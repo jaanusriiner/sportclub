@@ -1,5 +1,5 @@
 -- Kustutab minu_projekt schema (mis põhimõtteliselt kustutab kõik tabelid)
-DROP SCHEMA IF EXISTS minu_projekt CASCADE;
+DROP SCHEMA IF EXISTS sportclub CASCADE;
 -- Loob uue minu_projekt schema vajalikud õigused
 CREATE SCHEMA sportclub
 -- taastab vajalikud andmebaasi õigused
