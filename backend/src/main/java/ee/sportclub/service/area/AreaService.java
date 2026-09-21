@@ -6,6 +6,7 @@ import ee.sportclub.persistence.area.Area;
 import ee.sportclub.persistence.area.AreaMapper;
 import ee.sportclub.persistence.area.AreaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +19,8 @@ public class AreaService {
     private final AreaMapper areaMapper;
 
     public List<AreaDto> findAreas() {
-        List<Area> areas = areaRepository.findAll();
+        Sort byNameAsc = Sort.by(Sort.Direction.ASC, "name");
+        List<Area> areas = areaRepository.findAll(byNameAsc);
         List<AreaDto> areaDtos = areaMapper.toAreaDtos(areas);
         return areaDtos;
     }
