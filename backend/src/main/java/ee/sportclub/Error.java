@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum Error {
-    INCORRECT_CREDENTIALS("Vale kasutajanimi või parool"),
+    INCORRECT_CREDENTIALS("Vale e-post või parool"),
     USER_UNAVAILABLE("Sellise kasutajanimega (email) aktiivne kasutaja on juba süsteemis olemas"),
     SPORT_MISSING("sportIds: Vali vähemalt üks spordiala");
 
