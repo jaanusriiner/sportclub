@@ -29,7 +29,7 @@ API: POST /api/login
 LoginRequestDto.java
 Request body:
 {
-  "email": "jaanus@gmail.com",
+  "email": "admin@admin.ee",
   "password": "123"
 }
 
