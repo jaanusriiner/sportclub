@@ -1,4 +1,4 @@
-package ee.sportclub;
+package ee.sportclub.persistence.sport;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
