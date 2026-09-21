@@ -12,28 +12,30 @@ Teenusel puuduvad sisendid.
 
 ## Väljund
 
-**Response (200 OK):** kõikide spordialade nimekiri (`SportDto.java` massiiv), samas järjekorras nagu `sport` tabelis (ID kasvavalt).
+**Response (200 OK):** kõikide spordialade nimekiri (`SportDto.java` massiiv), sorteeritud spordiala nime (`sport.name`) järgi tähestikuliselt (A–Z).
 
 ```json
 [
   {
-    "sportId": 1,
-    "sportName": "Tennis"
+    "sportId": 3,
+    "sportName": "Basketball"
   },
   {
     "sportId": 2,
     "sportName": "Football"
   },
   {
-    "sportId": 3,
-    "sportName": "Basketball"
-  },
-  {
     "sportId": 4,
     "sportName": "Golf"
+  },
+  {
+    "sportId": 1,
+    "sportName": "Tennis"
   }
 ]
 ```
+
+Järjekord ei sõltu ID-st ega andmebaasi lisamise järjekorrast — sorteerimine tehakse päringus (nt `ORDER BY name`), mitte frontendis.
 
 - `sportId` — `sport.id`
 - `sportName` — `sport.name`
@@ -79,7 +81,8 @@ Teenusel puuduvad sisendid ja rollipiirangud, seega ärilisi veaolukordi ei ole.
 
 - [ ] Endpoint `GET /api/sports` on olemas ja ei nõua sisendparameetreid
 - [ ] Õnnestunud vastus on 200 ja JSON massiiv `SportDto` objektidega (`sportId`, `sportName`)
-- [ ] Vastuses on kõik `sport` tabeli read, ID järgi kasvavas järjekorras
+- [ ] Vastuses on kõik `sport` tabeli read, sorteeritud `sportName` järgi tähestikuliselt (Basketball, Football, Golf, Tennis)
+- [ ] Sorteerimine toimub backendis ja ei sõltu ID-dest (nt uus spordiala "Athletics" ilmub nimekirja esimesena)
 - [ ] Kui `sport` tabel on tühi, tagastatakse 200 ja tühi massiiv `[]`
 - [ ] Endpoint on kättesaadav ka sisse logimata kasutajale (vaade on mõeldud külastajale)
 - [ ] Kirjutatud on automaattestid: nimekiri mitme spordialaga, tühi nimekiri

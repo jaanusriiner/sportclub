@@ -81,25 +81,25 @@ Response (200):
     "areaName": "Harjumaa"
   },
   {
-    "areaId": 2,
-    "areaName": "Läänemaa"
-  },
-  {
-    "areaId": 3,
-    "areaName": "Saaremaa"
-  },
-  {
     "areaId": 4,
     "areaName": "Hiiumaa"
   },
   {
+    "areaId": 2,
+    "areaName": "Läänemaa"
+  },
+  {
     "areaId": 5,
     "areaName": "Pärnumaa"
+  },
+  {
+    "areaId": 3,
+    "areaName": "Saaremaa"
   }
 ]
 
 API teenuse lisainfo:
-—
+Vastus on sorteeritud nime järgi tähestikuliselt (A–Z).
 
 Veateated: —
 ```
@@ -115,25 +115,25 @@ SportDto.java
 Response (200):
 [
   {
-    "sportId": 1,
-    "sportName": "Tennis"
+    "sportId": 3,
+    "sportName": "Basketball"
   },
   {
     "sportId": 2,
     "sportName": "Football"
   },
   {
-    "sportId": 3,
-    "sportName": "Basketball"
-  },
-  {
     "sportId": 4,
     "sportName": "Golf"
+  },
+  {
+    "sportId": 1,
+    "sportName": "Tennis"
   }
 ]
 
 API teenuse lisainfo:
-—
+Vastus on sorteeritud nime järgi tähestikuliselt (A–Z).
 
 Veateated: —
 ```

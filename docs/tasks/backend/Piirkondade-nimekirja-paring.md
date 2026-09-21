@@ -12,7 +12,7 @@ Teenusel puuduvad sisendid.
 
 ## Väljund
 
-**Response (200 OK):** kõikide piirkondade nimekiri (`AreaDto.java` massiiv), samas järjekorras nagu `area` tabelis (ID kasvavalt).
+**Response (200 OK):** kõikide piirkondade nimekiri (`AreaDto.java` massiiv), sorteeritud piirkonna nime (`area.name`) järgi tähestikuliselt (A–Z).
 
 ```json
 [
@@ -21,23 +21,25 @@ Teenusel puuduvad sisendid.
     "areaName": "Harjumaa"
   },
   {
-    "areaId": 2,
-    "areaName": "Läänemaa"
-  },
-  {
-    "areaId": 3,
-    "areaName": "Saaremaa"
-  },
-  {
     "areaId": 4,
     "areaName": "Hiiumaa"
   },
   {
+    "areaId": 2,
+    "areaName": "Läänemaa"
+  },
+  {
     "areaId": 5,
     "areaName": "Pärnumaa"
+  },
+  {
+    "areaId": 3,
+    "areaName": "Saaremaa"
   }
 ]
 ```
+
+Järjekord ei sõltu ID-st ega andmebaasi lisamise järjekorrast — sorteerimine tehakse päringus (nt `ORDER BY name`), mitte frontendis.
 
 - `areaId` — `area.id`
 - `areaName` — `area.name`
@@ -84,7 +86,8 @@ Teenusel puuduvad sisendid ja rollipiirangud, seega ärilisi veaolukordi ei ole.
 
 - [ ] Endpoint `GET /api/areas` on olemas ja ei nõua sisendparameetreid
 - [ ] Õnnestunud vastus on 200 ja JSON massiiv `AreaDto` objektidega (`areaId`, `areaName`)
-- [ ] Vastuses on kõik `area` tabeli read, ID järgi kasvavas järjekorras
+- [ ] Vastuses on kõik `area` tabeli read, sorteeritud `areaName` järgi tähestikuliselt (Harjumaa, Hiiumaa, Läänemaa, Pärnumaa, Saaremaa)
+- [ ] Sorteerimine toimub backendis ja ei sõltu ID-dest (nt uus piirkond "Alfamaa" ilmub nimekirja esimesena)
 - [ ] Kui `area` tabel on tühi, tagastatakse 200 ja tühi massiiv `[]`
 - [ ] Endpoint on kättesaadav ka sisse logimata kasutajale (vaade on mõeldud külastajale)
 - [ ] Kirjutatud on automaattestid: nimekiri mitme piirkonnaga, tühi nimekiri
