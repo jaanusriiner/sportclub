@@ -46,7 +46,7 @@ Response (200):
 }
 
 API teenuse lisainfo:
-Luuakse uus kasutaja rolliga customer ja aktiivse staatusega (user tabeli status = 'A'), temaga seotud profiil (profile) ning valitud spordialade huvid (user_sport). E-post peab olema unikaalne aktiivsete kasutajate seas. Salasõna kordust ja tingimustega nõustumist kontrollitakse ainult frontendis.
+Luuakse uus kasutaja rolliga customer ja aktiivse staatusega (user tabeli status = 'A'), temaga seotud profiil (profile) ning valitud spordialade huvid (user_sport). sportIds peab sisaldama vähemalt ühte spordiala. E-post peab olema unikaalne aktiivsete kasutajate seas. Salasõna kordust ja tingimustega nõustumist kontrollitakse ainult frontendis.
 
 Veateated:
 HTTP: 403
