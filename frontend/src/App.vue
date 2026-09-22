@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 mb-3">
-    <RouterLink class="navbar-brand" to="/">Minu Projekt</RouterLink>
+    <RouterLink class="navbar-brand" to="/">SportClub</RouterLink>
     <button
       class="navbar-toggler"
       type="button"
@@ -15,7 +15,7 @@
         <RouterLink class="nav-link" to="/">Tutvustus</RouterLink>
         <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
         <RouterLink class="nav-link" to="/">Logi sisse</RouterLink>
-        <RouterLink class="nav-link" to="/">Registreeru</RouterLink>
+        <RouterLink class="nav-link" to="/register">Registreeru</RouterLink>
       </div>
     </div>
   </nav>
