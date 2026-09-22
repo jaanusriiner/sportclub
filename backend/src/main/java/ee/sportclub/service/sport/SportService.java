@@ -1,4 +1,4 @@
-package ee.sportclub.service.area;
+package ee.sportclub.service.sport;
 
 
 import ee.sportclub.controller.sport.SportDto;
