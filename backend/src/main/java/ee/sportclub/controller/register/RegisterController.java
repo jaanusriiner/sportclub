@@ -1,5 +1,6 @@
 package ee.sportclub.controller.register;
 
+import ee.sportclub.controller.login.dto.LoginResponseDto;
 import ee.sportclub.controller.register.dto.RegisterRequestDto;
 import ee.sportclub.service.register.RegisterService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,8 +21,8 @@ class RegisterController {
     @PostMapping("/api/register")
     @Operation(summary = "Kasutajaks registreerimine",
             description = "Uus kasutaja luuakse vaikimisi CUSTOMER rollis. Kasutaja loomise käigus kontrollitakse, kas sama emailiga aktiivne kasutaja on juba süsteemis olemas. ")
-    public void registerUser(@RequestBody @Valid RegisterRequestDto registerRequestDto){
-        registerService.registerUser(registerRequestDto);
+    public LoginResponseDto registerUser(@RequestBody @Valid RegisterRequestDto registerRequestDto){
+        return registerService.registerUser(registerRequestDto);
     }
 
 }

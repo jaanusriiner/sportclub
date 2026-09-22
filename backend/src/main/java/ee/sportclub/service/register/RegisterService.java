@@ -2,6 +2,7 @@ package ee.sportclub.service.register;
 
 import ee.sportclub.Status;
 import ee.sportclub.UserRole;
+import ee.sportclub.controller.login.dto.LoginResponseDto;
 import ee.sportclub.controller.register.dto.RegisterRequestDto;
 import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
@@ -15,6 +16,7 @@ import ee.sportclub.persistence.role.RoleRepository;
 import ee.sportclub.persistence.sport.Sport;
 import ee.sportclub.persistence.sport.SportRepository;
 import ee.sportclub.persistence.user.User;
+import ee.sportclub.persistence.user.UserMapper;
 import ee.sportclub.persistence.user.UserRepository;
 import ee.sportclub.persistence.usersport.UserSport;
 import ee.sportclub.persistence.usersport.UserSportRepository;
@@ -40,16 +42,18 @@ public class RegisterService {
     private final ProfileRepository profileRepository;
     private final ProfileMapper profileMapper;
     private final UserSportRepository userSportRepository;
+    private final UserMapper userMapper;
 
-    //todo Jaanus muudab nii, et registerUser meetod tagastaks loginResponse ja kasutaja oleks kohe edukalt sisse logitud
     @Transactional
-    public void registerUser(RegisterRequestDto registerRequestDto) {
+    public LoginResponseDto registerUser(RegisterRequestDto registerRequestDto) {
         validateUserEmailIsAvailable(registerRequestDto.getEmail());
         Area area = getValidArea(registerRequestDto.getAreaId());
         List<Sport> sports = getValidSports(registerRequestDto.getSportIds());
         User user = createAndSaveUser(registerRequestDto);
         createAndSaveProfile(registerRequestDto, user, area);
         createAndSaveUserSport(user, sports);
+        LoginResponseDto loginResponseDto = userMapper.toLoginResponseDto(user);
+        return loginResponseDto;
     }
 
     private void createAndSaveUserSport(User user, List<Sport> sports) {
