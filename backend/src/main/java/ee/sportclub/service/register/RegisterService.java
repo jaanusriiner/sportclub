@@ -34,6 +34,14 @@ public class RegisterService {
         validateUserEmailIsAvailable(registerRequestDto.getEmail());
         Area area = getValidArea(registerRequestDto.getAreaId());
         List<Sport> sports = getValidSports(registerRequestDto.getSportIds());
+        createAndSaveUser(registerRequestDto);
+
+
+    }
+
+    private void createAndSaveUser(RegisterRequestDto registerRequestDto) {
+
+
     }
 
     private void validateUserEmailIsAvailable(@NotNull @Email String email) {
