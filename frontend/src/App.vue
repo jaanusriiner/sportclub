@@ -11,8 +11,11 @@
     </button>
     <div class="collapse navbar-collapse justify-content-center" id="navMenu">
       <div class="navbar-nav">
-        <RouterLink class="nav-link" to="/">Home</RouterLink>
-        <RouterLink class="nav-link" to="/test">Test</RouterLink>
+        <RouterLink class="nav-link" to="/">Kodu</RouterLink>
+        <RouterLink class="nav-link" to="/">Tutvustus</RouterLink>
+        <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
+        <RouterLink class="nav-link" to="/">Logi sisse</RouterLink>
+        <RouterLink class="nav-link" to="/">Registreeru</RouterLink>
       </div>
     </div>
   </nav>
