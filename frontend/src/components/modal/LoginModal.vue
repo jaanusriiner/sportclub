@@ -9,6 +9,7 @@ import BaseModal from '@/components/modal/BaseModal.vue'
   @event-modal-closed="$emit('event-login-modal-closed')"
   >
 
+
 <template #title>
 {{Sisselogimine}}
 </template>
