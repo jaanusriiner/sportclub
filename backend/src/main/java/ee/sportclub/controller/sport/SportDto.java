@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Value;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -14,7 +14,7 @@ import java.io.Serializable;
  */
 @Data
 @AllArgsConstructor
-@Value
+@NoArgsConstructor
 public class SportDto implements Serializable {
     Integer sportId;
     @NotNull
