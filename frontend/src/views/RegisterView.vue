@@ -3,14 +3,28 @@ import AlertDanger from '@/components/alert/AlertDanger.vue'
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
 import AreaService from '@/services/AreaService.js'
 import NavigationService from '@/services/NavigationService.js'
-import SportService from "@/services/SportService.js";
+import SportService from '@/services/SportService.js'
+import AreasDropDown from '@/components/dropdown/AreasDropDown.vue'
+import TomSelect from 'tom-select'
 
 export default {
   name: 'RegisterView',
-  components: { AlertSuccess, AlertDanger },
+  components: { AreasDropDown, AlertSuccess, AlertDanger },
   beforeMount() {
     this.getAreas()
     this.getSports()
+  },
+  mounted() {
+    this.sportsSelect = new TomSelect('#sports', {
+      plugins: ['remove_button'], // adds an × to remove each selected tag
+      placeholder: 'Vali spordialad...',
+      maxItems: null, // null = unlimited selections
+      create: false, // prevents users typing in new options that don't exist
+      controlClass: 'ts-control form-select border border-dark', // näeb välja nagu teised valikuväljad
+    })
+  },
+  beforeUnmount() {
+    this.sportsSelect?.destroy()
   },
   data() {
     return {
@@ -69,6 +83,11 @@ export default {
     handleGetSportsResponse(response) {
       this.sports = response.data
     },
+
+    alertInfo(id) {
+      alert(id)
+    }
+
   },
 }
 </script>
@@ -110,20 +129,57 @@ export default {
 
         <div class="row justify-content-center mb-5">
           <div class="col">
-            <select class="form-select border border-dark" aria-label="Default select example">
-              <option selected>Piirkond</option>
-              <option value="1">Harjumaa</option>
-              <option value="2">Läänemaa</option>
-              <option value="3">Pärnumaa</option>
-            </select>
+            <AreasDropDown :areas="areas" @event-new-area-selected="alertInfo"/>
           </div>
           <div class="col">
-            <select class="form-select border border-dark" aria-label="Default select example">
-              <option selected>Spordiala</option>
-              <option value="1">Tennis</option>
-              <option value="2">Jalgpall</option>
-              <option value="3">Golf</option>
-            </select>
+
+            <div class="mb-3">
+              <label for="sports" class="form-label"></label>
+              <select id="sports" multiple>
+                <option value="jousaal">Jõusaal</option>
+                <option value="jooga">Jooga</option>
+                <option value="crossfit">Crossfit</option>
+                <option value="pilates">Pilates</option>
+                <option value="boks">Poks</option>
+              </select>
+            </div>
+
+
+
+
+<!--            <div class="dropdown">-->
+<!--              <button class="btn btn-outline-primary dropdown-toggle border border-dark" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">-->
+<!--                Spordialad-->
+<!--              </button>-->
+<!--              <ul class="dropdown-menu p-2" style="min-width: 220px;">-->
+<!--                <li><div class="form-check">-->
+<!--                  <input class="form-check-input" type="checkbox" value="1" id="opt1">-->
+<!--                  <label class="form-check-label" for="opt1">Jõusaal</label>-->
+<!--                </div></li>-->
+<!--                <li><div class="form-check">-->
+<!--                  <input class="form-check-input" type="checkbox" value="2" id="opt2">-->
+<!--                  <label class="form-check-label" for="opt2">Jooga</label>-->
+<!--                </div></li>-->
+<!--                <li><div class="form-check">-->
+<!--                  <input class="form-check-input" type="checkbox" value="3" id="opt3">-->
+<!--                  <label class="form-check-label" for="opt3">Crossfit</label>-->
+<!--                </div></li>-->
+<!--              </ul>-->
+<!--            </div>-->
+          </div>
+        </div>
+        <div class="row justify-content-center mb-5">
+          <div class="col">
+            <div class="mb-3">
+              <label for="sports" class="form-label">Vali spordialad</label>
+              <select id="sports" multiple>
+                <option value="jousaal">Jõusaal</option>
+                <option value="jooga">Jooga</option>
+                <option value="crossfit">Crossfit</option>
+                <option value="pilates">Pilates</option>
+                <option value="boks">Poks</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -194,3 +250,11 @@ export default {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Tom Select kirjutab valitud spordialade puhul oma padding'u üle, mis katab muidu form-select
+   noole ära - taastame ruumi noole jaoks, et väli näeks endiselt dropdown'i moodi välja. */
+:deep(.ts-wrapper .ts-control.form-select) {
+  padding-right: 2.25rem !important;
+}
+</style>
