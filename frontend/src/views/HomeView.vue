@@ -1,10 +1,23 @@
 <template>
-  <div class="container text-center mt-4">
-    <nav class="d-flex justify-content-end mb-4 p-2 bg-light rounded">
-      <button class="btn btn-outline-primary" @click="openLoginModal">Logi sisse</button>
-    </nav>
-    <div class="alert alert-primary" role="alert">See on koduvaade, see asub rajal (/)</div>
-    <TestComponent />
+  <div class="container text-center">
+    <LoginModal
+      :login-modal-is-open="isLoginModalOpen"
+      @event-login-modal-closed="isLoginModalOpen = false"
+    />
+    <div class="row justify-content-end my-3">
+      <div class="col col-2">
+        <button class="btn btn-outline-primary" @click="isLoginModalOpen = true">
+          Ava sisselogimine
+        </button>
+      </div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col">
+        <div class="alert alert-primary" role="alert">See on koduvaade, see asub rajal (/)</div>
+        <TestComponent />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -18,15 +31,10 @@ export default {
   data() {
     return {
       isLoginModalOpen: false,
+      email: '',
+      password: '',
+      errorMessage: '',
     }
-  },
-  methods: {
-    openLoginModal() {
-      this.isLoginModalOpen = true
-    },
-    colseLoginModal() {
-      this.closeLoginModalOpen = false
-    },
   },
 }
 </script>

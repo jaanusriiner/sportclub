@@ -14,7 +14,7 @@
         <RouterLink class="nav-link" to="/">Kodu</RouterLink>
         <RouterLink class="nav-link" to="/">Tutvustus</RouterLink>
         <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
-        <a class="nav-link" href="#" @click.prevent="$emit('event-open-login-modal')">Logi sisse</a>
+        <RouterLink class="nav-link" to="/">Logi sisse</RouterLink>
         <RouterLink class="nav-link" to="/register">Registreeru</RouterLink>
       </div>
     </div>
