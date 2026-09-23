@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from "@/views/HomeView.vue";
 import TestView from "@/views/TestView.vue";
 import RegisterView from '@/views/RegisterView.vue'
+import ErrorView from '@/views/ErrorView.vue'
 
 
 const router = createRouter({
@@ -21,6 +22,11 @@ const router = createRouter({
       path: '/register',
       name: 'registerRoute',
       component: RegisterView,
+    },
+    {
+      path: '/error',
+      name: 'errorRoute',
+      component: ErrorView,
     },
   ],
 })

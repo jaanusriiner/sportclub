@@ -1,18 +1,75 @@
 <script>
 import AlertDanger from '@/components/alert/AlertDanger.vue'
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
+import AreaService from '@/services/AreaService.js'
+import NavigationService from '@/services/NavigationService.js'
+import SportService from "@/services/SportService.js";
 
 export default {
   name: 'RegisterView',
   components: { AlertSuccess, AlertDanger },
-  beforeMount() {},
+  beforeMount() {
+    this.getAreas()
+    this.getSports()
+  },
   data() {
     return {
       errorMessage: '',
       successMessage: '',
+
+      areas: [
+        {
+          areaId: 0,
+          areaName: '',
+        },
+      ],
+
+      sports: [
+        {
+          sportId: 0,
+          sportName: '',
+        },
+      ],
+
+      loginRequest: {
+        firstName: '',
+        lastName: '',
+        phoneNumber: 0,
+        email: '',
+        password: '',
+        areaId: 0,
+        sportIds: [0],
+      },
+
+      loginResponse: {
+        userId: 0,
+        roleName: '',
+      },
     }
   },
-  methods: {},
+  methods: {
+    getAreas() {
+      AreaService.getAreasRequest()
+        .then((response) => this.handleGetAreasResponse(response))
+        .catch(() => NavigationService.navigateToErrorView())
+        .finally()
+    },
+
+    handleGetAreasResponse(response) {
+      this.areas = response.data
+    },
+
+    getSports() {
+      SportService.getSportsRequest()
+        .then((response) => this.handleGetSportsResponse(response))
+        .catch(() => NavigationService.navigateToErrorView())
+        .finally()
+    },
+
+    handleGetSportsResponse(response) {
+      this.sports = response.data
+    },
+  },
 }
 </script>
 
