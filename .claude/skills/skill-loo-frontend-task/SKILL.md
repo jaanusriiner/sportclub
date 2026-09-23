@@ -1,13 +1,13 @@
 ---
 name: skill-loo-frontend-task
-description: Loo frontend vaate taski MD fail balsamic mockup PDF-i konkreetse lehekülje põhjal, tuginedes vajadusel olemasolevale backend taskile. Küsi kasutajalt PDF failinimi, lehekülje number ja (kui asjakohane) backend taski viide. Kasuta, kui kasutaja tahab luua frontend taski, vaate taski, mockup lehekülje põhjal FE taski, või mainib "loo frontend task" vms.
+description: Loo frontend vaate taski MD fail balsamic mockup PDF-i konkreetse lehekülje põhjal — vaade ja kasutajaliides tulevad mockupilt, kuid vaate API kutsete kontrakt tuletatakse eelistatult olemasolevast backend koodist või backend taskist, mitte ainult mockupi API märkmetest. Küsi kasutajalt PDF failinimi, lehekülje number ja (kui asjakohane) backend taski viide. Kasuta, kui kasutaja tahab luua frontend taski, vaate taski, mockup lehekülje põhjal FE taski, või mainib "loo frontend task" vms.
 ---
 
-# Loo frontend vaate task balsamic mockupist
+# Loo frontend vaate task mockupi ja olemasoleva backend'i põhjal
 
-Loe balsamic mockup PDF-i konkreetne lehekülg, tuvasta sellel kirjeldatud vaade ("Vaate märkmed" post-it) ja selle tehtavad API kutsed ("API märkmed" postid), ning koosta selle kohta täielik taski MD fail koos vastava lehekülje pildiga. Salvesta `docs/tasks/frontend` kausta.
+Loe balsamic mockup PDF-i konkreetne lehekülg, tuvasta sellel kirjeldatud vaade ("Vaate märkmed" post-it) ja selle tehtavad API kutsed ("API märkmed" postid), ning koosta selle kohta täielik taski MD fail koos vastava lehekülje pildiga. Salvesta `docs/tasks/frontend` kausta. Vaate ja kasutajaliidese kirjeldus tuleb alati mockupilt, aga iga API kutse kontrakt tuletatakse mockupi asemel eelistatult olemasolevast backend koodist või backend taskist — mockupi "API märkmeid" kasutatakse ainult siis, kui kumbagi pole (vt täpne prioriteetsuse järjekord sammus 5).
 
-See skill on `skill-loo-backend-task` vaste frontendi jaoks — erinevus on selles, et frontend task kirjeldab kasutajaliidest ja kasutajavoogu, mitte teenuse äriloogikat, ning API kontrakt tuletatakse eelistatult juba olemasolevast backend koodist või taskist, mitte mockupist otse (vt täpne prioriteetsuse järjekord sammus 5).
+See skill on `skill-loo-backend-task` vaste frontendi jaoks — erinevus on selles, et frontend task kirjeldab kasutajaliidest ja kasutajavoogu, mitte teenuse äriloogikat.
 
 ## Steps
 
