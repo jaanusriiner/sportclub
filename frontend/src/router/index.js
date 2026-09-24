@@ -28,6 +28,11 @@ const router = createRouter({
       name: 'errorRoute',
       component: ErrorView,
     },
+    {
+      path: '/training',
+      name: 'trainingRoute',
+      component: HomeView,
+    }
   ],
 })
 
