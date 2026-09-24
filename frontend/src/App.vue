@@ -14,15 +14,45 @@
         <RouterLink class="nav-link" to="/">Kodu</RouterLink>
         <RouterLink class="nav-link" to="/">Tutvustus</RouterLink>
         <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
-        <RouterLink class="nav-link" to="/">Logi sisse</RouterLink>
+        <button type="button" class="nav-link btn btn-link text-start" @click="openModal">
+          Logi sisse
+        </button>
         <RouterLink class="nav-link" to="/register">Registreeru</RouterLink>
       </div>
     </div>
   </nav>
 
   <RouterView />
+  <LoginModal :login-modal-is-open="loginModalIsOpen" @event-login-modal-closed="closeModal" />
 </template>
 
-<script setup>
+<script>
 import { RouterLink, RouterView } from 'vue-router'
+import LoginModal from '@/components/modal/LoginModal.vue'
+
+export default {
+  name: 'App',
+  components: { RouterLink, RouterView, LoginModal },
+  data() {
+    return {
+      loginModalIsOpen: false,
+    }
+  },
+  methods: {
+    openModal() {
+      this.loginModalIsOpen = true
+    },
+    closeModal() {
+      this.loginModalIsOpen = false
+    },
+  },
+}
 </script>
+
+<style scoped>
+.btn-link {
+  border: none;
+  background: none;
+  text-decoration: none;
+}
+</style>

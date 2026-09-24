@@ -2,11 +2,8 @@
   <BaseModal :is-open="loginModalIsOpen" @event-modal-closed="closeModal">
     <template #title> Logi sisse </template>
     <template #body>
-      <div v-if="errorMessage" class="alert alert-danger" role="alert">
-        {{ errorMessage }}
-      </div>
-
-      <form>
+      <AlertDanger v-if="errorMessage" :error-message="errorMessage" />
+      <form @submit.prevent="handleLogin">
         <div class="mb-3 text-start">
           <label for="emailInput" class="form-label">E-post</label>
           <input
@@ -39,12 +36,12 @@
 
 <script>
 import BaseModal from '@/components/modal/BaseModal.vue'
+import AlertDanger from '@/components/alert/AlertDanger.vue'
+import LoginService from '@/services/LoginService.js'
 
 export default {
   name: 'LoginModal',
-  components: {
-    BaseModal,
-  },
+  components: { BaseModal, AlertDanger },
   props: {
     loginModalIsOpen: {
       type: Boolean,
@@ -59,7 +56,6 @@ export default {
     }
   },
   methods: {
-
     closeModal() {
       this.email = ''
       this.password = ''
@@ -67,20 +63,23 @@ export default {
       this.$emit('event-login-modal-closed')
     },
 
-
     handleLogin() {
       this.errorMessage = ''
-      console.log('Saadan andmed:', this.email, this.password)
-
-
-      if (this.email === 'admin@admin.ee' && this.password === '123') {
-        sessionStorage.setItem('userId', '1')
-        sessionStorage.setItem('roleName', 'admin')
-        alert('Login successful!')
-        this.closeModal()
-      } else {
-        this.errorMessage = 'Vale e-post või parool'
-      }
+      LoginService.sendLoginRequest(this.email, this.password)
+        .then((response) => {
+          const data = response.data
+          sessionStorage.setItem('userId', data.userId)
+          sessionStorage.setItem('roleName', data.roleName)
+          this.closeModal()
+          this.$router.push('/training')
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 403) {
+            this.errorMessage = error.response.data.message || 'Vale e-post või parool'
+          } else {
+            this.errorMessage = 'Süsteemne viga. Palun proovi hiljem uuesti.'
+          }
+        })
     },
   },
 }
