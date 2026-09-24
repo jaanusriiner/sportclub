@@ -67,18 +67,22 @@ INSERT INTO sportclub.training (id, training_group_id, default_facility_id, name
 INSERT INTO sportclub.training (id, training_group_id, default_facility_id, name, maxsize, description, default_start_date, default_end_date, default_start_time, default_end_time, duration, weekdays) VALUES (default, 4, 4, 'Jalgpall - Algtase (Hiiu)', 22, NULL, NULL, NULL, '19:00:00', '20:30:00', 90, 'P');
 INSERT INTO sportclub.training (id, training_group_id, default_facility_id, name, maxsize, description, default_start_date, default_end_date, default_start_time, default_end_time, duration, weekdays) VALUES (default, 5, 5, 'Golf - Edasijõudnud (Niitvälja)', 12, NULL, NULL, NULL, '14:00:00', '15:30:00', 90, 'P');
 
-INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 1, 1, '2026-09-20', '19:30:00', 90, 'A', 2, 4, '2026-09-01');
-INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 2, 2, '2026-09-19', '18:30:00', 90, 'A', 4, 4, '2026-09-01');
-INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 3, 3, '2026-09-20', '18:00:00', 90, 'A', 2, 4, '2026-09-01');
-INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 4, 4, '2026-09-20', '19:00:00', 90, 'A', 16, 22, '2026-09-01');
-INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 5, 5, '2026-09-20', '14:00:00', 90, 'A', 0, 12, '2026-09-01');
+INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 1, 1, '2026-10-20', '19:30:00', 90, 'A', 2, 4, '2026-09-01');
+INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 1, 1, '2026-10-21', '19:30:00', 90, 'A', 3, 4, '2026-09-01');
+INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 1, 1, '2026-10-22', '19:30:00', 90, 'A', 3, 4, '2026-09-01');
+INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 2, 2, '2026-10-19', '18:30:00', 90, 'A', 4, 4, '2026-09-01');
+INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 3, 3, '2026-10-21', '18:00:00', 90, 'A', 2, 4, '2026-09-01');
+INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 4, 4, '2026-10-22', '19:00:00', 90, 'A', 16, 22, '2026-09-01');
+INSERT INTO sportclub.training_date (id, training_id, facility_id, start_date, start_time, duration, status, user_count, max_size, date_added) VALUES (default, 5, 5, '2026-09-21', '14:00:00', 90, 'A', 0, 12, '2026-09-01');
 
 -- customer@customer.ee (user id 3) on Tennis/Jalgpall gruppide liige, kuid mitte Golfi grupi liige
 INSERT INTO sportclub.user_training_group (id, user_id, training_group_id) VALUES (default, 3, 1);
 INSERT INTO sportclub.user_training_group (id, user_id, training_group_id) VALUES (default, 3, 2);
-INSERT INTO sportclub.user_training_group (id, user_id, training_group_id) VALUES (default, 3, 3);
-INSERT INTO sportclub.user_training_group (id, user_id, training_group_id) VALUES (default, 3, 4);
+INSERT INTO sportclub.user_training_group (id, user_id, training_group_id) VALUES (default, 1, 3);
+INSERT INTO sportclub.user_training_group (id, user_id, training_group_id) VALUES (default, 2, 4);
 
 -- customer@customer.ee registreeritud 20.09.2026 Tennis Algtase treeningule (training_date id 1)
 INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (default, 3, 1);
+INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (default, 2, 2);
+INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (default, 1, 3);
 
