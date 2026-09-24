@@ -84,6 +84,9 @@ export default {
       UserService.postRegisterRequest(this.registerRequest)
       NavigationService.navigateToHomeView()
     },
+    goBack() {
+      this.$router.back()
+    },
   },
 }
 </script>
@@ -205,7 +208,7 @@ export default {
     </div>
     <div class="row justify-content-center">
       <div class="col">
-        <button class="btn btn-secondary me-3" type="submit">Tagasi</button>
+        <button @click="goBack" class="btn btn-secondary me-3" type="button">Tagasi</button>
         <button @click="registerUser" class="btn btn-success" type="submit">Registreeru</button>
       </div>
     </div>
