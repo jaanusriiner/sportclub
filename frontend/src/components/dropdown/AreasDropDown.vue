@@ -19,7 +19,7 @@ export default {
     class="form-select border border-dark"
     aria-label="Default select example"
   >
-    <option :value="0">Kõik piirkonnad</option>
+    <option :value="0">Vali piirkond...</option>
     <option v-for="area in areas" :key="area.areaId" :value="area.areaId">
       {{ area.areaName }}
     </option>

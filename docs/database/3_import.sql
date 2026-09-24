@@ -3,8 +3,8 @@ INSERT INTO sportclub.role (id, name) VALUES (default, 'trainer');
 INSERT INTO sportclub.role (id, name) VALUES (default, 'customer');
 
 INSERT INTO sportclub.sport (id, name) VALUES (default, 'Tennis');
-INSERT INTO sportclub.sport (id, name) VALUES (default, 'Football');
-INSERT INTO sportclub.sport (id, name) VALUES (default, 'Basketball');
+INSERT INTO sportclub.sport (id, name) VALUES (default, 'Jalgpall');
+INSERT INTO sportclub.sport (id, name) VALUES (default, 'Korvpall');
 INSERT INTO sportclub.sport (id, name) VALUES (default, 'Golf');
 
 INSERT INTO sportclub.area (id, name) VALUES (default, 'Harjumaa');
