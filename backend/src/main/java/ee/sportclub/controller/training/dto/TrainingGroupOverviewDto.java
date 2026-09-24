@@ -18,6 +18,7 @@ public class TrainingGroupOverviewDto implements Serializable {
     private String sportName;
     private Integer facilityId;
     private String facilityName;
+    private Integer areaId;
     private Integer trainerId;
     private String trainerName;
     private Integer sportclubId;
@@ -25,10 +26,12 @@ public class TrainingGroupOverviewDto implements Serializable {
     private Integer skillLevelId;
     private String skillLevelName;
     private Integer trainingDateId;
-    private LocalDate nextTrainingDate;
-    private LocalTime nextTrainingTime;
+    private LocalDate trainingDate;
+    private LocalTime trainingTime;
+    private String status;
     private Integer userCount;
     private Integer maxSize;
-    private Boolean isTrainingGroupMember;
+    private Boolean userIsRegistered;
+    private Boolean userIsTrainingGroupMember;
 
 }

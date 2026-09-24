@@ -405,5 +405,38 @@ ALTER TABLE user_training_group ADD CONSTRAINT user_traininggroup_user
             INITIALLY IMMEDIATE
 ;
 
+-- views
+-- View: v_training_date_overview
+-- Üks rida iga training_date kirje kohta (grupeerimist ei toimu).
+-- Kasutajapõhised väljad (userIsRegistered, userIsTrainingGroupMember) arvutatakse
+-- service kihis requestUserId järgi, sest view ei saa parameetreid vastu võtta.
+CREATE VIEW v_training_date_overview AS
+SELECT td.id                                 AS training_date_id,
+       tg.id                                 AS training_group_id,
+       s.id                                  AS sport_id,
+       s.name                                AS sport_name,
+       f.id                                  AS facility_id,
+       f.name                                AS facility_name,
+       f.area_id                             AS area_id,
+       tg.user_id                            AS trainer_id,
+       p.first_name || ' ' || p.last_name    AS trainer_name,
+       sc.id                                 AS sportclub_id,
+       sc.name                               AS sportclub_name,
+       sl.id                                 AS skill_level_id,
+       sl.name                               AS skill_level_name,
+       td.start_date                         AS training_date,
+       td.start_time                         AS training_time,
+       td.status                             AS status,
+       td.user_count                         AS user_count,
+       td.max_size                           AS max_size
+FROM training_date td
+         JOIN training t ON t.id = td.training_id
+         JOIN training_group tg ON tg.id = t.training_group_id
+         JOIN sport s ON s.id = tg.sport_id
+         JOIN facility f ON f.id = td.facility_id
+         JOIN sportclub sc ON sc.id = tg.sportclub_id
+         JOIN skill_level sl ON sl.id = tg.skill_level_id
+         LEFT JOIN profile p ON p.user_id = tg.user_id;
+
 -- End of file.
 

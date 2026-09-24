@@ -2,11 +2,8 @@ package ee.sportclub.controller.training;
 
 
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewDto;
-import ee.sportclub.infrastructure.error.ApiError;
 import ee.sportclub.service.training.TrainingService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -27,32 +24,26 @@ public class TrainingController {
     @GetMapping("/api/trainings")
     @Operation(summary = "Leiab kõik treeningud",
             description = """
-                    -userId on kohustuslik
-                    -Kõik teised parameetrid on valikulised, kui edastatakse tühi väärtus siis piirangut ei rakendata
-                    -time parameeter tagastab treeningud ALATES määratud kellaajast
-                    -date parameeter määrab ära täpse kuupäeva"""
+                    - Iga training_date kirje on eraldi rida
+                    - requestUserId järgi arvutatakse userIsRegistered ja userIsTrainingGroupMember (0 puhul mõlemad false)
+                    - areaId, sportId, trainerId: väärtus 0 tähendab, et selle järgi ei filtreerita
+                    - dateFrom tagastab treeningud ALATES määratud kuupäevast
+                    - timeFrom tagastab igal päeval treeningud ALATES määratud kellaajast"""
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200", description = "OK"
-            ),
-            @ApiResponse(
-                    responseCode = "404", description = "Kui userId on tundmatu siis kuvatakse 'message': Tundmatu kasutaja, 'errorCode:' PRIMARY_KEY_NOT_FOUND",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
             )
     })
-
     public List<TrainingGroupOverviewDto> findTrainings(
-            @RequestParam Integer userId,
-            @RequestParam(required = false) Integer areaId,
-            @RequestParam(required = false) Integer sportId,
-            @RequestParam(required = false) Integer trainerId,
-            @RequestParam(required = false) LocalDate date,
-            @RequestParam(required = false) LocalTime time
-    )
-    {
-    return trainingService.findTrainings(userId, areaId, sportId, trainerId, date, time);
-
+            @RequestParam Integer requestUserId,
+            @RequestParam Integer areaId,
+            @RequestParam Integer sportId,
+            @RequestParam Integer trainerId,
+            @RequestParam LocalDate dateFrom,
+            @RequestParam LocalTime timeFrom
+    ) {
+        return trainingService.findTrainings(requestUserId, areaId, sportId, trainerId, dateFrom, timeFrom);
     }
 
 }
