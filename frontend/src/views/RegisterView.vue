@@ -82,6 +82,7 @@ export default {
     //todo Jaanus, puudu sisendite validatsioonid ja spordialade valik on hetkel hardcode'itud, samuti veaolukorrad
     registerUser() {
       UserService.postRegisterRequest(this.registerRequest)
+      NavigationService.navigateToHomeView()
     },
   },
 }
