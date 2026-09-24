@@ -51,7 +51,7 @@ public class TrainingService {
             trainingGroupOverviewDto.setIsTrainingGroupMember(containsTrainingGroupId);
             trainerIds.add(trainingGroupOverviewDto.getTrainerId());
         }
-        Set<Profile> trainerProfiles = profileRepository.findByUserIds(trainerIds);
+        Set<Profile> trainerProfiles = profileRepository.findByUserId(trainerIds);
         Map<Integer, Profile> profilesByUserId = new HashMap<>();
         for (Profile profile : trainerProfiles) {
             profilesByUserId.put(profile.getUser().getId(), profile);
