@@ -48,6 +48,8 @@ export default {
       default: false,
     },
   },
+  emits: ['event-login-successful', 'event-login-modal-closed'],
+
   data() {
     return {
       email: '',
@@ -70,6 +72,7 @@ export default {
           const data = response.data
           sessionStorage.setItem('userId', data.userId)
           sessionStorage.setItem('roleName', data.roleName)
+          this.$emit('event-login-successful')
           this.closeModal()
           this.$router.push('/training')
         })

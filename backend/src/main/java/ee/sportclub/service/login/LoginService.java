@@ -6,7 +6,7 @@ import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.persistence.user.User;
 import ee.sportclub.persistence.user.UserMapper;
 import ee.sportclub.persistence.user.UserRepository;
-import ee.sportclub.service.Status;
+import ee.sportclub.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
