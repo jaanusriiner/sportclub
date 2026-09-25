@@ -1,7 +1,6 @@
 package ee.sportclub.persistence.joinapplication;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,4 +11,18 @@ import lombok.Setter;
 
 public class JoinApplication {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Column(name = "id", nullable = false)
+    private Integer id;
+
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
+
+    @Column(name = "training_group_id", nullable = false)
+    private Integer trainingGroupId;
+
+    @Column(name = "status", nullable = false, length = 3)
+    private String status;
 }
