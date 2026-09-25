@@ -10,302 +10,194 @@ Query parameetrid:
 
 | Parameeter | Kohustuslik | Kirjeldus |
 |---|---|---|
-| `userId` | Jah | Kasutaja, kelle vaates olevate tabeli ridade `isTrainingGroupMember` väärtus arvutatakse (`user_training_group` olemasolu järgi). |
-| `areaId` | Ei | Filtreerib treeninggrupi asukoha (`facility.area_id`) järgi. |
-| `sportId` | Ei | Filtreerib spordiala järgi. |
-| `trainerId` | Ei | Filtreerib treeneri (`training_group.user_id`) järgi. |
-| `date` | Ei | Filtreerib järgmise treeningu toimumiskuupäeva (`training_date.start_date`) järgi. |
-| `time` | Ei | Filtreerib järgmise treeningu toimumiskellaaja (`training_date.start_time`) järgi. |
+| `requestUserId` | Jah | Päringu tegija. Selle järgi arvutatakse iga rea `userIsRegistered` (`user_training` olemasolu) ja `userIsTrainingGroupMember` (`user_training_group` olemasolu). Väärtuse `0` korral on mõlemad `false`. |
+| `areaId` | Jah | Filtreerib toimumiskoha piirkonna (`facility.area_id`) järgi. `0` = ei filtreeri. |
+| `sportId` | Jah | Filtreerib spordiala (`training_group.sport_id`) järgi. `0` = ei filtreeri. |
+| `trainerId` | Jah | Filtreerib treeneri (`training_group.user_id`) järgi. `0` = ei filtreeri. |
+| `dateFrom` | Jah | Tagastab treeningud **alates** sellest kuupäevast (`training_date.start_date >= dateFrom`). Formaat `YYYY-MM-DD`. |
+| `timeFrom` | Jah | Tagastab **igal päeval** treeningud alates sellest kellaajast (`training_date.start_time >= timeFrom`). Formaat `HH:mm`. |
+| `page` | Ei | Lehekülje number, algab `0`-st. Vaikimisi `0`. |
+| `size` | Ei | Ridade arv ühel leheküljel. Vaikimisi `7`. |
 
-Kõik valikulised filtrid kombineeritakse AND-loogikaga. Filtri puudumisel piirangut ei rakendata.
+Kõik filtrid kombineeritakse AND-loogikaga.
+
+Näide:
+
+```
+GET /api/trainings?requestUserId=3&areaId=0&sportId=0&trainerId=0&dateFrom=2026-09-24&timeFrom=00:00&page=0&size=7
+```
 
 ## Väljund
 
-**Response (200 OK):** treeninggruppide nimekiri (`TrainingGroupOverviewDto.java` massiiv) koos iga grupi järgmise toimuva treeninguga.
+**Response (200 OK):** üks lehekülg treeningute nimekirjast (`TrainingGroupOverviewPageDto.java`), mille `trainings` väljas on `TrainingGroupOverviewDto.java` objektid ja ülejäänud väljad kirjeldavad lehekülge.
+
+Iga `training_date` kirje on vastuses eraldi rida — treeninggruppide kaupa grupeerimist ei toimu. Read on sorteeritud `trainingDate` ja seejärel `trainingTime` järgi kasvavalt (sorteerimist frontend muuta ei saa).
+
+Näide (näidisandmetega, `requestUserId=3`, ilma filtriteta, `dateFrom=2026-09-24`; lühiduse mõttes on näidatud ainult 2 esimest rida):
 
 ```json
-[
-  {
-    "trainingGroupId": 1,
-    "sportId": 1,
-    "sportName": "Tennis",
-    "facilityId": 1,
-    "facilityName": "Laagri Tennisekeskus",
-    "trainerId": 5,
-    "trainerName": "Jaana Kask",
-    "sportclubId": 1,
-    "sportclubName": "Beeta Tenniseklubi",
-    "skillLevelId": 1,
-    "skillLevelName": "Algtase",
-    "trainingDateId": 1,
-    "nextTrainingDate": "2026-09-20",
-    "nextTrainingTime": "19:30",
-    "userCount": 2,
-    "maxSize": 4,
-    "isTrainingGroupMember": true
-  },
-  {
-    "trainingGroupId": 2,
-    "sportId": 1,
-    "sportName": "Tennis",
-    "facilityId": 2,
-    "facilityName": "Pärnu Tennise- ja Padelikeskus",
-    "trainerId": 6,
-    "trainerName": "Jaanus Tubli",
-    "sportclubId": 2,
-    "sportclubName": "Alta Tenniseklubi",
-    "skillLevelId": 2,
-    "skillLevelName": "Kesktase",
-    "trainingDateId": 2,
-    "nextTrainingDate": "2026-09-19",
-    "nextTrainingTime": "18:30",
-    "userCount": 4,
-    "maxSize": 4,
-    "isTrainingGroupMember": true
-  },
-  {
-    "trainingGroupId": 3,
-    "sportId": 1,
-    "sportName": "Tennis",
-    "facilityId": 3,
-    "facilityName": "Tallink Tennisekeskus",
-    "trainerId": 7,
-    "trainerName": "Aivar Lahe",
-    "sportclubId": 3,
-    "sportclubName": "Laeva Tenniseklubi",
-    "skillLevelId": 3,
-    "skillLevelName": "Edasijõudnud",
-    "trainingDateId": 3,
-    "nextTrainingDate": "2026-09-20",
-    "nextTrainingTime": "18:00",
-    "userCount": 2,
-    "maxSize": 4,
-    "isTrainingGroupMember": true
-  },
-  {
-    "trainingGroupId": 4,
-    "sportId": 2,
-    "sportName": "Football",
-    "facilityId": 4,
-    "facilityName": "Hiiu Staadion",
-    "trainerId": 8,
-    "trainerName": "Mihkel Maru",
-    "sportclubId": 4,
-    "sportclubName": "FC Jalg",
-    "skillLevelId": 4,
-    "skillLevelName": "Algtase",
-    "trainingDateId": 4,
-    "nextTrainingDate": "2026-09-20",
-    "nextTrainingTime": "19:00",
-    "userCount": 16,
-    "maxSize": 22,
-    "isTrainingGroupMember": true
-  },
-  {
-    "trainingGroupId": 5,
-    "sportId": 4,
-    "sportName": "Golf",
-    "facilityId": 5,
-    "facilityName": "Niitvälja Golf",
-    "trainerId": 9,
-    "trainerName": "Reena Sibul",
-    "sportclubId": 5,
-    "sportclubName": "Tore Golfklubi",
-    "skillLevelId": 5,
-    "skillLevelName": "Edasijõudnud",
-    "trainingDateId": 5,
-    "nextTrainingDate": "2026-09-20",
-    "nextTrainingTime": "14:00",
-    "userCount": 0,
-    "maxSize": 12,
-    "isTrainingGroupMember": false
-  }
-]
+{
+  "trainings": [
+    {
+      "trainingGroupId": 2,
+      "sportId": 1,
+      "sportName": "Tennis",
+      "facilityId": 2,
+      "facilityName": "Pärnu Tennise- ja Padelikeskus",
+      "areaId": 5,
+      "trainerId": 6,
+      "trainerName": "Jaanus Tubli",
+      "sportclubId": 2,
+      "sportclubName": "Alta Tenniseklubi",
+      "skillLevelId": 2,
+      "skillLevelName": "Kesktase",
+      "trainingDateId": 4,
+      "trainingDate": "2026-10-19",
+      "trainingTime": "18:30:00",
+      "status": "A",
+      "userCount": 4,
+      "maxSize": 4,
+      "userIsRegistered": false,
+      "userIsTrainingGroupMember": true
+    },
+    {
+      "trainingGroupId": 1,
+      "sportId": 1,
+      "sportName": "Tennis",
+      "facilityId": 1,
+      "facilityName": "Laagri Tennisekeskus",
+      "areaId": 1,
+      "trainerId": 5,
+      "trainerName": "Jaana Kask",
+      "sportclubId": 1,
+      "sportclubName": "Beeta Tenniseklubi",
+      "skillLevelId": 1,
+      "skillLevelName": "Algtase",
+      "trainingDateId": 1,
+      "trainingDate": "2026-10-20",
+      "trainingTime": "19:30:00",
+      "status": "A",
+      "userCount": 2,
+      "maxSize": 4,
+      "userIsRegistered": true,
+      "userIsTrainingGroupMember": true
+    }
+  ],
+  "pageNumber": 0,
+  "pageSize": 7,
+  "totalElements": 6,
+  "totalPages": 1
+}
 ```
 
-Väljade tähendus:
+### Lehekülje väljad (`TrainingGroupOverviewPageDto`)
+
+- `trainings` — antud lehekülje read (`List<TrainingGroupOverviewDto>`)
+- `pageNumber` — päritud lehekülje number (algab `0`-st)
+- `pageSize` — ridade arv leheküljel (päritud `size`)
+- `totalElements` — filtritele vastavate ridade koguarv üle kõigi lehekülgede
+- `totalPages` — lehekülgede koguarv
+
+### Rea väljad (`TrainingGroupOverviewDto`)
 
 - `trainingGroupId` — `training_group.id`
 - `sportId` / `sportName` — `sport.id` / `sport.name` (`training_group.sport_id` kaudu)
-- `facilityId` / `facilityName` — järgmise toimuva `training_date.facility_id` / `facility.name`
-- `trainerId` / `trainerName` — `training_group.user_id` kaudu leitud `user.id` ja `profile.first_name` + `profile.last_name`
+- `facilityId` / `facilityName` — `training_date.facility_id` / `facility.name` (treeningu tegelik toimumiskoht)
+- `areaId` — `facility.area_id`
+- `trainerId` / `trainerName` — `training_group.user_id` ja selle kasutaja `profile.first_name` + `' '` + `profile.last_name` (profiili puudumisel `null`)
 - `sportclubId` / `sportclubName` — `sportclub.id` / `sportclub.name` (`training_group.sportclub_id` kaudu)
 - `skillLevelId` / `skillLevelName` — `skill_level.id` / `skill_level.name` (`training_group.skill_level_id` kaudu)
-- `trainingDateId` — treeninggrupi järgmise (lähima tulevikus toimuva) `training_date.id`
-- `nextTrainingDate` / `nextTrainingTime` — sama kirje `start_date` / `start_time`
+- `trainingDateId` — `training_date.id`
+- `trainingDate` / `trainingTime` — sama kirje `start_date` / `start_time`
+- `status` — sama kirje `status` (vt `Status` enum: `A` = aktiivne, `D` = kustutatud)
 - `userCount` / `maxSize` — sama kirje `user_count` / `max_size`
-- `isTrainingGroupMember` — kas päritud `userId` on selle `training_group.id` kohta `user_training_group` tabelis olemas
+- `userIsRegistered` — kas `requestUserId` + rea `trainingDateId` kombinatsioon on `user_training` tabelis olemas
+- `userIsTrainingGroupMember` — kas `requestUserId` + rea `trainingGroupId` kombinatsioon on `user_training_group` tabelis olemas
 
-Kui `userId` ei ole mõne treeninggrupi liige (`isTrainingGroupMember: false`), ei kuva frontend `userCount`/`maxSize` väärtusi kasutajale (vt `TrainingsView-markmed.md`), kuid backend tagastab need väljad ikkagi.
+Kui kasutaja ei ole treeninggrupi liige (`userIsTrainingGroupMember: false`), ei kuva frontend `userCount`/`maxSize` väärtusi (vt `TrainingsView-markmed.md`), kuid backend tagastab need väljad ikkagi.
 
 ## Eesmärk
 
-`TrainingsView.vue` kutsub selle teenuse vaate avamisel ja iga kord, kui kasutaja muudab tabeli kohal olevaid filtreid (Piirkond, Spordiala, Treener, Kuupäev, Kellaaeg). `isTrainingGroupMember` väli otsustab, kas tabeli reas kuvatakse nupp "Registreeru" (kasutaja on liige ja kohti on vabu), tekst "Kohad on täis" (kasutaja on liige, aga `userCount >= maxSize`) või nupp "Taotle Liitumist" (kasutaja pole liige).
+`TrainingsView.vue` kutsub selle teenuse vaate avamisel, iga kord kui kasutaja muudab tabeli kohal olevaid filtreid (Piirkond, Spordiala, Treener, Kuupäev, Kellaaeg) ning kui kasutaja liigub tabeli all lehekülgede vahel. Filtri muutmisel alustab frontend uuesti leheküljelt `0`. `totalPages` põhjal kuvatakse lehekülgede navigatsioon.
 
-## Seotud andmebaasi tabelid
+Rea tegevus sõltub väljadest:
 
-Vt `docs/database/2_create.sql`.
+- `userIsTrainingGroupMember: false` → nupp "Taotle Liitumist"
+- `userIsTrainingGroupMember: true` ja `userIsRegistered: true` → kasutaja on sellele treeningule juba registreerunud
+- `userIsTrainingGroupMember: true`, `userIsRegistered: false` ja `userCount < maxSize` → nupp "Registreeru"
+- `userIsTrainingGroupMember: true`, `userIsRegistered: false` ja `userCount >= maxSize` → tekst "Kohad on täis"
 
-### `training_group`
+## Andmeallikas
 
-```sql
-CREATE TABLE training_group (
-    id serial  NOT NULL,
-    sportclub_id int  NOT NULL,
-    sport_id int  NOT NULL,
-    user_id int  NOT NULL,
-    name varchar(100)  NOT NULL,
-    description varchar(255)  NULL,
-    skill_level_id int  NOT NULL,
-    CONSTRAINT traininggroup_pk PRIMARY KEY (id)
-);
+Teenus loeb andmeid andmebaasi view'st `v_training_date_overview` (loomise skript `docs/database/2_create.sql` lõpus), mis ühendab tabelid:
+
+```
+training_date → training → training_group → sport / sportclub / skill_level
+training_date → facility (area_id)
+training_group.user_id → profile (LEFT JOIN, treeneri nimi)
 ```
 
-### `training`
+View's on üks rida iga `training_date` kirje kohta. View'l on JPA entity `TrainingDateOverview` (`@Immutable`).
 
-```sql
-CREATE TABLE training (
-    id serial  NOT NULL,
-    training_group_id int  NOT NULL,
-    default_facility_id int  NOT NULL,
-    name varchar(255)  NOT NULL,
-    maxsize int  NOT NULL,
-    description varchar(255)  NULL,
-    default_start_date date  NULL,
-    default_end_date date  NULL,
-    default_start_time time  NOT NULL,
-    default_end_time time  NOT NULL,
-    duration int  NOT NULL,
-    weekdays varchar(255)  NOT NULL,
-    CONSTRAINT training_pk PRIMARY KEY (id)
-);
-```
+`userIsRegistered` ja `userIsTrainingGroupMember` ei ole view's, sest view ei saa parameetreid vastu võtta — need arvutatakse repository päringus `EXISTS` alampäringutega tabelitest `user_training` (entity `UserTraining`) ja `user_training_group` (entity `UserTrainingGroup`).
 
-### `training_date`
+Kasutatavad tabelid on kirjeldatud failis `docs/database/2_create.sql`: `training_date`, `training`, `training_group`, `sport`, `sportclub`, `skill_level`, `facility`, `profile`, `user_training`, `user_training_group`.
 
-```sql
-CREATE TABLE training_date (
-    id serial  NOT NULL,
-    training_id int  NOT NULL,
-    facility_id int  NOT NULL,
-    start_date date  NOT NULL,
-    start_time time  NOT NULL,
-    duration int  NOT NULL,
-    status varchar(3)  NOT NULL,
-    user_count int  NOT NULL,
-    max_size int  NOT NULL,
-    date_added date  NOT NULL,
-    CONSTRAINT training_date_pk PRIMARY KEY (id)
-);
-```
+### Näidisandmed (`3_import.sql`)
 
-Teenus kasutab iga treeninggrupi kohta ainult **järgmist tulevikus toimuvat** `training_date` kirjet (väikseim `start_date`/`start_time`, mis on praegusest hetkest hiljem).
+| training_date_id | training_group_id | sport | facility (area) | trainer | kuupäev/kellaaeg | user_count/max_size |
+|---|---|---|---|---|---|---|
+| 1 | 1 | Tennis | Laagri Tennisekeskus (1) | Jaana Kask | 2026-10-20 19:30 | 2/4 |
+| 2 | 1 | Tennis | Laagri Tennisekeskus (1) | Jaana Kask | 2026-10-21 19:30 | 3/4 |
+| 3 | 1 | Tennis | Laagri Tennisekeskus (1) | Jaana Kask | 2026-10-22 19:30 | 3/4 |
+| 4 | 2 | Tennis | Pärnu Tennise- ja Padelikeskus (5) | Jaanus Tubli | 2026-10-19 18:30 | 4/4 |
+| 5 | 3 | Tennis | Tallink Tennisekeskus (1) | Aivar Lahe | 2026-10-21 18:00 | 2/4 |
+| 6 | 4 | Football | Hiiu Staadion (1) | Mihkel Maru | 2026-10-22 19:00 | 16/22 |
+| 7 | 5 | Golf | Niitvälja Golf (1) | Reena Sibul | 2026-09-21 14:00 | 0/12 |
 
-### `facility`
+Kasutaja `customer@customer.ee` (`user.id = 3`) on gruppide 1 ja 2 liige ning registreerunud treeningule `training_date_id = 1`. `dateFrom=2026-09-24` korral jääb `training_date_id = 7` (Golf, 2026-09-21) vastusest välja, seega on `totalElements = 6`.
 
-```sql
-CREATE TABLE facility (
-    id serial  NOT NULL,
-    area_id int  NOT NULL,
-    name varchar(255)  NOT NULL,
-    address varchar(255)  NOT NULL,
-    description varchar(255)  NULL,
-    CONSTRAINT facility_pk PRIMARY KEY (id)
-);
-```
+## Pagination
 
-`facility.area_id` on aluseks `areaId` filtrile.
+- Lehekülgede numeratsioon algab `0`-st.
+- `size` vaikeväärtus on `7`.
+- `totalElements` ja `totalPages` arvestavad kõiki rakendatud filtreid.
+- Sorteerimine on fikseeritud (`trainingDate`, `trainingTime` kasvavalt) — `sort` query parameetrit ei toetata.
+- Kui `page` on suurem kui viimane olemasolev lehekülg, tagastatakse 200 ja tühi `trainings` massiiv (`totalElements`/`totalPages` on ikkagi õiged).
 
-### `sportclub`
+Tehnilised märkused:
 
-```sql
-CREATE TABLE sportclub (
-    id serial  NOT NULL,
-    name varchar(100)  NOT NULL,
-    CONSTRAINT sportclub_pk PRIMARY KEY (id)
-);
-```
-
-### `skill_level`
-
-```sql
-CREATE TABLE skill_level (
-    id serial  NOT NULL,
-    sport_id int  NOT NULL,
-    name varchar(30)  NOT NULL,
-    CONSTRAINT skilllevel_pk PRIMARY KEY (id)
-);
-```
-
-### `sport`
-
-```sql
-CREATE TABLE sport (
-    id serial  NOT NULL,
-    name varchar(255)  NOT NULL,
-    CONSTRAINT sport_pk PRIMARY KEY (id)
-);
-```
-
-### `profile` (treeneri nime jaoks)
-
-```sql
-CREATE TABLE profile (
-    id serial  NOT NULL,
-    user_id int  NOT NULL,
-    first_name varchar(255)  NOT NULL,
-    last_name varchar(255)  NOT NULL,
-    phone_number int  NOT NULL,
-    area_id int  NOT NULL,
-    CONSTRAINT profile_pk PRIMARY KEY (id)
-);
-```
-
-`trainerName` moodustatakse `training_group.user_id` kaudu leitud kasutaja `profile.first_name` + `profile.last_name` väljadest.
-
-### `user_training_group` (liikmelisuse kontroll)
-
-```sql
-CREATE TABLE user_training_group (
-    id serial  NOT NULL,
-    user_id int  NOT NULL,
-    training_group_id int  NOT NULL,
-    CONSTRAINT user_traininggroup_pk PRIMARY KEY (id)
-);
-```
-
-`isTrainingGroupMember` on `true`, kui päritud `userId` + iga rea `trainingGroupId` kombinatsioon eksisteerib selles tabelis.
-
-Näidisandmed (`3_import.sql`, pärast lisatud kandeid):
-
-| training_group_id | sport | facility | trainer | sportclub | skill_level | training_date_id | kuupäev/kellaaeg | user_count/max_size |
-|---|---|---|---|---|---|---|---|---|
-| 1 | Tennis | Laagri Tennisekeskus | Jaana Kask | Beeta Tenniseklubi | Algtase | 1 | 2026-09-20 19:30 | 2/4 |
-| 2 | Tennis | Pärnu Tennise- ja Padelikeskus | Jaanus Tubli | Alta Tenniseklubi | Kesktase | 2 | 2026-09-19 18:30 | 4/4 |
-| 3 | Tennis | Tallink Tennisekeskus | Aivar Lahe | Laeva Tenniseklubi | Edasijõudnud | 3 | 2026-09-20 18:00 | 2/4 |
-| 4 | Football | Hiiu Staadion | Mihkel Maru | FC Jalg | Algtase | 4 | 2026-09-20 19:00 | 16/22 |
-| 5 | Golf | Niitvälja Golf | Reena Sibul | Tore Golfklubi | Edasijõudnud | 5 | 2026-09-20 14:00 | 0/12 |
-
-`user_training_group` sisaldab kasutaja `customer@customer.ee` (`user.id = 3`) liikmelisust treeninggruppides 1–4, kuid mitte grupis 5 — see annab näidisandmetes `isTrainingGroupMember: false` ainult Golfi reale.
-
-Tabelit `area` (`docs/database/2_create.sql`) kasutab see teenus ainult kaudselt `areaId` filtri kaudu (`facility.area_id`), otseselt `area` andmeid vastuses ei tagastata.
+- Repository meetod võtab lisaks filtritele `Pageable` parameetri ja tagastab `Page<TrainingGroupOverviewDto>`. Service koostab `Pageable` objekti `PageRequest.of(page, size)` abil (ilma sorteerimiseta, sest järjekord on päringus) ja teisendab `Page` objekti `TrainingGroupOverviewPageDto`-ks.
+- Kuna päring kasutab konstruktori avaldist (`select new ...`) ja `EXISTS` alampäringuid, tuleb `@Query` annotatsioonile lisada eraldi `countQuery` (sama `from` ja `where` osaga, `select count(v)`), et Spring ei peaks count-päringut ise tuletama.
+- Controller tagastab `TrainingGroupOverviewPageDto`, mitte Springi `Page` objekti.
 
 ## Veaolukorrad
 
 | Olukord | Status code | Response body |
 |---|---|---|
-| `userId` väärtusega kasutajat ei leitud | 404 Not Found | `{"errorCode": "PRIMARY_KEY_NOT_FOUND", "message": "Ei leidnud primary keyd 'userId' väärtusega: 99"}` |
+| Kohustuslik parameeter puudub või on vales formaadis | 400 Bad Request | Springi vaikimisi veavastus |
 | Ootamatu serveri viga | 500 Internal Server Error | — |
 
-`areaId`/`sportId`/`trainerId`/`date`/`time` filtrite puhul, mis ei anna ühtegi vastet, tagastatakse 200 ja tühi massiiv `[]` (mitte viga) — sama loogika, mis teistel selle projekti nimekirja-päringutel (vt `Piirkondade-nimekirja-paring.md`).
+Tundmatu `requestUserId` ei ole viga — kasutajat ei valideerita, sellisel juhul on kõigil ridadel `userIsRegistered` ja `userIsTrainingGroupMember` väärtus `false`.
+
+Filtrite puhul, mis ei anna ühtegi vastet, tagastatakse 200, tühi `trainings` massiiv, `totalElements = 0` ja `totalPages = 0` (mitte viga).
+
+`page < 0` või `size < 1` valideerimine ei ole selle taski skoobis.
 
 ## Vastuvõtu kriteeriumid
 
-- [ ] Endpoint `GET /api/trainings` on olemas ja nõuab kohustuslikku query parameetrit `userId`
-- [ ] Õnnestunud vastus on 200 ja JSON massiiv `TrainingGroupOverviewDto` objektidega, üks kirje treeninggrupi kohta koos selle järgmise toimuva `training_date`-ga
-- [ ] `isTrainingGroupMember` kajastab õigesti `user_training_group` tabeli sisu antud `userId` kohta
-- [ ] Valikulised filtrid `areaId`, `sportId`, `trainerId`, `date`, `time` toimivad AND-loogikaga ja puuduva filtri korral piirangut ei rakendata
-- [ ] Kui filtrile ei vasta ükski treeninggrupp, tagastatakse 200 ja tühi massiiv `[]`
-- [ ] Treeninggrupp, millel pole ühtegi tulevikus toimuvat `training_date` kirjet (kõik toimumisajad on minevikus), jäetakse vastusest täielikult välja — sellist gruppi kasutajale ei kuvata
-- [ ] Tundmatu `userId` korral tagastatakse 404 koos `errorCode: PRIMARY_KEY_NOT_FOUND`
-- [ ] Kirjutatud on automaattestid: mitme treeninggrupiga vastus, tühi tulemus filtri korral, liikmelisuse tõene/väär juhtum, tundmatu `userId`
+- [ ] Endpoint `GET /api/trainings` on olemas ja nõuab parameetreid `requestUserId`, `areaId`, `sportId`, `trainerId`, `dateFrom`, `timeFrom`
+- [ ] Õnnestunud vastus on 200 ja JSON objekt `TrainingGroupOverviewPageDto` väljadega `trainings`, `pageNumber`, `pageSize`, `totalElements`, `totalPages`
+- [ ] Iga `training_date` kirje on eraldi rida (grupeerimist ei toimu)
+- [ ] Filtri väärtus `0` jätab vastava filtri (`areaId`, `sportId`, `trainerId`) rakendamata; muul juhul filtreeritakse vastava veeru järgi
+- [ ] `dateFrom` tagastab treeningud alates antud kuupäevast ja `timeFrom` iga päeva treeningud alates antud kellaajast
+- [ ] `userIsRegistered` kajastab õigesti `user_training` tabeli sisu antud `requestUserId` kohta
+- [ ] `userIsTrainingGroupMember` kajastab õigesti `user_training_group` tabeli sisu antud `requestUserId` kohta
+- [ ] `requestUserId=0` korral on mõlemad booleanid kõigil ridadel `false`
+- [ ] Read on sorteeritud `trainingDate`, `trainingTime` järgi kasvavalt
+- [ ] `page` ja `size` puudumisel tagastatakse esimene lehekülg 7 reaga (või vähem, kui ridu on vähem)
+- [ ] `size` määrab ridade arvu leheküljel ja `page` valib õige lehekülje
+- [ ] `totalElements` ja `totalPages` arvestavad filtreid
+- [ ] Viimasest leheküljest suurema `page` korral tagastatakse 200 ja tühi `trainings` massiiv
+- [ ] Kui filtrile ei vasta ükski rida, tagastatakse 200, tühi `trainings` massiiv ja `totalElements = 0`
+- [ ] Kirjutatud on automaattestid: mitme leheküljega vastus (nt `size=2`), tühi tulemus filtri korral, booleanide tõene/väär juhtum, `requestUserId=0`, lehekülg väljaspool vahemikku
