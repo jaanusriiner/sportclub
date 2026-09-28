@@ -12,7 +12,10 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TrainerSportclubDto implements Serializable {
+public class TrainerTrainingGroupDto implements Serializable {
+
+    Integer trainingGroupId;
+    String trainingGroupName;
     Integer sportclubId;
     String sportclubName;
 }
