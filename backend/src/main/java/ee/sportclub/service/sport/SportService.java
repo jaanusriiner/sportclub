@@ -2,6 +2,10 @@ package ee.sportclub.service.sport;
 
 
 import ee.sportclub.controller.sport.SportDto;
+import ee.sportclub.controller.sport.SportSkillLevelDto;
+import ee.sportclub.persistence.skilllevel.SkillLevel;
+import ee.sportclub.persistence.skilllevel.SkillLevelRepository;
+import ee.sportclub.persistence.skilllevel.SportSkillLevelMapper;
 import ee.sportclub.persistence.sport.Sport;
 import ee.sportclub.persistence.sport.SportMapper;
 import ee.sportclub.persistence.sport.SportRepository;
@@ -17,6 +21,8 @@ public class SportService {
 
     private final SportRepository sportRepository;
     private final SportMapper sportMapper;
+    private final SkillLevelRepository skillLevelRepository;
+    private final SportSkillLevelMapper sportSkillLevelMapper;
 
     public List<SportDto> findSports() {
 
@@ -27,5 +33,14 @@ public class SportService {
 
 
     }
+//todo Jaanus Võrreldes taskiga jääb hetkel tegemata veakäsitlus, kui sportId ei eksisteeri, hetkel tagastab sel juhul tühja Listi
+    public List<SportSkillLevelDto> findSportSkillLevels(Integer sportId) {
+        List<SkillLevel> skillLevels = skillLevelRepository.findBySportId(sportId);
+        List<SportSkillLevelDto> skillLevelDtos = sportSkillLevelMapper.tosSportSkillLevelDtos(skillLevels);
+        return skillLevelDtos;
+    }
+
+
+
 
 }
