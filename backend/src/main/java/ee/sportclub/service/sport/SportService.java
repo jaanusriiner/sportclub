@@ -10,13 +10,14 @@ import ee.sportclub.persistence.sport.Sport;
 import ee.sportclub.persistence.sport.SportMapper;
 import ee.sportclub.persistence.sport.SportRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SportService {
 
     private final SportRepository sportRepository;
