@@ -16,7 +16,7 @@ class TrainerController {
 
     private final TrainerService trainerService;
 
-    @GetMapping("/api/sports/{trainerId}/sportclubs")
+    @GetMapping("/api/trainers/{trainerId}/sportclubs")
     @Operation(summary = "Treeneri spordiklubide pärimine",
             description = "Tagastatakse spordiklubide nimekiri, kus vastav treener on tegev. Spordiklubide puudumisel tagastatakse tühi list.")
     public List<TrainerSportclubDto> findTrainerSportclubs(@PathVariable Integer trainerId) {
