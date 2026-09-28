@@ -11,4 +11,9 @@ public interface SportclubTrainerRepository extends JpaRepository<SportclubTrain
 
     @Query("select s from SportclubTrainer s where s.user.id = :trainerId")
     List<SportclubTrainer> findSportClubsByTrainer(Integer trainerId);
+
+    @Query("select (count(s) > 0) from SportclubTrainer s where s.user.id = :userId and s.sportclub.id = :sportclubId")
+    boolean existsSportclubByTrainerId(Integer userId, Integer sportclubId);
+
+
 }
