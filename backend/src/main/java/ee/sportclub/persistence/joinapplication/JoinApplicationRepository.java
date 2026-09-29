@@ -11,5 +11,5 @@ public interface JoinApplicationRepository extends JpaRepository<JoinApplication
     @Query("select j from JoinApplication j where j.userId = :userId and j.trainingGroupId = :trainingGroupId")
     Optional<JoinApplication> findJoinApplicationBy(Integer userId,  Integer trainingGroupId);
 
-
+boolean existsByUserIdAndTrainingGroupIdAndStatus(Integer userId, Integer trainingGroupId, String status);
 }
