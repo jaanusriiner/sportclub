@@ -19,6 +19,9 @@ export default {
     return {
       errorMessage: '',
       successMessage: '',
+      passwordRepeat: '',
+      registrationNotComplete: true,
+      termsAccepted: false,
 
       areas: [
         {
@@ -41,7 +44,7 @@ export default {
         email: '',
         password: '',
         areaId: 0,
-        sportIds: [1,2],
+        sportIds: [1, 2],
       },
 
       loginResponse: {
@@ -81,12 +84,52 @@ export default {
 
     //todo Jaanus, puudu sisendite validatsioonid ja spordialade valik on hetkel hardcode'itud, samuti veaolukorrad
     registerUser() {
-      UserService.postRegisterRequest(this.registerRequest)
-      NavigationService.navigateToHomeView()
+      this.resetSuccessMessage()
+      this.resetErrorMessage()
+      this.checkFormForErrors()
+
+      if (this.errorMessageIsEmpty()) {
+        UserService.postRegisterRequest(this.registerRequest)
+          .then(()=> this.handleRegisterResponse())
+          .catch(()=> NavigationService.navigateToErrorView())
+        // NavigationService.navigateToHomeView()
+      }
     },
     goBack() {
       this.$router.back()
     },
+    errorMessageIsEmpty() {
+      return this.errorMessage === ''
+    },
+    resetSuccessMessage() {
+      this.successMessage = ''
+    },
+
+    resetErrorMessage() {
+      this.errorMessage = ''
+    },
+    checkFormForErrors() {
+      if (this.registerRequest.firstName === '') {
+        this.errorMessage = 'Sisesta eesnimi'
+      } else if (this.registerRequest.lastName === '') {
+        this.errorMessage = 'Sisesta perenimi'
+      } else if (this.registerRequest.phoneNumber < 10000) {
+        this.errorMessage = 'Sisesta kontaktnumber (peab olema vähemalt 5-kohaline number'
+      } else if (this.registerRequest.areaId === 0) {
+        this.errorMessage = 'Vali piirkond'
+      } else if (this.registerRequest.sportIds.length < 1) {
+        this.errorMessage = 'Vali vähemalt 1 spordiala eelistus'
+      } else if (this.registerRequest.email === '') {
+        this.errorMessage = 'Sisesta email'
+      } else if (this.registerRequest.password !== this.passwordRepeat) {
+        this.errorMessage = 'Salasõna ei kattu'
+      }
+    },
+    handleRegisterResponse() {
+      this.successMessage = 'Uus kasutaja edukalt registreeritud'
+      this.registrationNotComplete = false
+      // this.resetAllFields()
+    }
   },
 }
 </script>
@@ -97,10 +140,12 @@ export default {
       <div class="col col-5">
         <AlertSuccess :success-message="successMessage" />
         <AlertDanger :error-message="errorMessage" />
-        <h1>Registreeru kasutajaks</h1>
+        <div v-if = "registrationNotComplete">
+          <h1>Registreeru kasutajaks</h1>
+        </div>
       </div>
     </div>
-    <div class="row justify-content-center mb-5">
+    <div v-if = "registrationNotComplete" class="row justify-content-center mb-5">
       <div class="col col-5">
         <div class="row justify-content-center mb-3">
           <div class="col">
@@ -167,13 +212,18 @@ export default {
           </div>
           <div class="col">
             <div class="form-floating mb-3">
-              <input type="text" class="form-control border border-dark" placeholder="" />
+              <input
+                v-model="registerRequest.password"
+                type="password"
+                class="form-control border border-dark"
+                placeholder=""
+              />
               <label>Salasõna</label>
             </div>
             <div class="form-floating">
               <input
-                v-model="registerRequest.password"
-                type="text"
+                v-model="passwordRepeat"
+                type="password"
                 class="form-control border border-dark"
                 placeholder=""
               />
@@ -206,7 +256,7 @@ export default {
         </div>
       </div>
     </div>
-    <div class="row justify-content-center">
+    <div v-if = "registrationNotComplete" class="row justify-content-center">
       <div class="col">
         <button @click="goBack" class="btn btn-secondary me-3" type="button">Tagasi</button>
         <button @click="registerUser" class="btn btn-success" type="submit">Registreeru</button>
