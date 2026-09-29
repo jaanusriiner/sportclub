@@ -24,5 +24,14 @@ class TrainerController {
         return trainerService.findTrainerSportclubs(trainerId);
     }
 
+    @GetMapping("/api/trainers/{trainerId}/training-groups")
+    @Operation(summary = "Treeneriga seotud treeninggruppide päring",
+            description = "Tagastatakse treeninggruppide nimekiri, kus vastav treener on määratud vastutavaks/omanikuks. Treeninggruppide puudumisel tagastatakse tühi list.")
+    public List<TrainerTrainingGroupDto> findTrainerTrainingGroups(@PathVariable Integer trainerId) {
+
+        return trainerService.findTrainerTrainingGroups(trainerId);
+    }
+
+
 
 }
