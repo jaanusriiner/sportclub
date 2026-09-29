@@ -16,7 +16,7 @@ public class SportController {
 
     private final SportService sportService;
 
-    @GetMapping("/api/sports/")
+    @GetMapping("/api/sports")
     @Operation(summary = "Kõikide spordialade pärimine",
             description = "Tagastatakse kõikide spordialade list. Spordialade puudumisel tagastatakse tühi list.")
     public List<SportDto> findSports() {
