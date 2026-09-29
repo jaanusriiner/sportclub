@@ -13,6 +13,4 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class JoinApplicationRequest implements Serializable {
     private Integer userId;
-    private Integer trainingGroupId;
-    private String status;
 }
