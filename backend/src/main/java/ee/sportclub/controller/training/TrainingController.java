@@ -86,4 +86,28 @@ public class TrainingController {
 
     }
 
+    @DeleteMapping("/api/training-dates/{trainingDateId}")
+    @Operation(
+            summary = "Kustutab ühe treeningu trainingDateId järgi",
+            description = "Ootab sisse trainingDateId"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "'message': Ei leidnud primary keyd 'trainingDateId'",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error"
+            )
+    })
+    public void deleteTrainingDate(@PathVariable Integer trainingDateId) {
+        trainingService.deleteTrainingDateBy(trainingDateId);
+    }
+
 }

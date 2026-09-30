@@ -47,6 +47,13 @@ public class TrainingService {
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("userId", userId));
     }
 
+    @Transactional
+    public void deleteTrainingDateBy(Integer trainingDateId) {
+        getValidTrainingDateBy(trainingDateId);
+        userTrainingRepository.deleteUserTrainingsBy(trainingDateId);
+        trainingDateRepository.deleteById(trainingDateId);
+    }
+
     public TrainingDate getValidTrainingDateBy(Integer trainingDateId) {
         return trainingDateRepository.findById(trainingDateId)
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("trainingDateId", trainingDateId));
@@ -117,5 +124,4 @@ public class TrainingService {
         trainingGroupOverviewPageDto.setTotalPages(trainingGroupOverviewDtoPage.getTotalPages());
         return trainingGroupOverviewPageDto;
     }
-
 }
