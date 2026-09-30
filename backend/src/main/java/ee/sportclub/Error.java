@@ -10,7 +10,10 @@ public enum Error {
     SKILL_LEVEL_SPORT_MISMATCH("Antud skill-level ei kuulu antud spordialale"),
     SPORT_MISSING("sportIds: Vali vähemalt üks spordiala"),
     PRIMARY_KEY_NOT_FOUND("Ei leidnud primary keyd"),
-    JOIN_APPLICATION_UNAVAILABLE("Oled selle treeninggrupiga juba liitunud või taotlus on juba esitatud");
+    JOIN_APPLICATION_UNAVAILABLE("Oled selle treeninggrupiga juba liitunud või taotlus on juba esitatud"),
+    NOT_TRAINING_GROUP_MEMBER("Registreerumiseks pead olema treeninggrupi liige"),
+    TRAINING_FULL("Sellel treeningul pole enam vabu kohti"),
+    ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud");
 
 
     private final String message;

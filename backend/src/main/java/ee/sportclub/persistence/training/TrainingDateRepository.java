@@ -1,11 +1,14 @@
 package ee.sportclub.persistence.training;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface TrainingDateRepository extends JpaRepository<TrainingDate, Integer> {
     @Query("""
@@ -18,4 +21,10 @@ public interface TrainingDateRepository extends JpaRepository<TrainingDate, Inte
                                                                         and (cast(:time as time) is null or t.startTime >= :time)
             order by t.startDate, t.startTime""")
     List<TrainingDate> findTrainingBy(Integer areaId, Integer sportId, Integer trainerId, LocalDate date, LocalTime time);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select t from TrainingDate t where t.id = :trainingDateId")
+    Optional<TrainingDate> findTrainingDateByIdAndLockIt(Integer trainingDateId);
+
+
 }
