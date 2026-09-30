@@ -46,11 +46,13 @@ export default {
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse justify-content-center" id="navMenu">
-      <div class="navbar-nav">
+    <div class="collapse navbar-collapse" id="navMenu">
+      <div class="navbar-nav me-auto">
         <RouterLink class="nav-link" to="/">Kodu</RouterLink>
-        <RouterLink class="nav-link" to="/">Tutvustus</RouterLink>
+        <RouterLink class="nav-link" to="/info">Info</RouterLink>
         <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
+      </div>
+      <div class="navbar-nav">
         <div v-if="isLoggedIn">
           <button type="button" class="nav-link btn btn-link text-start" @click="executeLogOut">
             Logi välja
