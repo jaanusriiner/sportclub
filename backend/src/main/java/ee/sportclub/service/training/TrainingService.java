@@ -1,9 +1,6 @@
 package ee.sportclub.service.training;
 
-import ee.sportclub.controller.training.dto.TrainingDateRegisterRequestDto;
-import ee.sportclub.controller.training.dto.TrainingGroupOverviewDto;
-import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
-import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
+import ee.sportclub.controller.training.dto.*;
 import ee.sportclub.controller.user.dto.MyTrainingDto;
 import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
@@ -17,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -123,5 +122,20 @@ public class TrainingService {
         trainingGroupOverviewPageDto.setTotalElements(trainingGroupOverviewDtoPage.getTotalElements());
         trainingGroupOverviewPageDto.setTotalPages(trainingGroupOverviewDtoPage.getTotalPages());
         return trainingGroupOverviewPageDto;
+    }
+
+
+    public void updateTrainingDateDetails(Integer trainingDateId, UpdateTrainingDateRequestDto updateTrainingDateRequestDto) {
+        TrainingDate trainingDate = getValidTrainingDateBy(trainingDateId);
+        trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
+        trainingDate.setMaxSize(updateTrainingDateRequestDto.getMaxSize());
+        trainingDate.setStartDate(updateTrainingDateRequestDto.getTrainingDate());
+        trainingDate.setStartTime(updateTrainingDateRequestDto.getTrainingTime());
+        trainingDateRepository.save(trainingDate);
+    }
+
+    private void validateTrainingDateNewMaxSizeIsAllowed(Integer trainingDateId, Integer maxSize) {
+        if (maxSize) {
+        }
     }
 }
