@@ -10,4 +10,10 @@ public interface UserTrainingGroupRepository extends JpaRepository<UserTrainingG
     @Query("select u.trainingGroup.id from UserTrainingGroup u where u.user.id = :id")
     Set<Integer> findTrainingGroupIdsByUserId(Integer id);
 
+    @Query("""
+            select (count(u) > 0) from UserTrainingGroup u
+            where u.trainingGroup.id = :trainingGroupId and u.user.id = :userId""")
+    boolean userIsTrainingGroupMember(Integer trainingGroupId, Integer userId);
+
+
 }

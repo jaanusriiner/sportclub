@@ -3,13 +3,15 @@ package ee.sportclub.service.training;
 import ee.sportclub.controller.training.dto.TrainingDateRegisterRequestDto;
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewDto;
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
-import ee.sportclub.infrastructure.error.ApiError;
+import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
+import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
 import ee.sportclub.persistence.training.TrainingDate;
 import ee.sportclub.persistence.training.TrainingDateOverviewRepository;
 import ee.sportclub.persistence.training.TrainingDateRepository;
+import ee.sportclub.persistence.user.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Optional;
+
+import static ee.sportclub.Error.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,9 @@ public class TrainingService {
 
     private final TrainingDateOverviewRepository trainingDateOverviewRepository;
     private final TrainingDateRepository trainingDateRepository;
+    private final UserRepository userRepository;
+    private final UserTrainingGroupRepository userTrainingGroupRepository;
+    private final UserTrainingRepository userTrainingRepository;
 
     public TrainingGroupOverviewPageDto findTrainings(Integer requestUserId, Integer areaId, Integer sportId, Integer trainerId, LocalDate dateFrom, LocalTime timeFrom, Integer page, Integer size) {
         // API lehenumbrid algavad 1-st, Springi PageRequest 0-st; page < 1 käsitletakse kui esimest lehte
@@ -34,9 +40,9 @@ public class TrainingService {
         return createTrainingGroupOverviewPageDto(trainingGroupOverviewDtoPage);
     }
 
-    public void registerToTraining(Integer trainingDateId, TrainingDateRegisterRequestDto trainingDateRegisterRequestDto) {
-        TrainingDate trainingDate = getValidTrainingDateBy(trainingDateId);
-
+    public User getValidUser(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new PrimaryKeyNotFoundException("userId", userId));
     }
 
     public TrainingDate getValidTrainingDateBy(Integer trainingDateId) {
@@ -44,6 +50,58 @@ public class TrainingService {
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("trainingDateId", trainingDateId));
     }
 
+    @Transactional
+    public TrainingRegisterResponseDto registerToTraining(Integer trainingDateId, TrainingDateRegisterRequestDto trainingDateRegisterRequestDto) {
+        User user = getValidUser(trainingDateRegisterRequestDto.getUserId());
+        TrainingDate trainingDate = getValidTrainingDateByIdAndLockIt(trainingDateId);
+        validateUserIsTrainingGroupMember(user, trainingDate);
+        validateUserIsRegisteredToTraining(user.getId(), trainingDateId);
+        validateTrainingDateHasFreeSpaces(trainingDate.getUserCount(), trainingDate.getMaxSize());
+        saveUserToTrainingDate(user, trainingDate);
+        trainingDate.setUserCount(trainingDate.getUserCount() + 1);
+        return createRegisteredToTrainingSuccessMessage();
+
+
+    }
+
+    private TrainingDate getValidTrainingDateByIdAndLockIt(Integer trainingDateId) {
+        return trainingDateRepository.findTrainingDateByIdAndLockIt(trainingDateId)
+                .orElseThrow(() -> new PrimaryKeyNotFoundException("trainingDateId", trainingDateId));
+    }
+
+    private void validateUserIsTrainingGroupMember(User user, TrainingDate trainingDate) {
+        boolean userIsTrainingGroupMember = userTrainingGroupRepository.userIsTrainingGroupMember(trainingDate.getTraining().getTrainingGroup().getId(), user.getId());
+        if (!userIsTrainingGroupMember) {
+            throw new ForbiddenException(NOT_TRAINING_GROUP_MEMBER.getMessage(), NOT_TRAINING_GROUP_MEMBER.name());
+        }
+    }
+
+    private void validateUserIsRegisteredToTraining(Integer userId, Integer trainingDateId) {
+        boolean userIsRegisteredToTraining = userTrainingRepository.userIsRegisteredToTraining(userId, trainingDateId);
+        if (userIsRegisteredToTraining) {
+            throw new ForbiddenException(ALREADY_REGISTERED.getMessage(), ALREADY_REGISTERED.name());
+        }
+    }
+
+    private void validateTrainingDateHasFreeSpaces(Integer userCount, Integer maxSize) {
+        if (userCount >= maxSize) {
+            throw new ForbiddenException(TRAINING_FULL.getMessage(), TRAINING_FULL.name());
+        }
+
+    }
+
+    private void saveUserToTrainingDate(User user, TrainingDate trainingDate) {
+        UserTraining userTraining = new UserTraining();
+        userTraining.setUser(user);
+        userTraining.setTrainingDate(trainingDate);
+        userTrainingRepository.save(userTraining);
+    }
+
+    private static TrainingRegisterResponseDto createRegisteredToTrainingSuccessMessage() {
+        TrainingRegisterResponseDto trainingRegisterResponseDto = new TrainingRegisterResponseDto();
+        trainingRegisterResponseDto.setMessage("Oled edukalt treeningule registreerunud");
+        return trainingRegisterResponseDto;
+    }
 
     private static TrainingGroupOverviewPageDto createTrainingGroupOverviewPageDto(Page<TrainingGroupOverviewDto> trainingGroupOverviewDtoPage) {
         TrainingGroupOverviewPageDto trainingGroupOverviewPageDto = new TrainingGroupOverviewPageDto();

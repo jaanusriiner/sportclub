@@ -30,7 +30,7 @@ Request body (`TrainingDateRegisterRequestDto.java`):
 
 ```json
 {
-  "message": "Oled edukalt treeningule registreerinud"
+  "message": "Oled edukalt treeningule registreerunud"
 }
 ```
 
@@ -118,7 +118,7 @@ Vea korral on response body kujul `{ "message": "...", "errorCode": "..." }` (`A
 ## Vastuvõtu kriteeriumid
 
 - [ ] Endpoint `POST /api/training-dates/{trainingDateId}/register` on olemas ja võtab vastu `TrainingDateRegisterRequestDto` JSON-i
-- [ ] Õnnestunud registreerimisel tagastatakse 200 ja `TrainingRegisterResponseDto` sõnumiga "Oled edukalt treeningule registreerinud"
+- [ ] Õnnestunud registreerimisel tagastatakse 200 ja `TrainingRegisterResponseDto` sõnumiga "Oled edukalt treeningule registreerunud"
 - [ ] Andmebaasi luuakse üks `user_training` kirje ja `training_date.user_count` kasvab ühe võrra
 - [ ] Kasutaja, kes pole treeninggrupi liige, saab 403 ja errorCode'i `NOT_TRAINING_GROUP_MEMBER` — `user_training` kirjet ei looda
 - [ ] Täis treeningule (`user_count >= max_size`) registreerumine tagastab 403 ja errorCode'i `TRAINING_FULL`

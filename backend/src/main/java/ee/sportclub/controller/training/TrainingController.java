@@ -3,6 +3,7 @@ package ee.sportclub.controller.training;
 
 import ee.sportclub.controller.training.dto.TrainingDateRegisterRequestDto;
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
+import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
 import ee.sportclub.infrastructure.error.ApiError;
 import ee.sportclub.service.training.TrainingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,7 +66,7 @@ public class TrainingController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "'message': Ei leidnud primary keyd 'trainingDateId' väärtusega: 999', 'errorCode': 'PRIMARY_KEY_NOT_FOUND'",
+                    description = "'message': Ei leidnud primary keyd 'trainingDateId', 'errorCode': 'PRIMARY_KEY_NOT_FOUND'",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(
@@ -79,8 +80,9 @@ public class TrainingController {
             )
         }
     )
-    public void registerToTraining(@PathVariable Integer trainingDateId, @RequestBody @Valid TrainingDateRegisterRequestDto trainingDateRegisterRequestDto) {
-        trainingService.registerToTraining(trainingDateId, trainingDateRegisterRequestDto);
+    public TrainingRegisterResponseDto registerToTraining(@PathVariable Integer trainingDateId, @RequestBody @Valid TrainingDateRegisterRequestDto trainingDateRegisterRequestDto) {
+        return trainingService.registerToTraining(trainingDateId, trainingDateRegisterRequestDto);
+
 
     }
 
