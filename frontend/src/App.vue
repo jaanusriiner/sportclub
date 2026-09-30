@@ -49,7 +49,7 @@ export default {
     <div class="collapse navbar-collapse justify-content-center" id="navMenu">
       <div class="navbar-nav">
         <RouterLink class="nav-link" to="/">Kodu</RouterLink>
-        <RouterLink class="nav-link" to="/">Tutvustus</RouterLink>
+        <RouterLink class="nav-link" to="/info">Tutvustus</RouterLink>
         <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
         <div v-if="isLoggedIn">
           <button type="button" class="nav-link btn btn-link text-start" @click="executeLogOut">

@@ -75,7 +75,6 @@ public class NlToSqlService {
         String generatedSql = generateSql(userQuestion);
 //        String generatedSql = "SELECT SUM(id) FROM sport";
         List<Map<String, Object>> databaseResults = jdbcTemplate.queryForList(generatedSql);
-
         return generateResponse(userQuestion, databaseResults);
     }
 

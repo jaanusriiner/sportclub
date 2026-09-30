@@ -3,6 +3,7 @@ import HomeView from "@/views/HomeView.vue";
 import TestView from "@/views/TestView.vue";
 import RegisterView from '@/views/RegisterView.vue'
 import ErrorView from '@/views/ErrorView.vue'
+import InfoView from '@/views/InfoView.vue'
 
 
 const router = createRouter({
@@ -27,6 +28,11 @@ const router = createRouter({
       path: '/error',
       name: 'errorRoute',
       component: ErrorView,
+    },
+    {
+      path: '/info',
+      name: 'infoRoute',
+      component: InfoView,
     },
     {
       path: '/training',

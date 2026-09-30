@@ -13,4 +13,8 @@ export default {
     router.push({ name: 'errorRoute' })
   },
 
+  navigateToInfoView() {
+    router.push({ name: 'infoRoute' })
+  },
+
 }
