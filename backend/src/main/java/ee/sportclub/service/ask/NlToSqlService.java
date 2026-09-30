@@ -13,7 +13,7 @@ import java.util.Map;
 public class NlToSqlService {
 
     private static final String SQL_SYSTEM_PROMPT_TEMPLATE = """
-            You are a %s query generator for an sportclub infosystem database.
+            You are a %s query generator for an sportclub infosystem database. User question might be in Estonian, use as well English to search data.
             
             SCHEMA:
             area(id SERIAL PK, name VARCHAR(255))

@@ -40,7 +40,7 @@ export default {
       registerRequest: {
         firstName: '',
         lastName: '',
-        phoneNumber: 0,
+        phoneNumber: '',
         email: '',
         password: '',
         areaId: 0,

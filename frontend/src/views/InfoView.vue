@@ -52,10 +52,10 @@ export default {
 </script>
 
 <template>
-  <div class="container text-center">
+  <div class="container text-center mt-5">
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <p class="fs-5 mb-3">
+        <p class="fs-5 intro-text">
           Siit saad küsida harrastatavate spordialade, spordiklubide, treenerite, treeningrühmade ja
           trenniaegade kohta
         </p>
@@ -101,6 +101,10 @@ export default {
 </template>
 
 <style scoped>
+.intro-text {
+  margin-bottom: 5rem;
+}
+
 .clearable-input {
   padding-right: 2.5rem;
 }
