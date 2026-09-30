@@ -6,4 +6,8 @@ export default {
   userIsAdmin() {
     return sessionStorage.getItem('roleName') === 'admin'
   },
+
+  userIsTrainer() {
+    return sessionStorage.getItem('roleName') === 'trainer'
+  },
 }

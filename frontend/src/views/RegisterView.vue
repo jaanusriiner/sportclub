@@ -5,7 +5,7 @@ import AreaService from '@/services/AreaService.js'
 import NavigationService from '@/services/NavigationService.js'
 import SportService from '@/services/SportService.js'
 import AreasDropDown from '@/components/dropdown/AreasDropDown.vue'
-import SportsMultiSelect from '@/views/SportsMultiSelect.vue'
+import SportsMultiSelect from '@/components/multiselect/SportsMultiSelect.vue'
 import UserService from '@/services/UserService.js'
 
 export default {

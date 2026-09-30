@@ -12,6 +12,7 @@ export default {
       loginModalIsOpen: false,
       isLoggedIn: SessionStorageService.userIsLoggedIn(),
       isAdmin: SessionStorageService.userIsAdmin(),
+      isTrainer: SessionStorageService.userIsTrainer(),
     }
   },
   methods: {
@@ -29,7 +30,7 @@ export default {
     },
     updateNavMenu() {
       this.isLoggedIn = true
-      this.isAdmin = SessionStorageService.userIsAdmin()
+      this.isAdmin = SessionStorageService.userIsLoggedIn()
     },
   },
 }
@@ -54,6 +55,7 @@ export default {
       </div>
       <div class="navbar-nav">
         <div v-if="isLoggedIn">
+            <RouterLink v-if="isTrainer" class="nav-link" to="/managetrainings">Halda</RouterLink>
           <button type="button" class="nav-link btn btn-link text-start" @click="executeLogOut">
             Logi välja
           </button>
