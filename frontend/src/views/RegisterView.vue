@@ -235,6 +235,7 @@ export default {
           <div class="col">
             <div class="form-check">
               <input
+                v-model="termsAccepted"
                 class="form-check-input border border-dark"
                 type="checkbox"
                 value=""
@@ -259,7 +260,7 @@ export default {
     <div v-if = "registrationNotComplete" class="row justify-content-center">
       <div class="col">
         <button @click="goBack" class="btn btn-secondary me-3" type="button">Tagasi</button>
-        <button @click="registerUser" class="btn btn-success" type="submit">Registreeru</button>
+        <button :disabled="!termsAccepted" @click="registerUser" class="btn btn-success" type="submit">Registreeru</button>
       </div>
     </div>
   </div>
