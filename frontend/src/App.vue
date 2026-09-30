@@ -54,12 +54,12 @@ export default {
         <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
       </div>
       <div class="navbar-nav">
-        <div v-if="isLoggedIn">
-            <RouterLink v-if="isTrainer" class="nav-link" to="/managetrainings">Halda</RouterLink>
+        <template v-if="isLoggedIn">
+          <RouterLink v-if="isTrainer" class="nav-link" to="/managetrainings">Halda</RouterLink>
           <button type="button" class="nav-link btn btn-link text-start" @click="executeLogOut">
             Logi välja
           </button>
-        </div>
+        </template>
         <template v-else>
           <RouterLink class="nav-link" to="/register">Registreeru</RouterLink>
           <button type="button" class="nav-link btn btn-link text-start" @click="openModal">
