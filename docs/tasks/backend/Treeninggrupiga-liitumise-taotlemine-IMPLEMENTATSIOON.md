@@ -14,7 +14,7 @@ Uus entiteet + repository `join_application` jaoks, uued DTO-d, uus service meet
 
 ## Sammud
 
-### 1. `JoinApplication` entiteet
+### 1. `joinApplication` entiteet
 
 Fail: `persistence/joinapplication/JoinApplication.java`
 
