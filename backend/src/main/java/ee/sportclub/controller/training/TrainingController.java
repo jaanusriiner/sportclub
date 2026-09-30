@@ -6,7 +6,6 @@ import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
 import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
 import ee.sportclub.controller.training.dto.UpdateTrainingDateRequestDto;
 import ee.sportclub.infrastructure.error.ApiError;
-import ee.sportclub.persistence.training.TrainingDateRepository;
 import ee.sportclub.service.training.TrainingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,7 +24,6 @@ import java.time.LocalTime;
 public class TrainingController {
 
     private final TrainingService trainingService;
-    private final TrainingDateRepository trainingDateRepository;
 
     @GetMapping("/api/trainings")
     @Operation(summary = "Leiab kõik treeningud",

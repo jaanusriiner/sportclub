@@ -14,8 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -61,6 +59,16 @@ public class TrainingService {
     public List<MyTrainingDto> getUpcomingTrainingsByUserId(Integer userId) {
         getValidUser(userId);
         return trainingDateOverviewRepository.findUpcomingUserTrainingDtosBy(userId);
+    }
+
+    @Transactional
+    public void updateTrainingDateDetails(Integer trainingDateId, UpdateTrainingDateRequestDto updateTrainingDateRequestDto) {
+        TrainingDate trainingDate = getValidTrainingDateBy(trainingDateId);
+        validateTrainingDateNewMaxSizeIsAllowed(trainingDate.getUserCount(), updateTrainingDateRequestDto.getMaxSize());
+        trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
+        trainingDate.setMaxSize(updateTrainingDateRequestDto.getMaxSize());
+        trainingDate.setStartDate(updateTrainingDateRequestDto.getTrainingDate());
+        trainingDate.setStartTime(updateTrainingDateRequestDto.getTrainingTime());
     }
 
     @Transactional
@@ -110,6 +118,12 @@ public class TrainingService {
         userTrainingRepository.save(userTraining);
     }
 
+    private void validateTrainingDateNewMaxSizeIsAllowed(Integer userCount, Integer maxSize) {
+        if (userCount > maxSize) {
+            throw new ForbiddenException(MAX_SIZE_TOO_LOW.getMessage(), MAX_SIZE_TOO_LOW.name());
+        }
+    }
+
     private static TrainingRegisterResponseDto createRegisteredToTrainingSuccessMessage() {
         TrainingRegisterResponseDto trainingRegisterResponseDto = new TrainingRegisterResponseDto();
         trainingRegisterResponseDto.setMessage("Oled edukalt treeningule registreerunud");
@@ -124,18 +138,4 @@ public class TrainingService {
         return trainingGroupOverviewPageDto;
     }
 
-
-    public void updateTrainingDateDetails(Integer trainingDateId, UpdateTrainingDateRequestDto updateTrainingDateRequestDto) {
-        TrainingDate trainingDate = getValidTrainingDateBy(trainingDateId);
-        trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
-        trainingDate.setMaxSize(updateTrainingDateRequestDto.getMaxSize());
-        trainingDate.setStartDate(updateTrainingDateRequestDto.getTrainingDate());
-        trainingDate.setStartTime(updateTrainingDateRequestDto.getTrainingTime());
-        trainingDateRepository.save(trainingDate);
-    }
-
-    private void validateTrainingDateNewMaxSizeIsAllowed(Integer trainingDateId, Integer maxSize) {
-        if (maxSize) {
-        }
-    }
 }
