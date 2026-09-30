@@ -11,6 +11,8 @@ import router from './router'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.js'
 
+import 'tom-select/dist/css/tom-select.bootstrap5.css'
+
 // Extra imports
 // leafleti css kujindused
 import "leaflet/dist/leaflet.css";

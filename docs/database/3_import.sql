@@ -3,8 +3,8 @@ INSERT INTO sportclub.role (id, name) VALUES (default, 'trainer');
 INSERT INTO sportclub.role (id, name) VALUES (default, 'customer');
 
 INSERT INTO sportclub.sport (id, name) VALUES (default, 'Tennis');
-INSERT INTO sportclub.sport (id, name) VALUES (default, 'Football');
-INSERT INTO sportclub.sport (id, name) VALUES (default, 'Basketball');
+INSERT INTO sportclub.sport (id, name) VALUES (default, 'Jalgpall');
+INSERT INTO sportclub.sport (id, name) VALUES (default, 'Korvpall');
 INSERT INTO sportclub.sport (id, name) VALUES (default, 'Golf');
 
 INSERT INTO sportclub.area (id, name) VALUES (default, 'Harjumaa');
@@ -44,7 +44,9 @@ INSERT INTO sportclub.sportclub (id, name) VALUES (default, 'FC Jalg');
 INSERT INTO sportclub.sportclub (id, name) VALUES (default, 'Tore Golfklubi');
 
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 1, 5);
+INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 1, 6);
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 2, 6);
+INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 3, 6);
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 3, 7);
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 4, 8);
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 5, 9);

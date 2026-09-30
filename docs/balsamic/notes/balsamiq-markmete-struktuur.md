@@ -1,14 +1,10 @@
 # Balsamiq märkmete struktuur (kollased/valged kastid)
 
-See fail defineerib kaks korduvat märkme-tüüpi, mida kasutada Balsamiq mockup'i täiendamisel: **Vaate märkmed** (vaate
-üldinfo) ja **API märkmed** (üks backend teenuse kutse). Struktuur on teadlikult võtme-väärtus kujul (mitte vabas vormis
-proosa), et see oleks nii inimesele kui AI-le ühtviisi lihtsalt loetav ja masinaga töödeldav.
+See fail defineerib kaks korduvat märkme-tüüpi, mida kasutada Balsamiq mockup'i täiendamisel: **Vaate märkmed** (vaate üldinfo) ja **API märkmed** (üks backend teenuse kutse). Struktuur on teadlikult võtme-väärtus kujul (mitte vabas vormis proosa), et see oleks nii inimesele kui AI-le ühtviisi lihtsalt loetav ja masinaga töödeldav.
 
-Iga vaate juurde tuleb täpselt **üks Vaate märkmete kast** ja **üks API märkmete kast iga backend kutse kohta**, mida
-see vaade teeb (nt kui vaade teeb 3 eri API kutset, tuleb 3 eraldi API märkmete kasti).
+Iga vaate juurde tuleb täpselt **üks Vaate märkmete kast** ja **üks API märkmete kast iga backend kutse kohta**, mida see vaade teeb (nt kui vaade teeb 3 eri API kutset, tuleb 3 eraldi API märkmete kasti).
 
-Mõlema tüübi juures kehtib sama loogika: kõigepealt struktuur ja reeglid, kohe seejärel päris näide sama taski
-(`LoginView.vue`, BEB-5/FEB-7) põhjal.
+Mõlema tüübi juures kehtib sama loogika: kõigepealt struktuur ja reeglid, kohe seejärel päris näide sama taski (`LoginView.vue`, BEB-5/FEB-7) põhjal.
 
 ---
 
@@ -24,20 +20,12 @@ Vaatega seotud lisainfo:
 ```
 
 **Reeglid:**
-
 - `Roll`, `Failinimi` ja `Frontend rada` käivad koos, ilma tühjade ridadeta nende vahel — need on vaate baasinfo.
 - Enne `Vaatega seotud lisainfo:` tuleb üks tühi eraldusrida.
-- `Roll` — kui vaate sisu erineb rolliti (nt admin näeb lisavälju), kirjuta see selgelt, nt
-  `Roll: Kõik rollid (admin näeb lisaks edit/delete ikoone)`
+- `Roll` — kui vaate sisu erineb rolliti (nt admin näeb lisavälju), kirjuta see selgelt, nt `Roll: Kõik rollid (admin näeb lisaks edit/delete ikoone)`
 - `Failinimi` — täpne `.vue` komponendi nimi, nagu see kavatsetakse koodis luua
-- `Frontend rada` — Vue router path; kui rada kasutab query parameetrit, näita seda mustrina, nt
-  `/location?locationId={id}` (vt url-kaardistus.md kokkulepet query vs path variable kohta — see puudutab **backend**
-  API-t, frontend route ise kasutab query stringi, nagu varasemas vestluses kokku lepiti)
-- `Vaatega seotud lisainfo` — lühike (1–4 rida) vabas vormis märkus vaate käitumise kohta mingites olukordades, mis pole
-  eelnevatest väljadest ilmne. Näiteks: mis juhtub kui `locationId` query parameeter puudub (uue lisamise vorm vs
-  muutmise vorm samal route'il), millised elemendid on tingimuslikult nähtavad/peidetud (nt "Sisse logimine" link kaob
-  pärast edukat logimist), kuhu kasutaja pärast tegevust suunatakse. Kui vaate juures pole midagi sellist lisada, jäta
-  väärtuseks `—`.
+- `Frontend rada` — Vue router path; kui rada kasutab query parameetrit, näita seda mustrina, nt `/location?locationId={id}` (vt url-kaardistus.md kokkulepet query vs path variable kohta — see puudutab **backend** API-t, frontend route ise kasutab query stringi, nagu varasemas vestluses kokku lepiti)
+- `Vaatega seotud lisainfo` — lühike (1–4 rida) vabas vormis märkus vaate käitumise kohta mingites olukordades, mis pole eelnevatest väljadest ilmne. Näiteks: mis juhtub kui `locationId` query parameeter puudub (uue lisamise vorm vs muutmise vorm samal route'il), millised elemendid on tingimuslikult nähtavad/peidetud (nt "Sisse logimine" link kaob pärast edukat logimist), kuhu kasutaja pärast tegevust suunatakse. Kui vaate juures pole midagi sellist lisada, jäta väärtuseks `—`.
 
 ### Näide — LoginView.vue
 
@@ -100,39 +88,20 @@ message: "<backend message väli>"
 ```
 
 **Reeglid:**
-
-- Iga plokk (`API:`, `Query parameetrid:`, DTO+body paar, `API teenuse lisainfo:`, iga veajuhtum) on eraldatud tühja
-  reaga.
-- `API` rida — meetod + path muster, nii nagu spec (`stoplight_io_openAPI.json`) ja Jira taskid juba defineerivad. Path
-  muster peab täpselt vastama JSON-ile (nt path variable `{locationId}`, mitte query param). Konkreetsed väärtused
-  paistavad juba `Request body`/`Response` näidetest, seega `API` rida ei vaja eraldi näidis-URL'i.
-- **`Query parameetrid:`** — kasutatakse siis, kui endpoint võtab vastu query parameetreid (nt
-  otsingu/filtreerimise/lehitsemise jaoks). Paikneb vahetult `API:` rea järel, enne request/response DTO+body plokke.
-  Iga parameeter eraldi real kujul
-  `<parameetriNimi> — <lühikirjeldus, sh tüüp kui pole ilmne ja valikuline/kohustuslik>`. Selle ploki eesmärk on hoida
-  parameetrite tehniline kirjeldus eraldi äriloogika märkustest, et `API teenuse lisainfo` jääks lühikeseks. Kui
-  endpoint query parameetreid ei kasuta (nt lihtne POST/PUT body-ga), jäta plokk täielikult ära.
+- Iga plokk (`API:`, DTO+body paar, `API teenuse lisainfo:`, iga veajuhtum) on eraldatud tühja reaga.
+- `API` rida — meetod + path muster, nii nagu spec (`stoplight_io_openAPI.json`) ja Jira taskid juba defineerivad. Path muster peab täpselt vastama JSON-ile (nt path variable `{locationId}`, mitte query param). Konkreetsed väärtused paistavad juba `Request body`/`Response` näidetest, seega `API` rida ei vaja eraldi näidis-URL'i.
 - **DTO nimi käib alati vahetult vastava body ploki kohal**, mitte eraldi ühtse `DTO:` reana üleval:
-    - Kui operatsioon võtab sisse request body, kirjuta `<RequestDtoClassName.java>` real vahetult enne `Request body:`
-      plokki.
+    - Kui operatsioon võtab sisse request body, kirjuta `<RequestDtoClassName.java>` real vahetult enne `Request body:` plokki.
     - Response DTO nimi (`<ResponseDtoClassName.java>`) käib vahetult enne `Response (200):` plokki.
-    - Kui operatsioonil pole request body't (nt lihtne GET/DELETE), jäta `Request body` osa täielikult ära ja alusta
-      otse response DTO-st.
-    - Kui operatsioonil pole response body't (nt POST/PUT/DELETE, mis tagastab tühja 200), kirjuta
-      `Response (200): NONE` ilma DTO nimeta selle kohal.
-- `API teenuse lisainfo` — lühike (1–3 rida) vabas vormis märkus teenuse käitumise kohta, mis pole väljanimedest endist
-  ilmne. Näiteks: filtri erikäitumine (`cityId=0` tagastab kõik), valikulised väljad (`imageData` võib olla tühi
-  string), soft delete, vms. Kui teenusel pole midagi sellist lisada, jäta väärtuseks `—`.
+    - Kui operatsioonil pole request body't (nt lihtne GET/DELETE), jäta `Request body` osa täielikult ära ja alusta otse response DTO-st.
+    - Kui operatsioonil pole response body't (nt POST/PUT/DELETE, mis tagastab tühja 200), kirjuta `Response (200): NONE` ilma DTO nimeta selle kohal.
+- `API teenuse lisainfo` — lühike (1–3 rida) vabas vormis märkus teenuse käitumise kohta, mis pole väljanimedest endist ilmne. Näiteks: filtri erikäitumine (`cityId=0` tagastab kõik), valikulised väljad (`imageData` võib olla tühi string), soft delete, vms. Kui teenusel pole midagi sellist lisada, jäta väärtuseks `—`.
 - `Veateated` — iga veajuhtum on eraldi kolmerealine plokk, alati sama kolme võtmega samas järjekorras:
     - `HTTP:` — staatuskood (nt `404`, `403`)
     - `errorCode:` — backend ENUM-nimi (mitte number, vastavalt meie kokkuleppele), nt `PRIMARY_KEY_NOT_FOUND`
     - `message:` — backend `message` välja täpne sisu, nii nagu see JSON response'is tuleb
     - Mitme veajuhtumi vahel jäta üks tühi rida
     - Kui vigu pole, kirjuta `Veateated: —`
-- **Massiivid JSON näidetes** — kui request/response body sisaldab massiivi (array), näita näidises alati ainult **üks
-  element**, isegi kui reaalsuses tagastatakse/saadetakse mitu. Eesmärk on hoida näide lühikese ja loetavana — struktuur
-  (väljad) on ka ühe elemendi pealt selge. See kehtib nii tipptaseme massiivide (nt terve response on massiiv) kui
-  pesastatud massiivide kohta (nt DTO sees olev alammassiiv).
 
 ### Näide — POST /api/login
 
@@ -215,8 +184,5 @@ message: "Ei leidnud primary keyd 'cityId' väärtusega: 123"
 ## Kokkuvõte — kuidas ühte vaadet Balsamiqus märgistada
 
 1. Lisa vaate mockup'i kõrvale/juurde üks kollane/valge kast **Vaate märkmed** struktuuriga.
-2. Iga backend kutse kohta, mida see vaade teeb, lisa eraldi kast **API märkmed** struktuuriga; kasti pealkirjaks/nimeks
-   võib panna lühidalt API path (nt "GET /api/cities"), et need Balsamiqu vaates kergesti eristuksid.
-3. Kõik path/DTO/errorCode väärtused peavad ühtima `docs/stoplight_io_openAPI.json` ja vastava Jira taski
-   (`docs/jira-updates/*.md`) sisuga — need kolm allikat (Balsamiq, Jira, OpenAPI) kirjeldavad sama asja kolmest eri
-   vaatenurgast ja peavad olema omavahel süncis.
+2. Iga backend kutse kohta, mida see vaade teeb, lisa eraldi kast **API märkmed** struktuuriga; kasti pealkirjaks/nimeks võib panna lühidalt API path (nt "GET /api/cities"), et need Balsamiqu vaates kergesti eristuksid.
+3. Kõik path/DTO/errorCode väärtused peavad ühtima `docs/stoplight_io_openAPI.json` ja vastava Jira taski (`docs/jira-updates/*.md`) sisuga — need kolm allikat (Balsamiq, Jira, OpenAPI) kirjeldavad sama asja kolmest eri vaatenurgast ja peavad olema omavahel süncis.
