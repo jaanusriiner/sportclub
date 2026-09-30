@@ -41,7 +41,7 @@ Vaata ka `Error.java` enumit (`ee/sportclub/Error.java`). Siia koondatakse proje
 
 Kontroller `TrainingController` on juba olemas (`controller/training/`). Lisa sinna uus meetod.
 
-> **Tähelepanu:** Selles projektis ei kasutata klassi tasemel `@RequestMapping("/api")`, vaid **kogu tee** kirjutatakse mappingannotatsiooni sisse (vaata olemasolevat `findTrainings` meetodit). Järgi sama mustrit.
+> **Tähelepanu:** Selles projektis ei kasutata klassi tasemel `@RequestMapping("/api")`, vaid **kogu tee** kirjutatakse mappingannotatsiooni sisse (vaata olemasolevat `getUpcomingTrainingsByUserId` meetodit). Järgi sama mustrit.
 
 ### Meetodi loomine
 

@@ -1,6 +1,7 @@
 package ee.sportclub.persistence.training;
 
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewDto;
+import ee.sportclub.controller.user.dto.MyTrainingDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public interface TrainingDateOverviewRepository extends JpaRepository<TrainingDateOverview, Integer> {
     @Query(value = """
@@ -37,4 +39,21 @@ public interface TrainingDateOverviewRepository extends JpaRepository<TrainingDa
                       and v.trainingDate >= :dateFrom
                       and v.trainingTime >= :timeFrom""")
     Page<TrainingGroupOverviewDto> findTrainingGroupOverviewDtosBy(Integer userId, Integer areaId, Integer sportId, Integer trainerId, LocalDate dateFrom, LocalTime timeFrom, Pageable pageable);
+
+    @Query(value = """
+                   select new ee.sportclub.controller.user.dto.MyTrainingDto(
+                       v.trainingDateId, v.trainingGroupId, v.sportName,
+                           v.facilityName, v.trainerName, v.trainingDate,
+                               v.trainingTime, v.userCount, v.maxSize
+                       )
+                   from TrainingDateOverview v
+                       where exists (
+                           select 1 from UserTraining ut
+                               where ut.trainingDate.id = v.trainingDateId
+                                   and ut.user.id = :userId
+                           )
+                               and (v.trainingDate > LOCAL_DATE or (v.trainingDate = LOCAL_DATE and v.trainingTime > LOCAL_TIME))
+                                   order by v.trainingDate, v.trainingTime
+            """)
+    List<MyTrainingDto> findUpcomingUserTrainingDtosBy(Integer userId);
 }

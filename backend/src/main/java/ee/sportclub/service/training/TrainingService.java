@@ -4,6 +4,7 @@ import ee.sportclub.controller.training.dto.TrainingDateRegisterRequestDto;
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewDto;
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
 import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
+import ee.sportclub.controller.user.dto.MyTrainingDto;
 import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
 import ee.sportclub.persistence.training.TrainingDate;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import static ee.sportclub.Error.*;
 
@@ -48,6 +50,11 @@ public class TrainingService {
     public TrainingDate getValidTrainingDateBy(Integer trainingDateId) {
         return trainingDateRepository.findById(trainingDateId)
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("trainingDateId", trainingDateId));
+    }
+
+    public List<MyTrainingDto> getUpcomingTrainingsByUserId(Integer userId) {
+        getValidUser(userId);
+        return trainingDateOverviewRepository.findUpcomingUserTrainingDtosBy(userId);
     }
 
     @Transactional
@@ -110,6 +117,5 @@ public class TrainingService {
         trainingGroupOverviewPageDto.setTotalPages(trainingGroupOverviewDtoPage.getTotalPages());
         return trainingGroupOverviewPageDto;
     }
-
 
 }
