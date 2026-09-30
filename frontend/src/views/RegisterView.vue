@@ -44,7 +44,7 @@ export default {
         email: '',
         password: '',
         areaId: 0,
-        sportIds: [1, 2],
+        sportIds: [],
       },
 
       loginResponse: {
@@ -80,9 +80,10 @@ export default {
       this.registerRequest.areaId = id
     },
 
-    handleSportsSelected([]) {},
+    handleSportsSelected(sportIds) {
+      this.registerRequest.sportIds = sportIds
+    },
 
-    //todo Jaanus, puudu sisendite validatsioonid ja spordialade valik on hetkel hardcode'itud, samuti veaolukorrad
     registerUser() {
       this.resetSuccessMessage()
       this.resetErrorMessage()
@@ -90,8 +91,8 @@ export default {
 
       if (this.errorMessageIsEmpty()) {
         UserService.postRegisterRequest(this.registerRequest)
-          .then(()=> this.handleRegisterResponse())
-          .catch(()=> NavigationService.navigateToErrorView())
+          .then(() => this.handleRegisterResponse())
+          .catch(() => NavigationService.navigateToErrorView())
         // NavigationService.navigateToHomeView()
       }
     },
@@ -129,7 +130,7 @@ export default {
       this.successMessage = 'Uus kasutaja edukalt registreeritud'
       this.registrationNotComplete = false
       // this.resetAllFields()
-    }
+    },
   },
 }
 </script>
@@ -140,12 +141,12 @@ export default {
       <div class="col col-5">
         <AlertSuccess :success-message="successMessage" />
         <AlertDanger :error-message="errorMessage" />
-        <div v-if = "registrationNotComplete">
+        <div v-if="registrationNotComplete">
           <h1>Registreeru kasutajaks</h1>
         </div>
       </div>
     </div>
-    <div v-if = "registrationNotComplete" class="row justify-content-center mb-5">
+    <div v-if="registrationNotComplete" class="row justify-content-center mb-5">
       <div class="col col-5">
         <div class="row justify-content-center mb-3">
           <div class="col">
@@ -194,7 +195,7 @@ export default {
         </div>
         <div class="row justify-content-center mb-5">
           <div class="col">
-            <SportsMultiSelect :sports="sports" />
+            <SportsMultiSelect :sports="sports" @event-new-sports-selected="handleSportsSelected" />
           </div>
         </div>
 
@@ -257,10 +258,17 @@ export default {
         </div>
       </div>
     </div>
-    <div v-if = "registrationNotComplete" class="row justify-content-center">
+    <div v-if="registrationNotComplete" class="row justify-content-center">
       <div class="col">
         <button @click="goBack" class="btn btn-secondary me-3" type="button">Tagasi</button>
-        <button :disabled="!termsAccepted" @click="registerUser" class="btn btn-success" type="submit">Registreeru</button>
+        <button
+          :disabled="!termsAccepted"
+          @click="registerUser"
+          class="btn btn-success"
+          type="submit"
+        >
+          Registreeru
+        </button>
       </div>
     </div>
   </div>

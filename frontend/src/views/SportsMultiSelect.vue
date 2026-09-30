@@ -19,6 +19,7 @@ export default {
       maxItems: null, // null = unlimited selections
       create: false, // prevents users typing in new options that don't exist
       controlClass: 'ts-control form-select border border-dark', // näeb välja nagu teised valikuväljad
+      onChange: (selectedValues) => this.emitSelectedSportIds(selectedValues),
     })
     this.syncOptions()
   },
@@ -36,11 +37,21 @@ export default {
     },
   },
   methods: {
+    emitSelectedSportIds(selectedValues) {
+      const sportIds = []
+        .concat(selectedValues)
+        .filter((value) => value !== '')
+        .map(Number)
+      this.$emit('event-new-sports-selected', sportIds)
+    },
+
     syncOptions() {
       this.tomSelect.clearOptions()
       this.sports
         .filter((sport) => sport.sportName)
-        .forEach((sport) => this.tomSelect.addOption({ value: sport.sportId, text: sport.sportName }))
+        .forEach((sport) =>
+          this.tomSelect.addOption({ value: sport.sportId, text: sport.sportName }),
+        )
       this.tomSelect.refreshOptions(false)
     },
   },
