@@ -55,7 +55,7 @@ export default {
       </div>
       <div class="navbar-nav">
         <template v-if="isLoggedIn">
-          <RouterLink v-if="isTrainer" class="nav-link" to="/managetrainings">Halda</RouterLink>
+          <RouterLink v-if="isTrainer" class="nav-link" to="/manage-trainings">Halda</RouterLink>
           <button type="button" class="nav-link btn btn-link text-start" @click="executeLogOut">
             Logi välja
           </button>

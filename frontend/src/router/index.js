@@ -36,7 +36,7 @@ const router = createRouter({
       component: InfoView,
     },
     {
-      path: '/managetrainings',
+      path: '/manage-trainings',
       name: 'manageTrainingsRoute',
       component: ManageTrainingsView,
     },
