@@ -1,6 +1,6 @@
 package ee.sportclub.persistence.user;
 
-import ee.sportclub.persistence.training.TrainingGroup;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroup;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

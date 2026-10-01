@@ -1,5 +1,6 @@
-package ee.sportclub.persistence.training;
+package ee.sportclub.persistence.training.trainingdate;
 
+import ee.sportclub.persistence.training.Training;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

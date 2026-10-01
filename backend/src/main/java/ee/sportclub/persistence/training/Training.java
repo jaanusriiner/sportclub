@@ -1,6 +1,7 @@
 package ee.sportclub.persistence.training;
 
 import ee.sportclub.persistence.facility.Facility;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroup;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

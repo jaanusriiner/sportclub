@@ -14,9 +14,12 @@ public enum Error {
     NOT_TRAINING_GROUP_MEMBER("Registreerumiseks pead olema treeninggrupi liige"),
     TRAINING_FULL("Sellel treeningul pole enam vabu kohti"),
     MAX_SIZE_TOO_LOW("Maksimaalne osalejate arv ei tohi olla väiksem juba registreerunud kasutajate arvust"),
-    ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud"),
     NOT_REGISTERED("Sa ei ole sellele treeningule registreerunud"),
-    JOIN_APPLICATION_ALREADY_PROCESSED("Taotlus on juba menetletud");
+    JOIN_APPLICATION_ALREADY_PROCESSED("Taotlus on juba menetletud"),
+    NOT_TRAINING_GROUP_TRAINER("Antud treeninggrupp ei kuulu valitud treenerile"),
+    NO_TRAINING_DATES("Valitud perioodi ei jää ühtegi valitud nädalapäeva"),
+    ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud");
+
 
     private final String message;
 
@@ -24,3 +27,4 @@ public enum Error {
         this.message = message;
     }
 }
+

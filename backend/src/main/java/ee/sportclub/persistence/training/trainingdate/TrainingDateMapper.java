@@ -1,4 +1,4 @@
-package ee.sportclub.persistence.training;
+package ee.sportclub.persistence.training.trainingdate;
 
 
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewDto;

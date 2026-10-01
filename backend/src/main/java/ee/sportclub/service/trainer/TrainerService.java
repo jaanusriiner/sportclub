@@ -1,6 +1,5 @@
 package ee.sportclub.service.trainer;
 
-import ee.sportclub.controller.joinapplication.dto.PendingJoinApplicationDto;
 import ee.sportclub.controller.trainer.TrainerSportclubDto;
 import ee.sportclub.controller.trainer.TrainerTrainingGroupDto;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;

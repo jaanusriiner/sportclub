@@ -1,4 +1,4 @@
-package ee.sportclub.persistence.training;
+package ee.sportclub.persistence.training.traininggroup;
 
 import ee.sportclub.controller.trainer.TrainerTrainingGroupDto;
 import ee.sportclub.controller.traininggroup.TrainingGroupDto;
