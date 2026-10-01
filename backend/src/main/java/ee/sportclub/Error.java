@@ -13,6 +13,7 @@ public enum Error {
     JOIN_APPLICATION_UNAVAILABLE("Oled selle treeninggrupiga juba liitunud või taotlus on juba esitatud"),
     NOT_TRAINING_GROUP_MEMBER("Registreerumiseks pead olema treeninggrupi liige"),
     TRAINING_FULL("Sellel treeningul pole enam vabu kohti"),
+    MAX_SIZE_TOO_LOW("Maksimaalne osalejate arv ei tohi olla väiksem juba registreerunud kasutajate arvust"),
     ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud");
 
 

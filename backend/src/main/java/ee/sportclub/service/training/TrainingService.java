@@ -1,9 +1,6 @@
 package ee.sportclub.service.training;
 
-import ee.sportclub.controller.training.dto.TrainingDateRegisterRequestDto;
-import ee.sportclub.controller.training.dto.TrainingGroupOverviewDto;
-import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
-import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
+import ee.sportclub.controller.training.dto.*;
 import ee.sportclub.controller.user.dto.MyTrainingDto;
 import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
@@ -47,6 +44,13 @@ public class TrainingService {
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("userId", userId));
     }
 
+    @Transactional
+    public void deleteTrainingDateBy(Integer trainingDateId) {
+        getValidTrainingDateBy(trainingDateId);
+        userTrainingRepository.deleteUserTrainingsBy(trainingDateId);
+        trainingDateRepository.deleteById(trainingDateId);
+    }
+
     public TrainingDate getValidTrainingDateBy(Integer trainingDateId) {
         return trainingDateRepository.findById(trainingDateId)
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("trainingDateId", trainingDateId));
@@ -55,6 +59,16 @@ public class TrainingService {
     public List<MyTrainingDto> getUpcomingTrainingsByUserId(Integer userId) {
         getValidUser(userId);
         return trainingDateOverviewRepository.findUpcomingUserTrainingDtosBy(userId);
+    }
+
+    @Transactional
+    public void updateTrainingDateDetails(Integer trainingDateId, UpdateTrainingDateRequestDto updateTrainingDateRequestDto) {
+        TrainingDate trainingDate = getValidTrainingDateBy(trainingDateId);
+        validateTrainingDateNewMaxSizeIsAllowed(trainingDate.getUserCount(), updateTrainingDateRequestDto.getMaxSize());
+        trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
+        trainingDate.setMaxSize(updateTrainingDateRequestDto.getMaxSize());
+        trainingDate.setStartDate(updateTrainingDateRequestDto.getTrainingDate());
+        trainingDate.setStartTime(updateTrainingDateRequestDto.getTrainingTime());
     }
 
     @Transactional
@@ -102,6 +116,12 @@ public class TrainingService {
         userTraining.setUser(user);
         userTraining.setTrainingDate(trainingDate);
         userTrainingRepository.save(userTraining);
+    }
+
+    private void validateTrainingDateNewMaxSizeIsAllowed(Integer userCount, Integer maxSize) {
+        if (userCount > maxSize) {
+            throw new ForbiddenException(MAX_SIZE_TOO_LOW.getMessage(), MAX_SIZE_TOO_LOW.name());
+        }
     }
 
     private static TrainingRegisterResponseDto createRegisteredToTrainingSuccessMessage() {

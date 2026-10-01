@@ -26,5 +26,5 @@ public interface TrainingDateRepository extends JpaRepository<TrainingDate, Inte
     @Query("select t from TrainingDate t where t.id = :trainingDateId")
     Optional<TrainingDate> findTrainingDateByIdAndLockIt(Integer trainingDateId);
 
-
+    List<TrainingDate> training(Training training);
 }

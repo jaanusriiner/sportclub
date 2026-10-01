@@ -4,6 +4,7 @@ package ee.sportclub.controller.training;
 import ee.sportclub.controller.training.dto.TrainingDateRegisterRequestDto;
 import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
 import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
+import ee.sportclub.controller.training.dto.UpdateTrainingDateRequestDto;
 import ee.sportclub.infrastructure.error.ApiError;
 import ee.sportclub.service.training.TrainingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,18 +73,72 @@ public class TrainingController {
             @ApiResponse(
                     responseCode = "403",
                     description = """
-                    - 'message': Registreerumiseks pead olema treeninggrupi liige, 'errorCode': 'NOT_TRAINING_GROUP_MEMBER'
-                    - 'message': Sellel treeningul pole enam vabu kohti, 'errorCode': 'TRAINING_FULL'
-                    - 'message': Oled juba sellele treeningule registreerunud, 'errorCode': 'ALREADY_REGISTERED'
-                    """,
+                            - 'message': Registreerumiseks pead olema treeninggrupi liige, 'errorCode': 'NOT_TRAINING_GROUP_MEMBER'
+                            - 'message': Sellel treeningul pole enam vabu kohti, 'errorCode': 'TRAINING_FULL'
+                            - 'message': Oled juba sellele treeningule registreerunud, 'errorCode': 'ALREADY_REGISTERED'
+                            """,
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             )
-        }
+    }
     )
     public TrainingRegisterResponseDto registerToTraining(@PathVariable Integer trainingDateId, @RequestBody @Valid TrainingDateRegisterRequestDto trainingDateRegisterRequestDto) {
         return trainingService.registerToTraining(trainingDateId, trainingDateRegisterRequestDto);
 
 
     }
+
+    @DeleteMapping("/api/training-dates/{trainingDateId}")
+    @Operation(
+            summary = "Kustutab ühe treeningu trainingDateId järgi",
+            description = "Ootab sisse trainingDateId"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "'message': Ei leidnud primary keyd 'trainingDateId'",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error"
+            )
+    })
+    public void deleteTrainingDate(@PathVariable Integer trainingDateId) {
+        trainingService.deleteTrainingDateBy(trainingDateId);
+    }
+
+    @PutMapping("/api/training-dates/{trainingDateId}")
+    @Operation(
+            summary = "Muudab ühe treeningkorra detaile trainingDateId järgi",
+            description = "Ootab sisse trainingDateId ja request body"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "'message': Ei leidnud primary keyd 'trainingDateId'",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "'message': Maksimaalne osalejate arv ei tohi olla väiksem juba registreerunud kasutajate arvust",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error"
+            ),
+    })
+    public void updateTrainingDateDetails(@PathVariable Integer trainingDateId, @RequestBody @Valid UpdateTrainingDateRequestDto updateTrainingDateRequestDto) {
+        trainingService.updateTrainingDateDetails(trainingDateId, updateTrainingDateRequestDto);
+    }
+
 
 }
