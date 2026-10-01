@@ -19,7 +19,7 @@ public class NlToSearchService {
 
     private static final String SUMMARY_SYSTEM_PROMPT_TEMPLATE = """
             You are search engine for customers visiting Sportclub webpage.
-            As input along with customer/user prompt, you will get database printout with all active trainings in system according to schema below
+            As input along with customer/user prompt, you will get database printout with all active trainings from current date forward in system according to schema below
             User question might be in Estonian, use both Estonian and English language to search data.
             
             SCHEMA:
@@ -79,7 +79,7 @@ public class NlToSearchService {
 
     public AskResponse ask(String userQuestion, List<AskHistoryEntry> history) {
 //        String generatedSql = generateSql(userQuestion);
-        String generatedSql = "SELECT * FROM v_training_date_extended;";
+        String generatedSql = "SELECT * FROM v_training_date_extended WHERE training_date >= CURRENT_DATE;";
         List<Map<String, Object>> databaseResults = jdbcTemplate.queryForList(generatedSql);
         return generateResponse(userQuestion, history, databaseResults);
     }
