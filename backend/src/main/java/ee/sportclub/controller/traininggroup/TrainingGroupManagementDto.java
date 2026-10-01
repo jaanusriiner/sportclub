@@ -1,4 +1,4 @@
-package ee.sportclub.controller.trainer;
+package ee.sportclub.controller.traininggroup;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,17 +6,16 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
-/**
- * DTO for {@link ee.sportclub.persistence.sportclubtrainer.SportclubTrainer}
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TrainerTrainingGroupDto implements Serializable {
-
+public class TrainingGroupManagementDto implements Serializable {
     Integer trainingGroupId;
     String trainingGroupName;
-    Integer sportclubId;
     String sportclubName;
-    Integer trainerId;
+    String sportName;
+    String skillLevelName;
+    String trainerName;
+    Integer memberCount;
+    Integer trainingCount;
 }

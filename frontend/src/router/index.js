@@ -8,6 +8,10 @@ import ManageTrainingsView from '@/views/ManageTrainingsView.vue'
 import CreateTrainingGroupView from '@/views/CreateTrainingGroupView.vue'
 import CreateTrainingView from '@/views/CreateTrainingView.vue'
 import TrainingsView from '@/views/TrainingsView.vue'
+import CreateFacilityView from '@/views/CreateFacilityView.vue'
+import FacilitiesView from '@/views/FacilitiesView.vue'
+import ManageTrainingGroupsView from '@/views/ManageTrainingGroupsView.vue'
+import ManageUsersView from '@/views/ManageUsersView.vue'
 import SessionStorageService from '@/services/SessionStorageService.js'
 
 const router = createRouter({
@@ -48,6 +52,7 @@ const router = createRouter({
       path: '/create-training-group',
       name: 'createTrainingGroupRoute',
       component: CreateTrainingGroupView,
+      meta: { requiresAdminOrTrainer: true },
     },
     {
       path: '/create-training',
@@ -60,11 +65,39 @@ const router = createRouter({
       name: 'trainingsRoute',
       component: TrainingsView,
     },
+    {
+      path: '/manage-training-groups',
+      name: 'manageTrainingGroupsRoute',
+      component: ManageTrainingGroupsView,
+      meta: { requiresAdminOrTrainer: true },
+    },
+    {
+      path: '/manage-users',
+      name: 'manageUsersRoute',
+      component: ManageUsersView,
+      meta: { requiresAdmin: true },
+    },
+    {
+      path: '/facilities',
+      name: 'facilitiesRoute',
+      component: FacilitiesView,
+    },
+    {
+      path: '/create-facility',
+      name: 'createFacilityRoute',
+      component: CreateFacilityView,
+      meta: { requiresAdmin: true },
+    },
   ],
 })
 
 // lubab admin/trainer-only marsruudile ligi vaid sisse logitud admin või trainer rolliga kasutajal
 router.beforeEach((to) => {
+  // admin-only marsruudile pääseb ligi vaid sisse logitud admin
+  if (to.meta.requiresAdmin) {
+    const isAdmin = SessionStorageService.userIsLoggedIn() && SessionStorageService.userIsAdmin()
+    return isAdmin ? true : { name: 'homeRoute' }
+  }
   if (!to.meta.requiresAdminOrTrainer) {
     return true
   }

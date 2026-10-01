@@ -4,6 +4,7 @@ import ee.sportclub.persistence.training.Training;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
@@ -28,4 +29,20 @@ public interface TrainingDateRepository extends JpaRepository<TrainingDate, Inte
     Optional<TrainingDate> findTrainingDateByIdAndLockIt(Integer trainingDateId);
 
     List<TrainingDate> training(Training training);
+
+    @Modifying
+    @Query("""
+            delete from TrainingDate t
+            where t.training.id in (select tr.id from Training tr where tr.trainingGroup.id = :trainingGroupId)""")
+    void deleteTrainingDatesBy(Integer trainingGroupId);
+
+    // review tabelil pole entity't, seepärast native päring
+    @Modifying
+    @Query(value = """
+            delete from sportclub.review r
+            using sportclub.training_date td, sportclub.training t
+            where r.training_date_id = td.id
+              and td.training_id = t.id
+              and t.training_group_id = :trainingGroupId""", nativeQuery = true)
+    void deleteReviewsBy(Integer trainingGroupId);
 }

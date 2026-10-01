@@ -32,4 +32,12 @@ export default {
   navigateToCreateTrainingGroupView() {
     router.push({ name: 'createTrainingGroupRoute' })
   },
+
+  navigateToManageTrainingGroupsView() {
+    router.push({ name: 'manageTrainingGroupsRoute' })
+  },
+
+  navigateToCreateFacilityView() {
+    router.push({ name: 'createFacilityRoute' })
+  },
 }

@@ -94,7 +94,7 @@ export default {
         .map((weekday) => weekday.code)
         .filter((code) => this.trainingRequest.weekdays.includes(code))
       return {
-        trainerId: SessionStorageService.getUserId(),
+        trainerId: this.getTrainerId(),
         trainingGroupId: this.trainingRequest.trainingGroupId,
         facilityId: this.trainingRequest.facilityId,
         weekdays: orderedWeekdays.join(','),
@@ -105,6 +105,17 @@ export default {
         maxSize: this.trainingRequest.maxSize,
         description: this.trainingRequest.description,
       }
+    },
+
+    // admin lisab treeningu grupi treeneri nimel, treener iseenda nimel
+    getTrainerId() {
+      if (!SessionStorageService.userIsAdmin()) {
+        return SessionStorageService.getUserId()
+      }
+      const trainingGroup = this.trainerTrainingGroups.find(
+        (trainingGroup) => trainingGroup.trainingGroupId === this.trainingRequest.trainingGroupId,
+      )
+      return trainingGroup.trainerId
     },
 
     handleCreateError(error) {

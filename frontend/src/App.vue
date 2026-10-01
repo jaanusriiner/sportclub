@@ -89,6 +89,8 @@ export default {
         <!--        <RouterLink class="nav-link" to="/">Kodu</RouterLink>-->
         <RouterLink class="nav-link" to="/info">Küsi</RouterLink>
         <RouterLink class="nav-link" to="/trainings">Treeningud</RouterLink>
+        <RouterLink class="nav-link" to="/facilities">Asukohad</RouterLink>
+        <RouterLink v-if="isAdmin" class="nav-link" to="/create-facility">Lisa asukoht</RouterLink>
       </div>
       <div class="navbar-nav">
         <div v-if="isLoggedIn" class="nav-item dropdown">
@@ -102,9 +104,22 @@ export default {
             <span class="sc-avatar">{{ userInitials }}</span>
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li v-if="isTrainer">
-              <RouterLink class="dropdown-item" to="/manage-trainings">Halda</RouterLink>
-            </li>
+            <template v-if="isTrainer || isAdmin">
+              <li>
+                <RouterLink class="dropdown-item" to="/manage-trainings">
+                  Halda treeninguid
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink class="dropdown-item" to="/manage-training-groups">
+                  Halda treeninggruppe
+                </RouterLink>
+              </li>
+              <li v-if="isAdmin">
+                <RouterLink class="dropdown-item" to="/manage-users">Halda kasutajaid</RouterLink>
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+            </template>
             <li>
               <button type="button" class="dropdown-item" @click="executeLogOut">Logi välja</button>
             </li>

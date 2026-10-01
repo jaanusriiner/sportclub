@@ -8,4 +8,12 @@ export default {
   postTrainingGroupRequest(trainingGroupRequest) {
     return axios.post('/api/training-groups', trainingGroupRequest)
   },
+
+  getTrainingGroupsRequest(userId) {
+    return axios.get('/api/training-groups', { params: { userId } })
+  },
+
+  deleteTrainingGroupRequest(trainingGroupId, userId) {
+    return axios.delete(`/api/training-groups/${trainingGroupId}`, { params: { userId } })
+  },
 }

@@ -15,4 +15,11 @@ public interface UserTrainingRepository extends JpaRepository<UserTraining, Inte
     @Modifying
     @Query("delete from UserTraining u where u.trainingDate.id = :trainingDateId")
     void deleteUserTrainingsBy(Integer trainingDateId);
+
+    @Modifying
+    @Query("""
+            delete from UserTraining u
+            where u.trainingDate.id in (
+                select td.id from TrainingDate td where td.training.trainingGroup.id = :trainingGroupId)""")
+    void deleteUserTrainingsByTrainingGroup(Integer trainingGroupId);
 }
