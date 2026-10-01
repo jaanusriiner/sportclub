@@ -12,7 +12,10 @@ import JoinApplicationService from '@/services/JoinApplicationService.js'
 import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
 import AlertDanger from '@/components/alert/AlertDanger.vue'
 import CapacityBar from '@/components/CapacityBar.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
+
+const PAGE_SIZE = 10
 
 export default {
   name: 'ManageTrainingsView',
@@ -30,6 +33,7 @@ export default {
     AlertDanger,
     AlertSuccess,
     CapacityBar,
+    PaginationBar,
   },
   beforeMount() {
     this.getTrainerJoinApplications()
@@ -41,6 +45,7 @@ export default {
       trainings: [],
       trainerTrainingGroups: [],
       joinApplications: [],
+      currentPage: 1,
       selectedSportclubId: 0,
       selectedTrainingGroupId: 0,
       todayDate: new Date().toLocaleDateString('sv-SE'),
@@ -55,7 +60,34 @@ export default {
       isProcessingJoinApplication: false,
     }
   },
+  watch: {
+    // filtri muutmisel algab tulemuste vaatamine uuesti esimeselt lehelt
+    selectedSportclubId() {
+      this.currentPage = 1
+    },
+    selectedTrainingGroupId() {
+      this.currentPage = 1
+    },
+    selectedDateFrom() {
+      this.currentPage = 1
+    },
+    // kustutamine võib viimase lehe tühjaks teha
+    totalPages(totalPages) {
+      if (this.currentPage > totalPages) {
+        this.currentPage = Math.max(1, totalPages)
+      }
+    },
+  },
   computed: {
+    totalPages() {
+      return Math.ceil(this.filteredTrainings.length / PAGE_SIZE)
+    },
+
+    pagedTrainings() {
+      const startIndex = (this.currentPage - 1) * PAGE_SIZE
+      return this.filteredTrainings.slice(startIndex, startIndex + PAGE_SIZE)
+    },
+
     hasActiveFilters() {
       return (
         this.selectedSportclubId !== 0 ||
@@ -316,7 +348,7 @@ export default {
             </thead>
             <tbody>
               <tr
-                v-for="training in filteredTrainings"
+                v-for="training in pagedTrainings"
                 :key="training.trainingDateId"
                 class="clickable-row"
                 @click="openInfoModal(training)"
@@ -359,6 +391,13 @@ export default {
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="mt-4">
+          <PaginationBar
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @event-page-selected="(page) => (currentPage = page)"
+          />
         </div>
       </div>
     </div>

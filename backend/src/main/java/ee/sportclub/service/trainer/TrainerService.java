@@ -29,7 +29,8 @@ public class TrainerService {
 
     public List<TrainerSportclubDto> findTrainerSportclubs(Integer trainerId) {
         List<SportclubTrainer> sportclubTrainers = sportclubTrainerRepository.findSportClubsByTrainer(trainerId);
-        return sportclubTrainerMapper.toTrainerSportclubDtos(sportclubTrainers);
+        List<TrainerSportclubDto> trainerSportclubDtos = sportclubTrainerMapper.toTrainerSportclubDtos(sportclubTrainers);
+        return trainerSportclubDtos;
     }
 
     public List<TrainerTrainingGroupDto> findTrainerTrainingGroups(Integer trainerId) {

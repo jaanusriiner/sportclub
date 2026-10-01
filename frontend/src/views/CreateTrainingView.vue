@@ -2,6 +2,7 @@
 import AlertDanger from '@/components/alert/AlertDanger.vue'
 import FacilitiesDropDown from '@/components/dropdown/FacilitiesDropDown.vue'
 import FacilityService from '@/services/FacilityService.js'
+import TrainingService from '@/services/TrainingService.js'
 import NavigationService from '@/services/NavigationService.js'
 import SessionStorageService from '@/services/SessionStorageService.js'
 import TrainerService from '@/services/TrainerService.js'
@@ -28,6 +29,7 @@ export default {
     return {
       errorMessage: '',
       weekdays: WEEKDAYS,
+      todayDate: new Date().toLocaleDateString('sv-SE'),
       sportclubs: [],
       trainerTrainingGroups: [],
       facilities: [],
@@ -38,6 +40,9 @@ export default {
         facilityId: 0,
         weekdays: [],
         startTime: '',
+        duration: 90,
+        startDate: new Date().toLocaleDateString('sv-SE'),
+        endDate: '',
         maxSize: null,
         description: '',
       },
@@ -77,7 +82,36 @@ export default {
       this.errorMessage = ''
       this.checkFormForErrors()
       if (this.errorMessage === '') {
-        // TODO: saada päring, kui backendis valmib treeningu loomise endpoint
+        TrainingService.postTrainingRequest(this.createRequestBody())
+          .then(() => NavigationService.navigateToManageTrainingsView())
+          .catch((error) => this.handleCreateError(error))
+      }
+    },
+
+    createRequestBody() {
+      // backend ootab nädalapäevi komadega eraldatud stringina, nt "E,N"
+      const orderedWeekdays = this.weekdays
+        .map((weekday) => weekday.code)
+        .filter((code) => this.trainingRequest.weekdays.includes(code))
+      return {
+        trainerId: SessionStorageService.getUserId(),
+        trainingGroupId: this.trainingRequest.trainingGroupId,
+        facilityId: this.trainingRequest.facilityId,
+        weekdays: orderedWeekdays.join(','),
+        startTime: this.trainingRequest.startTime,
+        duration: this.trainingRequest.duration,
+        startDate: this.trainingRequest.startDate,
+        endDate: this.trainingRequest.endDate,
+        maxSize: this.trainingRequest.maxSize,
+        description: this.trainingRequest.description,
+      }
+    },
+
+    handleCreateError(error) {
+      if (error.response && [400, 403, 404].includes(error.response.status)) {
+        this.errorMessage = error.response.data.message
+      } else {
+        NavigationService.navigateToErrorView()
       }
     },
 
@@ -92,8 +126,16 @@ export default {
         this.errorMessage = 'Vali vähemalt üks nädalapäev'
       } else if (this.trainingRequest.startTime === '') {
         this.errorMessage = 'Sisesta treeningu algusaeg'
+      } else if (!this.trainingRequest.duration || this.trainingRequest.duration < 1) {
+        this.errorMessage = 'Sisesta treeningu kestus minutites'
       } else if (!this.trainingRequest.maxSize || this.trainingRequest.maxSize < 1) {
         this.errorMessage = 'Sisesta maksimaalne osalejate arv'
+      } else if (this.trainingRequest.startDate === '') {
+        this.errorMessage = 'Sisesta alguskuupäev'
+      } else if (this.trainingRequest.endDate === '') {
+        this.errorMessage = 'Sisesta lõppkuupäev'
+      } else if (this.trainingRequest.endDate < this.trainingRequest.startDate) {
+        this.errorMessage = 'Lõpu kuupäev ei tohi olla enne alguse kuupäeva'
       }
     },
 
@@ -184,6 +226,37 @@ export default {
             </div>
           </div>
           <input v-model="trainingRequest.startTime" type="time" class="form-control w-auto" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Treeningu kestus (minutites)</label>
+          <input
+            v-model.number="trainingRequest.duration"
+            type="number"
+            min="1"
+            class="form-control w-auto"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Treeningute periood</label>
+          <div class="d-flex align-items-center gap-2">
+            <input
+              v-model="trainingRequest.startDate"
+              type="date"
+              :min="todayDate"
+              class="form-control w-auto"
+              aria-label="Alguskuupäev"
+            />
+            <span>–</span>
+            <input
+              v-model="trainingRequest.endDate"
+              type="date"
+              :min="trainingRequest.startDate || todayDate"
+              class="form-control w-auto"
+              aria-label="Lõppkuupäev"
+            />
+          </div>
         </div>
 
         <div class="mb-3">

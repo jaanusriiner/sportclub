@@ -1,5 +1,6 @@
 <script>
 import CapacityBar from '@/components/CapacityBar.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
 import AreasDropDown from '@/components/dropdown/AreasDropDown.vue'
 import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
@@ -15,11 +16,14 @@ import TrainingService from '@/services/TrainingService.js'
 import UserService from '@/services/UserService.js'
 import { PhInfo } from '@phosphor-icons/vue'
 
+const PAGE_SIZE = 10
+
 export default {
   name: 'TrainingsView',
   components: {
     AlertSuccess,
     CapacityBar,
+    PaginationBar,
     AreasDropDown,
     SportclubsDropDown,
     SportsDropDown,
@@ -40,6 +44,7 @@ export default {
       myTrainings: [],
       areas: [],
       sports: [],
+      currentPage: 1,
       selectedAreaId: 0,
       selectedSportId: 0,
       // 0 = kõik spordiklubid, -1 = minu spordiklubid, muu = konkreetse spordiklubi id
@@ -57,7 +62,37 @@ export default {
       unregisterModalIsOpen: false,
     }
   },
+  watch: {
+    // filtri muutmisel algab tulemuste vaatamine uuesti esimeselt lehelt
+    selectedAreaId() {
+      this.currentPage = 1
+    },
+    selectedSportclubId() {
+      this.currentPage = 1
+    },
+    selectedSportId() {
+      this.currentPage = 1
+    },
+    selectedDateFrom() {
+      this.currentPage = 1
+    },
+    // registreerumine võib viimase lehe tühjaks teha
+    totalPages(totalPages) {
+      if (this.currentPage > totalPages) {
+        this.currentPage = Math.max(1, totalPages)
+      }
+    },
+  },
   computed: {
+    totalPages() {
+      return Math.ceil(this.availableTrainings.length / PAGE_SIZE)
+    },
+
+    pagedTrainings() {
+      const startIndex = (this.currentPage - 1) * PAGE_SIZE
+      return this.availableTrainings.slice(startIndex, startIndex + PAGE_SIZE)
+    },
+
     // kasutaja registreeritud treeningud on tabelis "Minu ..." ega kuvata alumises tabelis uuesti
     availableTrainings() {
       return this.trainings.filter(
@@ -279,7 +314,7 @@ export default {
   <div class="container">
     <div class="row justify-content-center mb-4">
       <div class="col">
-        <p class="eyebrow">Treeningud</p>
+        <p class="eyebrow">Harrastaja vaade</p>
         <h1>Treeninggrupid ja treeningud</h1>
         <AlertSuccess :success-message="successMessage" />
       </div>
@@ -420,14 +455,14 @@ export default {
 
                 <th>Spordiklubi</th>
                 <th>Oskustase</th>
-                <th>Järgmine treening</th>
+                <th class="text-nowrap">Järgmine treening</th>
                 <th>Täituvus</th>
                 <th>Info</th>
               </tr>
             </thead>
             <tbody>
               <tr
-                v-for="training in availableTrainings"
+                v-for="training in pagedTrainings"
                 :key="training.trainingDateId"
                 class="clickable-row"
                 @click="openInfoModal(training)"
@@ -487,6 +522,13 @@ export default {
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="mt-4">
+          <PaginationBar
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @event-page-selected="(page) => (currentPage = page)"
+          />
         </div>
       </div>
     </div>

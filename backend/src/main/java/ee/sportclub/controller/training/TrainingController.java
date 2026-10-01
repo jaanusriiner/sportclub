@@ -84,6 +84,34 @@ public class TrainingController {
 
     }
 
+    @DeleteMapping("/api/training-dates/{trainingDateId}/register")
+    @Operation(
+            summary = "Vabastab kasutaja koha treeningul trainingDateId järgi",
+            description = """
+                    - Vajab path variable trainingDateId ja query parameetrit userId
+                    - Eemaldab kasutaja treeningult ja vähendab treeningu osalejate arvu (user_count) ühe võrra
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "'message': Ei leidnud primary keyd 'trainingDateId' või 'userId', 'errorCode': 'PRIMARY_KEY_NOT_FOUND'",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "'message': Sa ei ole sellele treeningule registreerunud, 'errorCode': 'NOT_REGISTERED'",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            )
+    })
+    public TrainingRegisterResponseDto unregisterFromTraining(@PathVariable Integer trainingDateId, @RequestParam Integer userId) {
+        return trainingService.unregisterFromTraining(trainingDateId, userId);
+    }
+
     @PostMapping("/api/trainings")
     @Operation(
             summary = "Loob uue treeningseeria koos treeningkordadega",

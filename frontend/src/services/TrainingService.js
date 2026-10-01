@@ -5,6 +5,10 @@ export default {
     return axios.get('/api/trainings', { params })
   },
 
+  postTrainingRequest(trainingRequest) {
+    return axios.post('/api/trainings', trainingRequest)
+  },
+
   postRegisterToTrainingRequest(trainingDateId, userId) {
     return axios.post(`/api/training-dates/${trainingDateId}/register`, { userId })
   },
