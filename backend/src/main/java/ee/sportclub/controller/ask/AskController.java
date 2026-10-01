@@ -2,6 +2,7 @@ package ee.sportclub.controller.ask;
 
 import ee.sportclub.controller.ask.dto.AskRequest;
 import ee.sportclub.controller.ask.dto.AskResponse;
+import ee.sportclub.service.ask.NlToSearchService;
 import ee.sportclub.service.ask.NlToSqlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AskController {
 
-    private final NlToSqlService nlToSqlService;
+    private final NlToSearchService nlToSearchService;
 
     @PostMapping
     public AskResponse ask(@Valid @RequestBody AskRequest request) {
-        return nlToSqlService.ask(request.question());
+        return nlToSearchService.ask(request.question());
     }
 }

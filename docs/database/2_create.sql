@@ -438,5 +438,52 @@ FROM training_date td
          JOIN skill_level sl ON sl.id = tg.skill_level_id
          LEFT JOIN profile p ON p.user_id = tg.user_id;
 
+-- View: v_training_date_extended
+-- Laiendatud versioon v_training_date_overview'st: üks rida iga AKTIIVSE (status = 'A')
+-- training_date kirje kohta, lisaks grupi/piirkonna/asukoha/treeneri üksikasjad.
+-- review_description on kõigi selle treeningu arvustuste kirjeldused kokku (eraldatud " | "),
+-- et ridade arv ei kahekordistuks, kui ühel training_date'l on mitu arvustust.
+CREATE VIEW v_training_date_extended AS
+SELECT td.id                                 AS training_date_id,
+       tg.id                                 AS training_group_id,
+       tg.name                               AS training_group_name,
+       tg.description                        AS training_group_description,
+       s.id                                  AS sport_id,
+       s.name                                AS sport_name,
+       f.id                                  AS facility_id,
+       f.name                                AS facility_name,
+       f.address                             AS facility_address,
+       f.description                         AS facility_description,
+       f.area_id                             AS area_id,
+       a.name                                AS area_name,
+       tg.user_id                            AS trainer_id,
+       p.first_name || ' ' || p.last_name    AS trainer_name,
+       u.email                               AS trainer_email,
+       sc.id                                 AS sportclub_id,
+       sc.name                               AS sportclub_name,
+       sl.id                                 AS skill_level_id,
+       sl.name                               AS skill_level_name,
+       td.start_date                         AS training_date,
+       td.start_time                         AS training_time,
+       td.duration                           AS training_date_duration,
+       td.status                             AS status,
+       td.user_count                         AS user_count,
+       td.max_size                           AS training_date_max_size,
+       t.weekdays                            AS training_weekdays,
+       (SELECT string_agg(r.description, ' | ' ORDER BY r.id)
+        FROM review r
+        WHERE r.training_date_id = td.id)    AS review_description
+FROM training_date td
+         JOIN training t ON t.id = td.training_id
+         JOIN training_group tg ON tg.id = t.training_group_id
+         JOIN sport s ON s.id = tg.sport_id
+         JOIN facility f ON f.id = td.facility_id
+         JOIN area a ON a.id = f.area_id
+         JOIN sportclub sc ON sc.id = tg.sportclub_id
+         JOIN skill_level sl ON sl.id = tg.skill_level_id
+         JOIN "user" u ON u.id = tg.user_id
+         LEFT JOIN profile p ON p.user_id = tg.user_id
+WHERE td.status = 'A';
+
 -- End of file.
 
