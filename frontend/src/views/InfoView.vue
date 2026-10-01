@@ -14,10 +14,14 @@ export default {
         question: '',
       },
 
-      askResponse: {
-        answer: '',
-      },
+      chatHistory: [],
+      chatEntryCount: 0,
     }
+  },
+  computed: {
+    chatHistoryNewestFirst() {
+      return [...this.chatHistory].reverse()
+    },
   },
   methods: {
     ask() {
@@ -26,25 +30,46 @@ export default {
         return
       }
       this.errorMessage = ''
-      this.askResponse.answer = ''
       this.isLoading = true
+      this.chatEntryCount++
+      this.chatHistory.push({
+        id: this.chatEntryCount,
+        question: this.askRequest.question,
+        answer: null,
+      })
+      // otsime reaktiivse proxy, et hilisem answer-i muutmine uuendaks vaadet
+      const chatEntry = this.chatHistory[this.chatHistory.length - 1]
+      this.scrollChatToTop()
       AskService.postAskRequest(this.askRequest)
-        .then((response) => this.handleAskResponse(response))
-        .catch(() => this.handleAskError())
+        .then((response) => this.handleAskResponse(response, chatEntry))
+        .catch(() => this.handleAskError(chatEntry))
         .finally(() => (this.isLoading = false))
     },
 
     clearQuestion() {
       this.askRequest.question = ''
-      this.askResponse.answer = ''
       this.errorMessage = ''
     },
 
-    handleAskResponse(response) {
-      this.askResponse = response.data
+    handleAskResponse(response, chatEntry) {
+      chatEntry.answer = response.data.answer
+      this.askRequest.question = ''
+      this.scrollChatToTop()
     },
 
-    handleAskError() {
+    clearChat() {
+      this.chatHistory = []
+    },
+
+    scrollChatToTop() {
+      this.$nextTick(() => {
+        const chatBox = this.$refs.chatBox
+        chatBox.scrollTop = 0
+      })
+    },
+
+    handleAskError(chatEntry) {
+      this.chatHistory.splice(this.chatHistory.indexOf(chatEntry), 1)
       this.errorMessage = 'Kahjuks ei oska ma sellele küsimusele vastata'
     },
   },
@@ -55,7 +80,7 @@ export default {
   <div class="container text-center mt-5">
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <figure class="mt-5 mb-5">
+        <figure class="mt-3 mb-5">
           <blockquote class="blockquote fs-3 fst-italic">
             <p>
               “Just remember, you can’t climb the ladder of success with your hands in your
@@ -65,7 +90,7 @@ export default {
           <figcaption class="blockquote-footer">Arnold Schwarzenegger</figcaption>
         </figure>
 
-        <p class="fs-5 intro-text">
+        <p class="fs-6 text-secondary intro-text">
           Siit saad küsida harrastatavate spordialade, spordiklubide, treenerite, treeningrühmade ja
           trenniaegade kohta
         </p>
@@ -81,7 +106,9 @@ export default {
               maxlength="500"
               placeholder="Esita küsimus"
               @keyup.enter="ask"
+              @keyup.esc="clearQuestion"
             />
+            <span v-if="askRequest.question !== ''" class="esc-hint">Esc</span>
             <button
               v-if="askRequest.question !== ''"
               type="button"
@@ -96,15 +123,38 @@ export default {
           </button>
         </div>
 
-        <div v-if="isLoading" class="spinner-border" role="status"></div>
-        <textarea
-          v-else
-          v-model="askResponse.answer"
-          class="form-control"
-          rows="8"
-          readonly
-          placeholder="Vastus ilmub siia"
-        ></textarea>
+        <div class="text-start mb-2">
+          <button
+            v-if="chatHistory.length > 0"
+            type="button"
+            class="btn btn-secondary"
+            :disabled="isLoading"
+            @click="clearChat"
+          >
+            Tühjenda vestlus
+          </button>
+        </div>
+
+        <div ref="chatBox" class="chat-box border rounded p-3 text-start">
+          <p v-if="chatHistory.length === 0" class="text-secondary text-center mb-0">
+            Vestlus ilmub siia
+          </p>
+          <div v-for="chatEntry in chatHistoryNewestFirst" :key="chatEntry.id" class="mb-3">
+            <div class="d-flex justify-content-end mb-2">
+              <div class="chat-bubble bg-primary text-white">{{ chatEntry.question }}</div>
+            </div>
+            <div class="d-flex justify-content-start">
+              <div class="chat-bubble bg-light border">
+                <span
+                  v-if="chatEntry.answer === null"
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                ></span>
+                <template v-else>{{ chatEntry.answer }}</template>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -112,11 +162,35 @@ export default {
 
 <style scoped>
 .intro-text {
-  margin-bottom: 5rem;
+  margin-bottom: 2.5rem;
+}
+
+.chat-box {
+  height: 24rem;
+  overflow-y: auto;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .clearable-input {
-  padding-right: 2.5rem;
+  padding-right: 4.5rem;
+}
+
+.esc-hint {
+  position: absolute;
+  top: 50%;
+  right: 2.9rem;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: #adb5bd;
+  pointer-events: none;
+  user-select: none;
 }
 
 .clear-button {

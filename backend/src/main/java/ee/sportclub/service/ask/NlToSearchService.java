@@ -50,7 +50,7 @@ public class NlToSearchService {
             )
             
             RULES:
-            1. If you cannot answer from this schema, return: CANNOT_ANSWER
+            1. If you cannot answer from this schema, return: Põnev küsimus :) , aga kahjuks minu teadmiste väline
             """;
 
     private static final String SUMMARY_USER_PROMPT_TEMPLATE = """
