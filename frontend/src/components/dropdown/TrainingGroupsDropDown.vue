@@ -21,7 +21,7 @@ export default {
   <select
     :value="trainingGroupId"
     @change="$emit('event-new-training-group-selected', Number($event.target.value))"
-    class="form-select border border-dark"
+    class="form-select"
     aria-label="Vali treeninggrupp"
   >
     <option :value="0">Kõik treeninggrupid</option>

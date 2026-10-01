@@ -107,18 +107,18 @@ export default {
 <template>
   <div class="container">
     <div class="row justify-content-center mb-4">
-      <div class="col col-5">
+      <div class="col-12 col-md-8 col-lg-6">
         <h1>Loo uus treening</h1>
         <AlertDanger :error-message="errorMessage" />
       </div>
     </div>
-    <div class="row justify-content-center mb-5">
-      <div class="col col-5">
+    <div class="row justify-content-center mb-4">
+      <div class="col-12 col-md-8 col-lg-6 card p-4">
         <div class="mb-3">
           <label class="form-label">Spordiklubi</label>
           <select
             v-model="trainingRequest.sportclubId"
-            class="form-select border border-dark"
+            class="form-select"
             @change="handleSportclubChanged"
           >
             <option :value="0">Vali spordiklubi...</option>
@@ -136,7 +136,7 @@ export default {
           <label class="form-label">Treeninggrupi nimi</label>
           <select
             v-model="trainingRequest.trainingGroupId"
-            class="form-select border border-dark"
+            class="form-select"
             :disabled="trainingRequest.sportclubId === 0"
           >
             <option :value="0">Vali treeninggrupp...</option>
@@ -172,7 +172,7 @@ export default {
                 v-model="trainingRequest.weekdays"
                 :value="weekday.code"
                 type="checkbox"
-                class="form-check-input border-dark"
+                class="form-check-input"
               />
               <label
                 class="form-check-label"
@@ -183,11 +183,7 @@ export default {
               </label>
             </div>
           </div>
-          <input
-            v-model="trainingRequest.startTime"
-            type="time"
-            class="form-control border border-dark w-auto"
-          />
+          <input v-model="trainingRequest.startTime" type="time" class="form-control w-auto" />
         </div>
 
         <div class="mb-3">
@@ -196,7 +192,7 @@ export default {
             v-model.number="trainingRequest.maxSize"
             type="number"
             min="1"
-            class="form-control border border-dark w-auto"
+            class="form-control w-auto"
           />
         </div>
 
@@ -204,7 +200,7 @@ export default {
           <label class="form-label">Kirjeldus</label>
           <textarea
             v-model="trainingRequest.description"
-            class="form-control border border-dark"
+            class="form-control"
             rows="4"
             maxlength="255"
           ></textarea>
@@ -212,9 +208,9 @@ export default {
       </div>
     </div>
     <div class="row justify-content-center">
-      <div class="col col-5 text-center">
-        <button @click="goBack" class="btn btn-secondary me-3" type="button">Sulge</button>
-        <button @click="createTraining" class="btn btn-success" type="submit">Loo</button>
+      <div class="col-12 col-md-8 col-lg-6 text-center">
+        <button @click="goBack" class="btn btn-secondary me-3" type="button">Tagasi</button>
+        <button @click="createTraining" class="btn btn-primary" type="submit">Salvesta</button>
       </div>
     </div>
   </div>

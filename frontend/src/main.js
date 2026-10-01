@@ -13,9 +13,12 @@ import 'bootstrap/dist/js/bootstrap.js'
 
 import 'tom-select/dist/css/tom-select.bootstrap5.css'
 
+// Nordic teema (peab tulema pärast Bootstrapi CSS-i)
+import './assets/nordic.css'
+
 // Extra imports
 // leafleti css kujindused
-import "leaflet/dist/leaflet.css";
+import 'leaflet/dist/leaflet.css'
 
 const app = createApp(App)
 

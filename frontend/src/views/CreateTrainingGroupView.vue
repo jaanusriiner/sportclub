@@ -97,16 +97,16 @@ export default {
 <template>
   <div class="container">
     <div class="row justify-content-center mb-4">
-      <div class="col col-5">
+      <div class="col-12 col-md-8 col-lg-6">
         <h1>Loo uus treeninggrupp</h1>
         <AlertDanger :error-message="errorMessage" />
       </div>
     </div>
-    <div class="row justify-content-center mb-5">
-      <div class="col col-5">
+    <div class="row justify-content-center mb-4">
+      <div class="col-12 col-md-8 col-lg-6 card p-4">
         <div class="mb-3">
           <label class="form-label">Spordiklubi</label>
-          <select v-model="trainingGroupRequest.sportclubId" class="form-select border border-dark">
+          <select v-model="trainingGroupRequest.sportclubId" class="form-select">
             <option :value="0">Vali spordiklubi...</option>
             <option
               v-for="sportclub in sportclubs"
@@ -122,7 +122,7 @@ export default {
           <label class="form-label">Spordiala</label>
           <select
             v-model="trainingGroupRequest.sportId"
-            class="form-select border border-dark"
+            class="form-select"
             @change="handleSportChanged"
           >
             <option :value="0">Vali spordiala...</option>
@@ -133,10 +133,10 @@ export default {
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Skill-level</label>
+          <label class="form-label">Oskustase</label>
           <select
             v-model="trainingGroupRequest.skillLevelId"
-            class="form-select border border-dark"
+            class="form-select"
             :disabled="trainingGroupRequest.sportId === 0"
           >
             <option :value="0">Vali oskustase...</option>
@@ -155,7 +155,7 @@ export default {
           <input
             v-model="trainingGroupRequest.trainingGroupName"
             type="text"
-            class="form-control border border-dark"
+            class="form-control"
             maxlength="100"
           />
         </div>
@@ -164,7 +164,7 @@ export default {
           <label class="form-label">Kirjeldus</label>
           <textarea
             v-model="trainingGroupRequest.description"
-            class="form-control border border-dark"
+            class="form-control"
             rows="4"
             maxlength="255"
           ></textarea>
@@ -172,9 +172,9 @@ export default {
       </div>
     </div>
     <div class="row justify-content-center">
-      <div class="col col-5 text-center">
+      <div class="col-12 col-md-8 col-lg-6 text-center">
         <button @click="goBack" class="btn btn-secondary me-3" type="button">Tagasi</button>
-        <button @click="createTrainingGroup" class="btn btn-success" type="submit">Salvesta</button>
+        <button @click="createTrainingGroup" class="btn btn-primary" type="submit">Salvesta</button>
       </div>
     </div>
   </div>

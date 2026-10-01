@@ -11,6 +11,7 @@ import { PhCheck, PhInfo, PhPencilSimple, PhTrash, PhX } from '@phosphor-icons/v
 import JoinApplicationService from '@/services/JoinApplicationService.js'
 import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
 import AlertDanger from '@/components/alert/AlertDanger.vue'
+import CapacityBar from '@/components/CapacityBar.vue'
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
 
 export default {
@@ -28,6 +29,7 @@ export default {
     PhX,
     AlertDanger,
     AlertSuccess,
+    CapacityBar,
   },
   beforeMount() {
     this.getTrainerJoinApplications()
@@ -249,7 +251,8 @@ export default {
   <div class="container">
     <div class="row justify-content-center mb-4">
       <div class="col">
-        <h1 class="text-center">Halda treeninggruppe ja treeninguid</h1>
+        <p class="eyebrow">Treeneri vaade</p>
+        <h1>Halda treeninggruppe ja treeninguid</h1>
         <AlertSuccess :success-message="successMessage" />
       </div>
     </div>
@@ -280,7 +283,7 @@ export default {
           v-model="selectedDateFrom"
           type="date"
           :min="todayDate"
-          class="form-control border border-dark"
+          class="form-control"
           aria-label="Treeningud alates kuupäevast"
           title="Treeningud alates kuupäevast"
           @change="handleDateFromChanged"
@@ -324,31 +327,33 @@ export default {
                 <td class="text-nowrap">
                   {{ formatDateTime(training.trainingDate, training.trainingTime) }}
                 </td>
-                <td>{{ training.userCount }}/{{ training.maxSize }}</td>
+                <td>
+                  <CapacityBar :user-count="training.userCount" :max-size="training.maxSize" />
+                </td>
                 <td class="text-nowrap">
                   <button
                     type="button"
-                    class="btn btn-link p-1"
+                    class="icon-btn"
                     title="Info"
                     @click.stop="openInfoModal(training)"
                   >
-                    <PhInfo :size="22" />
+                    <PhInfo :size="18" />
                   </button>
                   <button
                     type="button"
-                    class="btn btn-link p-1"
+                    class="icon-btn"
                     title="Muuda"
                     @click.stop="openEditModal(training)"
                   >
-                    <PhPencilSimple :size="22" />
+                    <PhPencilSimple :size="18" />
                   </button>
                   <button
                     type="button"
-                    class="btn btn-link p-1"
+                    class="icon-btn icon-btn-danger"
                     title="Kustuta"
                     @click.stop="openDeleteModal(training)"
                   >
-                    <PhTrash :size="22" />
+                    <PhTrash :size="18" />
                   </button>
                 </td>
               </tr>
@@ -406,21 +411,21 @@ export default {
                 <td class="text-nowrap">
                   <button
                     type="button"
-                    class="btn btn-link p-1"
+                    class="icon-btn"
                     title="Kinnita"
                     :disabled="isProcessingJoinApplication"
                     @click="confirmJoinApplication(joinApplication.joinApplicationId)"
                   >
-                    <PhCheck :size="22" />
+                    <PhCheck :size="18" />
                   </button>
                   <button
                     type="button"
-                    class="btn btn-link p-1"
+                    class="icon-btn"
                     title="Lükka tagasi"
                     :disabled="isProcessingJoinApplication"
                     @click="rejectJoinApplication(joinApplication.joinApplicationId)"
                   >
-                    <PhX :size="22" />
+                    <PhX :size="18" />
                   </button>
                 </td>
               </tr>

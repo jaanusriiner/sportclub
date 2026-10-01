@@ -34,7 +34,7 @@ export default {
   <select
     :value="sportclubId"
     @change="$emit('event-new-sportclub-selected', Number($event.target.value))"
-    class="form-select border border-dark"
+    class="form-select"
     aria-label="Vali sportklubi"
   >
     <option :value="0">{{ allLabel }}</option>

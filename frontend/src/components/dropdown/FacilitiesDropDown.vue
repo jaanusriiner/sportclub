@@ -45,7 +45,7 @@ export default {
   <div ref="dropdown" class="dropdown">
     <button
       type="button"
-      class="form-select border border-dark text-start"
+      class="form-select text-start"
       aria-label="Vali asukoht"
       aria-haspopup="listbox"
       :aria-expanded="isOpen"

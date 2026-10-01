@@ -1,4 +1,5 @@
 <script>
+import CapacityBar from '@/components/CapacityBar.vue'
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
 import AreasDropDown from '@/components/dropdown/AreasDropDown.vue'
 import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
@@ -18,6 +19,7 @@ export default {
   name: 'TrainingsView',
   components: {
     AlertSuccess,
+    CapacityBar,
     AreasDropDown,
     SportclubsDropDown,
     SportsDropDown,
@@ -265,17 +267,6 @@ export default {
       }
     },
 
-    // täis -> hall, vähemalt 75% täis -> kollakas, muidu roheline
-    capacityClass(userCount, maxSize) {
-      if (userCount >= maxSize) {
-        return 'fw-bold text-secondary'
-      }
-      if (userCount / maxSize >= 0.75) {
-        return 'fw-bold text-warning-emphasis'
-      }
-      return 'fw-bold text-success'
-    },
-
     formatDateTime(trainingDate, trainingTime) {
       const [year, month, day] = trainingDate.split('-')
       return `${day}.${month}.${year} ${trainingTime.substring(0, 5)}`
@@ -288,7 +279,8 @@ export default {
   <div class="container">
     <div class="row justify-content-center mb-4">
       <div class="col">
-        <h1 class="text-center">Treeninggrupid ja treeningud</h1>
+        <p class="eyebrow">Treeningud</p>
+        <h1>Treeninggrupid ja treeningud</h1>
         <AlertSuccess :success-message="successMessage" />
       </div>
     </div>
@@ -329,8 +321,11 @@ export default {
                   <td class="text-nowrap">
                     {{ formatDateTime(myTraining.nextTrainingDate, myTraining.nextTrainingTime) }}
                   </td>
-                  <td :class="capacityClass(myTraining.userCount, myTraining.maxSize)">
-                    {{ myTraining.userCount }}/{{ myTraining.maxSize }}
+                  <td>
+                    <CapacityBar
+                      :user-count="myTraining.userCount"
+                      :max-size="myTraining.maxSize"
+                    />
                   </td>
                   <td>
                     <button
@@ -344,11 +339,11 @@ export default {
                   <td class="text-nowrap">
                     <button
                       type="button"
-                      class="btn btn-link p-1"
+                      class="icon-btn"
                       title="Info"
                       @click.stop="openMyTrainingInfoModal(myTraining)"
                     >
-                      <PhInfo :size="22" />
+                      <PhInfo :size="18" />
                     </button>
                   </td>
                 </tr>
@@ -397,7 +392,7 @@ export default {
           v-model="selectedDateFrom"
           type="date"
           :min="todayDate"
-          class="form-control border border-dark"
+          class="form-control"
           aria-label="Treeningud alates kuupäevast"
           title="Treeningud alates kuupäevast"
           @change="handleDateFromChanged"
@@ -447,15 +442,15 @@ export default {
                 </td>
                 <td>
                   <template v-if="training.userIsTrainingGroupMember">
-                    <div :class="capacityClass(training.userCount, training.maxSize)">
-                      {{ training.userCount }}/{{ training.maxSize }}
-                    </div>
-                    <span v-if="training.userIsRegistered" class="fw-bold text-success mt-1"
+                    <CapacityBar :user-count="training.userCount" :max-size="training.maxSize" />
+                    <span
+                      v-if="training.userIsRegistered"
+                      class="sc-strong text-success mt-1 d-inline-block"
                       >Registreeritud</span
                     >
                     <span
                       v-else-if="training.userCount >= training.maxSize"
-                      class="fw-bold text-secondary mt-1"
+                      class="sc-strong text-secondary mt-1 d-inline-block"
                       >Kohad on täis</span
                     >
                     <button
@@ -467,15 +462,13 @@ export default {
                       Registreeru
                     </button>
                   </template>
-                  <span
-                    v-else-if="training.userHasPendingJoinApplication"
-                    class="fw-bold text-warning-emphasis"
+                  <span v-else-if="training.userHasPendingJoinApplication" class="sc-pill"
                     >Taotlus edastatud</span
                   >
                   <button
                     v-else
                     type="button"
-                    class="btn btn-primary btn-sm text-nowrap"
+                    class="btn btn-outline-primary btn-sm text-nowrap"
                     @click.stop="openJoinModal(training)"
                   >
                     Taotle Liitumist
@@ -484,11 +477,11 @@ export default {
                 <td class="text-nowrap">
                   <button
                     type="button"
-                    class="btn btn-link p-1"
+                    class="icon-btn"
                     title="Info"
                     @click.stop="openInfoModal(training)"
                   >
-                    <PhInfo :size="22" />
+                    <PhInfo :size="18" />
                   </button>
                 </td>
               </tr>

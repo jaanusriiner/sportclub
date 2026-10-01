@@ -18,7 +18,7 @@ export default {
       placeholder: 'Vali vähemalt üks spordiala...',
       maxItems: null, // null = unlimited selections
       create: false, // prevents users typing in new options that don't exist
-      controlClass: 'ts-control form-select border border-dark', // näeb välja nagu teised valikuväljad
+      controlClass: 'ts-control form-select', // näeb välja nagu teised valikuväljad
       onChange: (selectedValues) => this.emitSelectedSportIds(selectedValues),
     })
     this.syncOptions()

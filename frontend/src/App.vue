@@ -3,11 +3,10 @@ import { RouterLink, RouterView } from 'vue-router'
 import LoginModal from '@/components/modal/LoginModal.vue'
 import NavigationService from '@/services/NavigationService.js'
 import SessionStorageService from '@/services/SessionStorageService.js'
-import { PhUserCircle } from '@phosphor-icons/vue'
 
 export default {
   name: 'App',
-  components: { RouterLink, RouterView, LoginModal, PhUserCircle },
+  components: { RouterLink, RouterView, LoginModal },
   // Lubab vaadetel (nt TrainingsView) login modaali avada
   provide() {
     return { openLoginModal: this.openModal }
@@ -21,6 +20,16 @@ export default {
       isTrainer: SessionStorageService.userIsTrainer(),
       userFullName: SessionStorageService.getUserFullName(),
     }
+  },
+  computed: {
+    userInitials() {
+      return this.userFullName
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((namePart) => namePart[0].toUpperCase())
+        .join('')
+    },
   },
   methods: {
     openModal() {
@@ -50,8 +59,23 @@ export default {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 mb-3">
-    <RouterLink class="navbar-brand" to="/">SportClub</RouterLink>
+  <nav class="navbar navbar-expand-lg sc-nav">
+    <RouterLink class="navbar-brand" to="/">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#2F5148"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M3 12h18"></path>
+        <path d="M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9"></path>
+      </svg>
+      <span>SportClub</span>
+    </RouterLink>
     <button
       class="navbar-toggler"
       type="button"
@@ -63,7 +87,7 @@ export default {
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-nav me-auto">
         <!--        <RouterLink class="nav-link" to="/">Kodu</RouterLink>-->
-        <RouterLink class="nav-link" to="/info">Meist</RouterLink>
+        <RouterLink class="nav-link" to="/info">Küsi</RouterLink>
         <RouterLink class="nav-link" to="/trainings">Treeningud</RouterLink>
       </div>
       <div class="navbar-nav">
@@ -75,7 +99,7 @@ export default {
             aria-expanded="false"
           >
             <span v-if="userFullName">{{ userFullName }}</span>
-            <PhUserCircle :size="28" />
+            <span class="sc-avatar">{{ userInitials }}</span>
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li v-if="isTrainer">

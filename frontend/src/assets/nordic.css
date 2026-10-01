@@ -1,0 +1,477 @@
+/*
+ * Nordic teema — Bootstrap 5 ülekirjutused vastavalt Claude Designi artifactile "SportClub – Nordic redesign".
+ * Imporditakse main.js-is pärast Bootstrapi CSS-i, et see saaks Bootstrapi reegleid üle kirjutada.
+ */
+:root {
+  --sc-ink: #18201e;
+  --sc-muted: #5c645f;
+  --sc-line: #e2e3de;
+  --sc-ground: #f4f4f1;
+  --sc-surface: #ffffff;
+  --sc-accent: #2f5148;
+  --sc-ochre: #7a5a12;
+  --sc-brick: #9a3b2b;
+
+  --bs-body-font-family:
+    'Familjen Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bs-body-font-size: 15px;
+  --bs-body-color: var(--sc-ink);
+  --bs-body-color-rgb: 24, 32, 30;
+  --bs-body-bg: var(--sc-ground);
+  --bs-body-bg-rgb: 244, 244, 241;
+  --bs-secondary-color: var(--sc-muted);
+  --bs-border-color: var(--sc-line);
+  --bs-primary: var(--sc-accent);
+  --bs-primary-rgb: 47, 81, 72;
+  --bs-link-color: var(--sc-accent);
+  --bs-link-color-rgb: 47, 81, 72;
+  --bs-link-hover-color: var(--sc-ink);
+  --bs-link-hover-color-rgb: 24, 32, 30;
+  --bs-light-rgb: 255, 255, 255;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+/* ---- Tüpograafia ---- */
+h1,
+.h1 {
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+h2,
+.h2,
+h4,
+.h4 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+  margin: 0 0 12px;
+}
+blockquote.blockquote {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: 44px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.blockquote-footer {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.blockquote-footer::before {
+  content: none;
+}
+
+/* ---- Konteiner ---- */
+.container {
+  max-width: 1120px;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+#app > .container {
+  padding-top: 56px;
+  padding-bottom: 96px;
+}
+
+/* ---- Navigatsioon ---- */
+.sc-nav {
+  background: var(--sc-surface);
+  border-bottom: 1px solid var(--sc-line);
+  height: 72px;
+  padding: 0 32px;
+}
+.sc-nav .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--sc-ink);
+  margin-right: 48px;
+}
+.sc-nav .navbar-nav {
+  gap: 32px;
+}
+.sc-nav .nav-link {
+  color: var(--sc-muted);
+  height: 72px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+}
+.sc-nav .nav-link:hover {
+  color: var(--sc-ink);
+}
+.sc-nav .nav-link.router-link-active {
+  color: var(--sc-ink);
+  border-bottom-color: var(--sc-accent);
+}
+.sc-nav .nav-link.btn {
+  border-radius: 0;
+  min-height: 72px;
+}
+.sc-nav .dropdown-toggle::after {
+  display: none;
+}
+.sc-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e7e9e4;
+  color: var(--sc-ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 991px) {
+  .sc-nav {
+    height: auto;
+    min-height: 72px;
+    padding: 0 16px;
+  }
+  .sc-nav .navbar-nav {
+    gap: 0;
+  }
+  .sc-nav .nav-link {
+    height: 48px;
+  }
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  h1,
+  .h1 {
+    font-size: 30px;
+  }
+}
+
+/* ---- Nupud ---- */
+.btn {
+  --bs-btn-padding-x: 18px;
+  --bs-btn-padding-y: 0;
+  --bs-btn-font-size: 14px;
+  --bs-btn-font-weight: 500;
+  --bs-btn-border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.btn-sm {
+  --bs-btn-padding-x: 14px;
+  --bs-btn-font-size: 13px;
+  min-height: 36px;
+}
+.btn-primary,
+.btn-success {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--sc-accent);
+  --bs-btn-border-color: var(--sc-accent);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--sc-accent);
+  --bs-btn-hover-border-color: var(--sc-accent);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--sc-accent);
+  --bs-btn-active-border-color: var(--sc-accent);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--sc-accent);
+  --bs-btn-disabled-border-color: var(--sc-accent);
+  --bs-btn-focus-shadow-rgb: 47, 81, 72;
+}
+.btn-primary:hover,
+.btn-success:hover {
+  filter: brightness(1.12);
+}
+.btn-secondary,
+.btn-outline-secondary {
+  --bs-btn-color: var(--sc-ink);
+  --bs-btn-bg: var(--sc-surface);
+  --bs-btn-border-color: var(--sc-line);
+  --bs-btn-hover-color: var(--sc-ink);
+  --bs-btn-hover-bg: var(--sc-surface);
+  --bs-btn-hover-border-color: #c9cbc4;
+  --bs-btn-active-color: var(--sc-ink);
+  --bs-btn-active-bg: var(--sc-surface);
+  --bs-btn-active-border-color: #c9cbc4;
+  --bs-btn-disabled-color: var(--sc-muted);
+  --bs-btn-disabled-bg: var(--sc-surface);
+  --bs-btn-disabled-border-color: var(--sc-line);
+  --bs-btn-focus-shadow-rgb: 201, 203, 196;
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--sc-accent);
+  --bs-btn-border-color: var(--sc-accent);
+  --bs-btn-hover-color: var(--sc-accent);
+  --bs-btn-hover-bg: #eef2f0;
+  --bs-btn-hover-border-color: var(--sc-accent);
+  --bs-btn-active-color: var(--sc-accent);
+  --bs-btn-active-bg: #eef2f0;
+  --bs-btn-active-border-color: var(--sc-accent);
+  --bs-btn-focus-shadow-rgb: 47, 81, 72;
+}
+.btn-outline-danger {
+  --bs-btn-color: var(--sc-brick);
+  --bs-btn-border-color: #e8d5d0;
+  --bs-btn-hover-color: var(--sc-brick);
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: var(--sc-brick);
+  --bs-btn-active-color: var(--sc-brick);
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: var(--sc-brick);
+  --bs-btn-focus-shadow-rgb: 154, 59, 43;
+}
+.btn-danger {
+  --bs-btn-bg: var(--sc-brick);
+  --bs-btn-border-color: var(--sc-brick);
+  --bs-btn-hover-bg: var(--sc-brick);
+  --bs-btn-hover-border-color: var(--sc-brick);
+  --bs-btn-active-bg: var(--sc-brick);
+  --bs-btn-active-border-color: var(--sc-brick);
+  --bs-btn-focus-shadow-rgb: 154, 59, 43;
+}
+.btn-danger:hover {
+  filter: brightness(1.12);
+}
+.btn-link {
+  --bs-btn-color: var(--sc-muted);
+  --bs-btn-hover-color: var(--sc-ink);
+  --bs-btn-active-color: var(--sc-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: var(--sc-muted);
+  cursor: pointer;
+  padding: 0;
+}
+.icon-btn:hover {
+  background: #eff0ec;
+  color: var(--sc-ink);
+}
+.icon-btn-danger {
+  color: var(--sc-brick);
+}
+.icon-btn-danger:hover {
+  color: var(--sc-brick);
+}
+
+/* ---- Vormid ---- */
+.form-control,
+.form-select {
+  min-height: 44px;
+  font-size: 15px;
+  color: var(--sc-ink);
+  background-color: var(--sc-surface);
+  border: 1px solid var(--sc-line);
+  border-radius: 8px;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+.form-select {
+  padding-right: 40px;
+}
+.form-control:focus,
+.form-select:focus {
+  color: var(--sc-ink);
+  border-color: transparent;
+  box-shadow: none;
+  outline: 2px solid var(--sc-accent);
+  outline-offset: 1px;
+}
+.form-select:disabled,
+.form-control:disabled {
+  background-color: #f0f1ed;
+  color: var(--sc-muted);
+}
+.form-control::placeholder {
+  color: #8a918c;
+}
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.form-check-input {
+  border-color: #c9cbc4;
+}
+.form-check-input:checked {
+  background-color: var(--sc-accent);
+  border-color: var(--sc-accent);
+}
+.form-check-input:focus {
+  border-color: var(--sc-accent);
+  box-shadow: 0 0 0 0.2rem rgba(47, 81, 72, 0.2);
+}
+
+/* ---- Tabelid ---- */
+.table-responsive {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-line) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: #f7f7f4;
+  --bs-table-border-color: var(--sc-line);
+  min-width: 860px;
+}
+.table > :not(caption) > * > * {
+  padding: 18px 24px;
+}
+.table > thead.table-dark,
+.table > thead > tr.table-dark {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--sc-muted);
+  --bs-table-border-color: var(--sc-line);
+}
+.table > thead th {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+  font-weight: 500;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.table > tbody > tr:last-child > * {
+  border-bottom: 0;
+}
+.sc-sub {
+  color: var(--sc-muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+.sc-strong {
+  font-weight: 500;
+}
+
+/* ---- Täituvus ja olekumärgend ---- */
+.sc-cap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.sc-bar {
+  width: 64px;
+  height: 4px;
+  border-radius: 2px;
+  background: #e7e9e4;
+  overflow: hidden;
+  display: block;
+}
+.sc-bar i {
+  display: block;
+  height: 100%;
+  background: var(--sc-accent);
+}
+.sc-bar.full i {
+  background: var(--sc-ink);
+}
+.sc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sc-ochre);
+  background: #f4eedd;
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.sc-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---- Modaalid, rippmenüüd, teated ---- */
+.modal {
+  --bs-modal-border-radius: 14px;
+}
+.modal-content {
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(24, 32, 30, 0.18);
+  overflow: hidden;
+}
+.modal-header {
+  border-bottom: 0;
+  padding: 20px 16px 4px 28px;
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.modal-body {
+  padding: 8px 28px;
+}
+.modal-footer {
+  border-top: 0;
+  padding: 16px 28px 24px;
+  gap: 12px;
+}
+.modal-backdrop {
+  --bs-backdrop-bg: #18201e;
+  --bs-backdrop-opacity: 0.45;
+}
+.dropdown-menu {
+  --bs-dropdown-border-color: var(--sc-line);
+  --bs-dropdown-border-radius: 10px;
+  --bs-dropdown-link-active-bg: var(--sc-accent);
+  --bs-dropdown-link-hover-bg: #eff0ec;
+  --bs-dropdown-link-color: var(--sc-ink);
+  box-shadow: 0 12px 32px rgba(24, 32, 30, 0.12);
+  padding: 6px;
+}
+.dropdown-item {
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.alert-success {
+  --bs-alert-color: var(--sc-accent);
+  --bs-alert-bg: #e6eeea;
+  --bs-alert-border-color: #cfddd6;
+}
+.alert-danger {
+  --bs-alert-color: var(--sc-brick);
+  --bs-alert-bg: #f6e7e3;
+  --bs-alert-border-color: #e8d5d0;
+}
+.alert {
+  border-radius: 10px;
+}

@@ -25,7 +25,7 @@ export default {
   <select
     :value="areaId"
     @change="$emit('event-new-area-selected', Number($event.target.value))"
-    class="form-select border border-dark"
+    class="form-select"
     aria-label="Default select example"
   >
     <option :value="0">{{ allLabel }}</option>

@@ -23,26 +23,18 @@
             v-model.number="updateRequest.maxSize"
             type="number"
             min="1"
-            class="form-control border border-dark"
+            class="form-control"
           />
         </div>
 
         <div class="mb-3">
           <label class="form-label">Kuupäev</label>
-          <input
-            v-model="updateRequest.trainingDate"
-            type="date"
-            class="form-control border border-dark"
-          />
+          <input v-model="updateRequest.trainingDate" type="date" class="form-control" />
         </div>
 
         <div class="mb-3">
           <label class="form-label">Kellaaeg</label>
-          <input
-            v-model="updateRequest.trainingTime"
-            type="time"
-            class="form-control border border-dark"
-          />
+          <input v-model="updateRequest.trainingTime" type="time" class="form-control" />
         </div>
       </div>
     </template>
