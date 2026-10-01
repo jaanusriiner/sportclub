@@ -1,5 +1,6 @@
 package ee.sportclub.controller.trainer;
 
+import ee.sportclub.controller.joinapplication.dto.PendingJoinApplicationDto;
 import ee.sportclub.controller.sport.SportSkillLevelDto;
 import ee.sportclub.service.trainer.TrainerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,14 @@ class TrainerController {
     public List<TrainerTrainingGroupDto> findTrainerTrainingGroups(@PathVariable Integer trainerId) {
 
         return trainerService.findTrainerTrainingGroups(trainerId);
+    }
+
+    @GetMapping("/api/trainers/{trainerId}/join-applications")
+    @Operation(summary = "Treeneri treeninggrupi liitumistaotluste nimekirja päring",
+            description = "Tagastatakse ootel (status = 'PEN') liitumistaotluste nimekiri treeneri enda treeninggruppidele. Kui ootel taotlusi pole, tagastatakse tühi massiiv [].")
+    public List<PendingJoinApplicationDto> findTrainerPendingJoinApplications(@PathVariable Integer trainerId) {
+
+        return trainerService.findTrainerPendingJoinApplications(trainerId);
     }
 
 
