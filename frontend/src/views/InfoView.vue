@@ -2,6 +2,9 @@
 import AlertDanger from '@/components/alert/AlertDanger.vue'
 import AskService from '@/services/AskService.js'
 
+const MAX_HISTORY_ENTRIES = 5
+const MAX_ANSWER_LENGTH = 2000 // sama piir mis backendi AskHistoryEntry.answer
+
 export default {
   name: 'InfoView',
   components: { AlertDanger },
@@ -12,6 +15,7 @@ export default {
 
       askRequest: {
         question: '',
+        history: [],
       },
 
       chatHistory: [],
@@ -31,6 +35,7 @@ export default {
       }
       this.errorMessage = ''
       this.isLoading = true
+      this.askRequest.history = this.getHistoryForRequest()
       this.chatEntryCount++
       this.chatHistory.push({
         id: this.chatEntryCount,
@@ -44,6 +49,17 @@ export default {
         .then((response) => this.handleAskResponse(response, chatEntry))
         .catch(() => this.handleAskError(chatEntry))
         .finally(() => (this.isLoading = false))
+    },
+
+    // saadame backendile viimased vastatud küsimused/vastused LLM-i kontekstiks
+    getHistoryForRequest() {
+      return this.chatHistory
+        .filter((chatEntry) => chatEntry.answer && chatEntry.answer.trim() !== '')
+        .slice(-MAX_HISTORY_ENTRIES)
+        .map((chatEntry) => ({
+          question: chatEntry.question,
+          answer: chatEntry.answer.slice(0, MAX_ANSWER_LENGTH),
+        }))
     },
 
     clearQuestion() {

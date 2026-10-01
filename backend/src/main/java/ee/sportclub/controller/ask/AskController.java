@@ -20,6 +20,6 @@ public class AskController {
 
     @PostMapping
     public AskResponse ask(@Valid @RequestBody AskRequest request) {
-        return nlToSearchService.ask(request.question());
+        return nlToSearchService.ask(request.question(), request.history());
     }
 }

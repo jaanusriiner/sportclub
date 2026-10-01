@@ -1,11 +1,16 @@
 package ee.sportclub.service.ask;
 
+import ee.sportclub.controller.ask.dto.AskHistoryEntry;
 import ee.sportclub.controller.ask.dto.AskResponse;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -72,36 +77,50 @@ public class NlToSearchService {
         this.SystemPrompt = SUMMARY_SYSTEM_PROMPT_TEMPLATE.formatted(dialect, dialect);
     }
 
-    public AskResponse ask(String userQuestion) {
+    public AskResponse ask(String userQuestion, List<AskHistoryEntry> history) {
 //        String generatedSql = generateSql(userQuestion);
         String generatedSql = "SELECT * FROM v_training_date_extended;";
         List<Map<String, Object>> databaseResults = jdbcTemplate.queryForList(generatedSql);
-        return generateResponse(userQuestion, databaseResults);
+        return generateResponse(userQuestion, history, databaseResults);
     }
 
-    private AskResponse generateResponse(String userQuestion, List<Map<String, Object>> databaseResults) {
-        String answer = formatResult(userQuestion, databaseResults).answer();
+    private AskResponse generateResponse(String userQuestion, List<AskHistoryEntry> history,
+                                        List<Map<String, Object>> databaseResults) {
+        String answer = formatResult(userQuestion, history, databaseResults).answer();
 
         return AskResponse.builder()
                 .answer(answer)
                 .build();
     }
 
-    private AskResponse formatResult(String userQuestion, List<Map<String, Object>> databaseResults) {
+    private AskResponse formatResult(String userQuestion, List<AskHistoryEntry> history,
+                                    List<Map<String, Object>> databaseResults) {
         String userPrompt = SUMMARY_USER_PROMPT_TEMPLATE.formatted(
                 userQuestion,
                 databaseResults.size(),
                 databaseResults);
 
-        return callLlm(SUMMARY_SYSTEM_PROMPT_TEMPLATE, userPrompt);
+        return callLlm(SUMMARY_SYSTEM_PROMPT_TEMPLATE, toHistoryMessages(history), userPrompt);
     }
 
 
 
 
-    private AskResponse callLlm(String systemPrompt, String userPrompt) {
+    private List<Message> toHistoryMessages(List<AskHistoryEntry> history) {
+        List<Message> messages = new ArrayList<>();
+        if (history != null) {
+            for (AskHistoryEntry entry : history) {
+                messages.add(new UserMessage(entry.question()));
+                messages.add(new AssistantMessage(entry.answer()));
+            }
+        }
+        return messages;
+    }
+
+    private AskResponse callLlm(String systemPrompt, List<Message> historyMessages, String userPrompt) {
         AskResponse response = chatClient.prompt()
                 .system(systemPrompt)
+                .messages(historyMessages)
                 .user(userPrompt)
                 .call()
                 .responseEntity(AskResponse.class)
