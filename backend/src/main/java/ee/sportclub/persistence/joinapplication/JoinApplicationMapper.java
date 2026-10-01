@@ -16,6 +16,7 @@ public interface JoinApplicationMapper {
 
     List<PendingJoinApplicationDto> toPendingJoinApplicationDtos(List<JoinApplication> joinApplications);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(source = "userId", target = "user.id")
     @Mapping(source = "trainingGroupId", target = "trainingGroup.id")
     UserTrainingGroup toUserTrainingGroup(JoinApplication joinApplication);
