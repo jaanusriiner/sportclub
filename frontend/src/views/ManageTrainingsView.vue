@@ -223,6 +223,11 @@ export default {
         <AlertSuccess :success-message="successMessage" />
       </div>
     </div>
+    <div class="row mt-5 mb-2">
+      <div class="col">
+        <h2 class="h4">Treeningud</h2>
+      </div>
+    </div>
     <div class="row mb-3">
       <div class="col-3">
         <SportclubsDropDown

@@ -1,9 +1,13 @@
 <script>
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
+import AreasDropDown from '@/components/dropdown/AreasDropDown.vue'
+import SportsDropDown from '@/components/dropdown/SportsDropDown.vue'
 import TrainingConfirmModal from '@/components/modal/TrainingConfirmModal.vue'
 import TrainingInfoModal from '@/components/modal/TrainingInfoModal.vue'
+import AreaService from '@/services/AreaService.js'
 import NavigationService from '@/services/NavigationService.js'
 import SessionStorageService from '@/services/SessionStorageService.js'
+import SportService from '@/services/SportService.js'
 import TrainingGroupService from '@/services/TrainingGroupService.js'
 import TrainingService from '@/services/TrainingService.js'
 import UserService from '@/services/UserService.js'
@@ -11,16 +15,29 @@ import { PhInfo } from '@phosphor-icons/vue'
 
 export default {
   name: 'TrainingsView',
-  components: { AlertSuccess, TrainingConfirmModal, TrainingInfoModal, PhInfo },
+  components: {
+    AlertSuccess,
+    AreasDropDown,
+    SportsDropDown,
+    TrainingConfirmModal,
+    TrainingInfoModal,
+    PhInfo,
+  },
   inject: ['openLoginModal'],
   beforeMount() {
     this.getMyTrainings()
+    this.getAreas()
+    this.getSports()
     this.getTrainings()
   },
   data() {
     return {
       trainings: [],
       myTrainings: [],
+      areas: [],
+      sports: [],
+      selectedAreaId: 0,
+      selectedSportId: 0,
       isLoggedIn: SessionStorageService.userIsLoggedIn(),
       successMessage: '',
       modalErrorMessage: '',
@@ -45,11 +62,33 @@ export default {
       }
     },
 
+    getAreas() {
+      AreaService.getAreasRequest()
+        .then((response) => (this.areas = response.data))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    getSports() {
+      SportService.getSportsRequest()
+        .then((response) => (this.sports = response.data))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    handleAreaSelected(areaId) {
+      this.selectedAreaId = areaId
+      this.getTrainings()
+    },
+
+    handleSportSelected(sportId) {
+      this.selectedSportId = sportId
+      this.getTrainings()
+    },
+
     getTrainings() {
       TrainingService.getTrainingsRequest({
         requestUserId: SessionStorageService.getUserId(),
-        areaId: 0,
-        sportId: 0,
+        areaId: this.selectedAreaId,
+        sportId: this.selectedSportId,
         trainerId: 0,
         dateFrom: new Date().toLocaleDateString('sv-SE'),
         timeFrom: '00:00',
@@ -145,15 +184,16 @@ export default {
 
 <template>
   <div class="container">
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mb-4">
       <div class="col">
+        <h1 class="text-center">Treeninggrupid ja treeningud</h1>
         <AlertSuccess :success-message="successMessage" />
       </div>
     </div>
     <template v-if="isLoggedIn">
-      <div class="row justify-content-center mb-4">
+      <div class="row mt-5 pt-3 mb-2">
         <div class="col">
-          <h2 class="text-center">Minu Treeninggrupid ja Treeningud</h2>
+          <h2 class="h4">Minu treeningud</h2>
         </div>
       </div>
       <div class="row justify-content-center mb-5">
@@ -214,9 +254,26 @@ export default {
         </div>
       </div>
     </template>
-    <div class="row justify-content-center mb-4">
+    <div class="row mb-2">
       <div class="col">
-        <h2 class="text-center">Treeningud</h2>
+        <h2 class="h4">Kõik treeningud</h2>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-3">
+        <AreasDropDown
+          :areas="areas"
+          :area-id="selectedAreaId"
+          all-label="Kõik piirkonnad"
+          @event-new-area-selected="handleAreaSelected"
+        />
+      </div>
+      <div class="col-3">
+        <SportsDropDown
+          :sports="sports"
+          :sport-id="selectedSportId"
+          @event-new-sport-selected="handleSportSelected"
+        />
       </div>
     </div>
     <div class="row justify-content-center">
@@ -253,8 +310,16 @@ export default {
                 <td>
                   <template v-if="training.userIsTrainingGroupMember">
                     <div>{{ training.userCount }}/{{ training.maxSize }}</div>
-                    <span v-if="training.userIsRegistered">Registreeritud</span>
-                    <span v-else-if="training.userCount >= training.maxSize">Kohad on täis</span>
+                    <span
+                      v-if="training.userIsRegistered"
+                      class="badge rounded-pill text-bg-success mt-1"
+                      >Registreeritud</span
+                    >
+                    <span
+                      v-else-if="training.userCount >= training.maxSize"
+                      class="badge rounded-pill text-bg-secondary mt-1"
+                      >Kohad on täis</span
+                    >
                     <button
                       v-else
                       type="button"
@@ -264,7 +329,11 @@ export default {
                       Registreeru
                     </button>
                   </template>
-                  <span v-else-if="training.userHasPendingJoinApplication">Taotlus edastatud</span>
+                  <span
+                    v-else-if="training.userHasPendingJoinApplication"
+                    class="badge rounded-pill text-bg-warning"
+                    >Taotlus edastatud</span
+                  >
                   <button
                     v-else
                     type="button"

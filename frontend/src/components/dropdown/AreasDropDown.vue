@@ -7,6 +7,10 @@ export default {
       default: 0,
     },
     areas: Array,
+    allLabel: {
+      type: String,
+      default: 'Vali piirkond...',
+    },
   },
   emits: ['event-new-area-selected'],
 }
@@ -19,7 +23,7 @@ export default {
     class="form-select border border-dark"
     aria-label="Default select example"
   >
-    <option :value="0">Vali piirkond...</option>
+    <option :value="0">{{ allLabel }}</option>
     <option v-for="area in areas" :key="area.areaId" :value="area.areaId">
       {{ area.areaName }}
     </option>
