@@ -87,6 +87,20 @@ public class TrainingService {
 
     }
 
+    @Transactional
+    public TrainingRegisterResponseDto unregisterFromTraining(Integer trainingDateId, Integer userId) {
+        getValidUser(userId);
+        TrainingDate trainingDate = getValidTrainingDateByIdAndLockIt(trainingDateId);
+        int deletedCount = userTrainingRepository.deleteUserTrainingBy(userId, trainingDateId);
+        if (deletedCount == 0) {
+            throw new ForbiddenException(NOT_REGISTERED.getMessage(), NOT_REGISTERED.name());
+        }
+        trainingDate.setUserCount(trainingDate.getUserCount() - 1);
+        TrainingRegisterResponseDto trainingRegisterResponseDto = new TrainingRegisterResponseDto();
+        trainingRegisterResponseDto.setMessage("Oled treeningult edukalt maha võetud");
+        return trainingRegisterResponseDto;
+    }
+
     private TrainingDate getValidTrainingDateByIdAndLockIt(Integer trainingDateId) {
         return trainingDateRepository.findTrainingDateByIdAndLockIt(trainingDateId)
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("trainingDateId", trainingDateId));

@@ -9,6 +9,10 @@ public interface UserTrainingRepository extends JpaRepository<UserTraining, Inte
     boolean userIsRegisteredToTraining(Integer userId, Integer trainingDateId);
 
     @Modifying
+    @Query("delete from UserTraining u where u.user.id = :userId and u.trainingDate.id = :trainingDateId")
+    int deleteUserTrainingBy(Integer userId, Integer trainingDateId);
+
+    @Modifying
     @Query("delete from UserTraining u where u.trainingDate.id = :trainingDateId")
     void deleteUserTrainingsBy(Integer trainingDateId);
 }

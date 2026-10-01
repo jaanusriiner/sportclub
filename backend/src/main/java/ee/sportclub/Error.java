@@ -15,6 +15,7 @@ public enum Error {
     TRAINING_FULL("Sellel treeningul pole enam vabu kohti"),
     MAX_SIZE_TOO_LOW("Maksimaalne osalejate arv ei tohi olla väiksem juba registreerunud kasutajate arvust"),
     ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud"),
+    NOT_REGISTERED("Sa ei ole sellele treeningule registreerunud"),
     JOIN_APPLICATION_ALREADY_PROCESSED("Taotlus on juba menetletud");
 
     private final String message;

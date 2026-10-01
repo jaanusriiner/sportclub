@@ -9,6 +9,10 @@ export default {
     return axios.post(`/api/training-dates/${trainingDateId}/register`, { userId })
   },
 
+  deleteRegisterFromTrainingRequest(trainingDateId, userId) {
+    return axios.delete(`/api/training-dates/${trainingDateId}/register`, { params: { userId } })
+  },
+
   putTrainingDateRequest(trainingDateId, updateRequest) {
     return axios.put(`/api/training-dates/${trainingDateId}`, updateRequest)
   },

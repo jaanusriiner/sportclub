@@ -45,6 +45,7 @@ export default {
       infoModalIsOpen: false,
       registerModalIsOpen: false,
       joinModalIsOpen: false,
+      unregisterModalIsOpen: false,
     }
   },
   computed: {
@@ -133,15 +134,36 @@ export default {
       this.joinModalIsOpen = true
     },
 
+    openUnregisterModal(myTraining) {
+      this.selectedTraining = {
+        ...myTraining,
+        trainingDate: myTraining.nextTrainingDate,
+        trainingTime: myTraining.nextTrainingTime,
+      }
+      this.modalErrorMessage = ''
+      this.unregisterModalIsOpen = true
+    },
+
     closeModals() {
       this.infoModalIsOpen = false
       this.registerModalIsOpen = false
       this.joinModalIsOpen = false
+      this.unregisterModalIsOpen = false
     },
 
     registerToTraining() {
       this.successMessage = ''
       TrainingService.postRegisterToTrainingRequest(
+        this.selectedTraining.trainingDateId,
+        SessionStorageService.getUserId(),
+      )
+        .then((response) => this.handleActionSuccess(response.data.message))
+        .catch((error) => this.handleActionError(error))
+    },
+
+    unregisterFromTraining() {
+      this.successMessage = ''
+      TrainingService.deleteRegisterFromTrainingRequest(
         this.selectedTraining.trainingDateId,
         SessionStorageService.getUserId(),
       )
@@ -202,7 +224,7 @@ export default {
       </div>
     </div>
     <template v-if="isLoggedIn">
-      <div class="row mt-5 pt-3 mb-2">
+      <div class="row mt-5 mb-2">
         <div class="col">
           <h2 class="h4">Minu treeningud</h2>
         </div>
@@ -245,7 +267,7 @@ export default {
                     <button
                       type="button"
                       class="btn btn-outline-danger btn-sm text-nowrap"
-                      @click.stop
+                      @click.stop="openUnregisterModal(myTraining)"
                     >
                       Vabasta koht
                     </button>
@@ -406,6 +428,19 @@ export default {
       "
       @event-confirm-modal-closed="closeModals"
       @event-confirmed="applyToJoinTrainingGroup"
+    />
+    <TrainingConfirmModal
+      :confirm-modal-is-open="unregisterModalIsOpen"
+      title="Koha vabastamine"
+      confirm-button-text="Vabasta koht"
+      :error-message="modalErrorMessage"
+      :training="selectedTraining"
+      :date-time="
+        selectedTraining &&
+        formatDateTime(selectedTraining.trainingDate, selectedTraining.trainingTime)
+      "
+      @event-confirm-modal-closed="closeModals"
+      @event-confirmed="unregisterFromTraining"
     />
   </div>
 </template>
