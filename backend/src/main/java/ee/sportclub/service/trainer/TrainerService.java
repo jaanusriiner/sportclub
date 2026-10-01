@@ -4,6 +4,7 @@ import ee.sportclub.controller.joinapplication.dto.PendingJoinApplicationDto;
 import ee.sportclub.controller.trainer.TrainerSportclubDto;
 import ee.sportclub.controller.trainer.TrainerTrainingGroupDto;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
+import ee.sportclub.persistence.joinapplication.JoinApplicationRepository;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainer;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainerMapper;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainerRepository;
