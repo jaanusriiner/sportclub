@@ -3,10 +3,11 @@ import { RouterLink, RouterView } from 'vue-router'
 import LoginModal from '@/components/modal/LoginModal.vue'
 import NavigationService from '@/services/NavigationService.js'
 import SessionStorageService from '@/services/SessionStorageService.js'
+import { PhUserCircle } from '@phosphor-icons/vue'
 
 export default {
   name: 'App',
-  components: { RouterLink, RouterView, LoginModal },
+  components: { RouterLink, RouterView, LoginModal, PhUserCircle },
   // Lubab vaadetel (nt TrainingsView) login modaali avada
   provide() {
     return { openLoginModal: this.openModal }
@@ -66,13 +67,25 @@ export default {
         <RouterLink class="nav-link" to="/trainings">Treeningud</RouterLink>
       </div>
       <div class="navbar-nav">
-        <template v-if="isLoggedIn">
-          <span v-if="userFullName" class="navbar-text me-3">{{ userFullName }}</span>
-          <RouterLink v-if="isTrainer" class="nav-link" to="/manage-trainings">Halda</RouterLink>
-          <button type="button" class="nav-link btn btn-link text-start" @click="executeLogOut">
-            Logi välja
+        <div v-if="isLoggedIn" class="nav-item dropdown">
+          <button
+            type="button"
+            class="nav-link btn btn-link dropdown-toggle d-flex align-items-center gap-2"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <span v-if="userFullName">{{ userFullName }}</span>
+            <PhUserCircle :size="28" />
           </button>
-        </template>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li v-if="isTrainer">
+              <RouterLink class="dropdown-item" to="/manage-trainings">Halda</RouterLink>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item" @click="executeLogOut">Logi välja</button>
+            </li>
+          </ul>
+        </div>
         <template v-else>
           <RouterLink class="nav-link" to="/register">Registreeru</RouterLink>
           <button type="button" class="nav-link btn btn-link text-start" @click="openModal">

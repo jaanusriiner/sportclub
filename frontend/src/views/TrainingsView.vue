@@ -30,6 +30,12 @@ export default {
       joinModalIsOpen: false,
     }
   },
+  computed: {
+    // kasutaja registreeritud treeningud on tabelis "Minu ..." ega kuvata alumises tabelis uuesti
+    availableTrainings() {
+      return this.trainings.filter((training) => !training.userIsRegistered)
+    },
+  },
   methods: {
     getMyTrainings() {
       if (this.isLoggedIn) {
@@ -61,6 +67,15 @@ export default {
     openInfoModal(training) {
       this.selectedTraining = training
       this.infoModalIsOpen = true
+    },
+
+    // MyTrainingDto kasutab nextTrainingDate/nextTrainingTime, infomodaal ootab trainingDate/trainingTime
+    openMyTrainingInfoModal(myTraining) {
+      this.openInfoModal({
+        ...myTraining,
+        trainingDate: myTraining.nextTrainingDate,
+        trainingTime: myTraining.nextTrainingTime,
+      })
     },
 
     openRegisterModal(training) {
@@ -146,28 +161,56 @@ export default {
           <p v-if="myTrainings.length === 0" class="text-center">
             Hetkel pole ühelegi treeningule registreeritud.
           </p>
-          <table v-else class="table table-bordered align-middle">
-            <thead>
-              <tr>
-                <th>Sport</th>
-                <th>Asukoht</th>
-                <th>Treener</th>
-                <th>Järgmine treening</th>
-                <th>Täituvus</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="myTraining in myTrainings" :key="myTraining.trainingDateId">
-                <td>{{ myTraining.sportName }}</td>
-                <td>{{ myTraining.facilityName }}</td>
-                <td>{{ myTraining.trainerName }}</td>
-                <td>
-                  {{ formatDateTime(myTraining.nextTrainingDate, myTraining.nextTrainingTime) }}
-                </td>
-                <td>{{ myTraining.userCount }}/{{ myTraining.maxSize }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div v-else class="table-responsive rounded shadow-sm border">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Sport</th>
+                  <th>Asukoht</th>
+                  <th>Treener</th>
+                  <th>Järgmine treening</th>
+                  <th>Täituvus</th>
+                  <th>Toimingud</th>
+                  <th>Info</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="myTraining in myTrainings"
+                  :key="myTraining.trainingDateId"
+                  class="clickable-row"
+                  @click="openMyTrainingInfoModal(myTraining)"
+                >
+                  <td>{{ myTraining.sportName }}</td>
+                  <td>{{ myTraining.facilityName }}</td>
+                  <td>{{ myTraining.trainerName }}</td>
+                  <td class="text-nowrap">
+                    {{ formatDateTime(myTraining.nextTrainingDate, myTraining.nextTrainingTime) }}
+                  </td>
+                  <td>{{ myTraining.userCount }}/{{ myTraining.maxSize }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger btn-sm text-nowrap"
+                      @click.stop
+                    >
+                      Vabasta koht
+                    </button>
+                  </td>
+                  <td class="text-nowrap">
+                    <button
+                      type="button"
+                      class="btn btn-link p-1"
+                      title="Info"
+                      @click.stop="openMyTrainingInfoModal(myTraining)"
+                    >
+                      <PhInfo :size="22" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </template>
@@ -178,63 +221,72 @@ export default {
     </div>
     <div class="row justify-content-center">
       <div class="col">
-        <table class="table table-bordered align-middle">
-          <thead>
-            <tr>
-              <th>Sport</th>
-              <th>Asukoht</th>
-              <th>Treener</th>
-              <th>Spordiklubi</th>
-              <th>Skill-level</th>
-              <th>Järgmine treening</th>
-              <th>Täituvus</th>
-              <th>Info</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="training in trainings" :key="training.trainingDateId">
-              <td>{{ training.sportName }}</td>
-              <td>{{ training.facilityName }}</td>
-              <td>{{ training.trainerName }}</td>
-              <td>{{ training.sportclubName }}</td>
-              <td>{{ training.skillLevelName }}</td>
-              <td>{{ formatDateTime(training.trainingDate, training.trainingTime) }}</td>
-              <td>
-                <template v-if="training.userIsTrainingGroupMember">
-                  <div>{{ training.userCount }}/{{ training.maxSize }}</div>
-                  <span v-if="training.userIsRegistered">Registreeritud</span>
-                  <span v-else-if="training.userCount >= training.maxSize">Kohad on täis</span>
+        <div class="table-responsive rounded shadow-sm border">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>Sport</th>
+                <th>Asukoht</th>
+
+                <th>Spordiklubi</th>
+                <th>Oskustase</th>
+                <th>Järgmine treening</th>
+                <th>Täituvus</th>
+                <th>Info</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="training in availableTrainings"
+                :key="training.trainingDateId"
+                class="clickable-row"
+                @click="openInfoModal(training)"
+              >
+                <td>{{ training.sportName }}</td>
+                <td>{{ training.facilityName }}</td>
+
+                <td>{{ training.sportclubName }}</td>
+                <td>{{ training.skillLevelName }}</td>
+                <td class="text-nowrap">
+                  {{ formatDateTime(training.trainingDate, training.trainingTime) }}
+                </td>
+                <td>
+                  <template v-if="training.userIsTrainingGroupMember">
+                    <div>{{ training.userCount }}/{{ training.maxSize }}</div>
+                    <span v-if="training.userIsRegistered">Registreeritud</span>
+                    <span v-else-if="training.userCount >= training.maxSize">Kohad on täis</span>
+                    <button
+                      v-else
+                      type="button"
+                      class="btn btn-success btn-sm text-nowrap mt-1"
+                      @click.stop="openRegisterModal(training)"
+                    >
+                      Registreeru
+                    </button>
+                  </template>
                   <button
                     v-else
                     type="button"
-                    class="btn btn-link p-0"
-                    @click="openRegisterModal(training)"
+                    class="btn btn-primary btn-sm text-nowrap"
+                    @click.stop="openJoinModal(training)"
                   >
-                    Registreeru
+                    Taotle Liitumist
                   </button>
-                </template>
-                <button
-                  v-else
-                  type="button"
-                  class="btn btn-link p-0"
-                  @click="openJoinModal(training)"
-                >
-                  Taotle Liitumist
-                </button>
-              </td>
-              <td class="text-nowrap">
-                <button
-                  type="button"
-                  class="btn btn-link p-1"
-                  title="Info"
-                  @click="openInfoModal(training)"
-                >
-                  <PhInfo :size="22" />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td class="text-nowrap">
+                  <button
+                    type="button"
+                    class="btn btn-link p-1"
+                    title="Info"
+                    @click.stop="openInfoModal(training)"
+                  >
+                    <PhInfo :size="22" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     <TrainingInfoModal
@@ -274,3 +326,9 @@ export default {
     />
   </div>
 </template>
+
+<style scoped>
+.clickable-row {
+  cursor: pointer;
+}
+</style>

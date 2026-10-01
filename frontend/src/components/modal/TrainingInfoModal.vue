@@ -10,10 +10,10 @@
         <div>
           <strong>Treener: {{ training.trainerName }}</strong>
         </div>
-        <div>
+        <div v-if="training.skillLevelName">
           <strong>{{ training.skillLevelName }}</strong>
         </div>
-        <div>{{ training.sportclubName }}</div>
+        <div v-if="training.sportclubName">{{ training.sportclubName }}</div>
         <div>{{ dateTime }}</div>
         <div>Täituvus: {{ training.userCount }}/{{ training.maxSize }}</div>
       </div>

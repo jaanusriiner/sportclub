@@ -77,7 +77,7 @@ export default {
           sessionStorage.setItem('userFullName', data.userFullName || '')
           this.$emit('event-login-successful')
           this.closeModal()
-          this.$router.push('/trainings')
+          this.$router.push(data.roleName === 'trainer' ? '/manage-trainings' : '/trainings')
         })
         .catch((error) => {
           if (error.response && error.response.status === 403) {
