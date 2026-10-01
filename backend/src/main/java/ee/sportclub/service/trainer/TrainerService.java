@@ -1,5 +1,6 @@
 package ee.sportclub.service.trainer;
 
+import ee.sportclub.controller.joinapplication.dto.PendingJoinApplicationDto;
 import ee.sportclub.controller.trainer.TrainerSportclubDto;
 import ee.sportclub.controller.trainer.TrainerTrainingGroupDto;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
@@ -9,9 +10,9 @@ import ee.sportclub.persistence.profile.ProfileRepository;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainer;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainerMapper;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainerRepository;
-import ee.sportclub.persistence.training.TrainingGroup;
-import ee.sportclub.persistence.training.TrainingGroupMapper;
-import ee.sportclub.persistence.training.TrainingGroupRepository;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroup;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroupMapper;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroupRepository;
 import ee.sportclub.persistence.user.UserRepository;
 import ee.sportclub.persistence.user.UserTrainingGroupRepository;
 import lombok.RequiredArgsConstructor;
