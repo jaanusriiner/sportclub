@@ -2,6 +2,7 @@ package ee.sportclub.persistence.joinapplication;
 
 import ee.sportclub.controller.joinapplication.dto.JoinApplicationResponse;
 import ee.sportclub.controller.joinapplication.dto.PendingJoinApplicationDto;
+import ee.sportclub.persistence.user.UserTrainingGroup;
 import org.mapstruct.*;
 import java.util.List;
 
@@ -14,4 +15,8 @@ public interface JoinApplicationMapper {
     PendingJoinApplicationDto toPendingJoinApplicationDto(JoinApplication joinApplication);
 
     List<PendingJoinApplicationDto> toPendingJoinApplicationDtos(List<JoinApplication> joinApplications);
+
+    @Mapping(source = "userId", target = "user.id")
+    @Mapping(source = "trainingGroupId", target = "trainingGroup.id")
+    UserTrainingGroup toUserTrainingGroup(JoinApplication joinApplication);
 }
