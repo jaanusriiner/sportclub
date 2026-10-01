@@ -49,8 +49,8 @@ export default {
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-nav me-auto">
-        <RouterLink class="nav-link" to="/">Kodu</RouterLink>
-        <RouterLink class="nav-link" to="/info">Info</RouterLink>
+<!--        <RouterLink class="nav-link" to="/">Kodu</RouterLink>-->
+        <RouterLink class="nav-link" to="/info">Meist</RouterLink>
         <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
       </div>
       <div class="navbar-nav">

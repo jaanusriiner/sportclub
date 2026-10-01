@@ -17,4 +17,11 @@ export default {
     router.push({ name: 'infoRoute' })
   },
 
+  navigateToManageTrainingsView() {
+    router.push({ name: 'manageTrainingsRoute' })
+  },
+
+  navigateToCreateTrainingGroupView() {
+    router.push({ name: 'createTrainingGroupRoute' })
+  },
 }

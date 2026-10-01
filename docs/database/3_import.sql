@@ -44,6 +44,8 @@ INSERT INTO sportclub.sportclub (id, name) VALUES (default, 'FC Jalg');
 INSERT INTO sportclub.sportclub (id, name) VALUES (default, 'Tore Golfklubi');
 
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 1, 5);
+INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 2, 5);
+INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 3, 5);
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 1, 6);
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 2, 6);
 INSERT INTO sportclub.sportclub_trainer (id, sportclub_id, user_id) VALUES (default, 3, 6);

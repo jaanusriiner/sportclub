@@ -1,15 +1,31 @@
 <script>
 import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
 import TrainingGroupsDropDown from '@/components/dropdown/TrainingGroupsDropDown.vue'
+import TrainingDeleteModal from '@/components/modal/TrainingDeleteModal.vue'
+import TrainingEditModal from '@/components/modal/TrainingEditModal.vue'
+import TrainingInfoModal from '@/components/modal/TrainingInfoModal.vue'
 import TrainerService from '@/services/TrainerService.js'
 import TrainingService from '@/services/TrainingService.js'
 import NavigationService from '@/services/NavigationService.js'
 import SessionStorageService from '@/services/SessionStorageService.js'
+import { PhCheck, PhInfo, PhPencilSimple, PhTrash, PhX } from '@phosphor-icons/vue'
 
 export default {
   name: 'ManageTrainingsView',
-  components: { SportclubsDropDown, TrainingGroupsDropDown },
+  components: {
+    SportclubsDropDown,
+    TrainingGroupsDropDown,
+    TrainingDeleteModal,
+    TrainingEditModal,
+    TrainingInfoModal,
+    PhCheck,
+    PhInfo,
+    PhPencilSimple,
+    PhTrash,
+    PhX,
+  },
   beforeMount() {
+    this.getTrainerJoinApplications()
     this.getTrainerTrainingGroups()
     this.getTrainerTrainings()
   },
@@ -17,8 +33,13 @@ export default {
     return {
       trainings: [],
       trainerTrainingGroups: [],
+      joinApplications: [],
       selectedSportclubId: 0,
       selectedTrainingGroupId: 0,
+      infoModalIsOpen: false,
+      deleteModalIsOpen: false,
+      editModalIsOpen: false,
+      selectedTraining: null,
     }
   },
   computed: {
@@ -51,10 +72,63 @@ export default {
     },
   },
   methods: {
+    getTrainerJoinApplications() {
+      TrainerService.getTrainerJoinApplicationsRequest(SessionStorageService.getUserId())
+        .then((response) => (this.joinApplications = response.data))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
     getTrainerTrainingGroups() {
       TrainerService.getTrainerTrainingGroupsRequest(SessionStorageService.getUserId())
         .then((response) => (this.trainerTrainingGroups = response.data))
         .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    openInfoModal(training) {
+      this.selectedTraining = training
+      this.infoModalIsOpen = true
+    },
+
+    openEditModal(training) {
+      this.selectedTraining = training
+      this.editModalIsOpen = true
+    },
+
+    closeEditModal() {
+      this.editModalIsOpen = false
+    },
+
+    handleTrainingUpdated() {
+      this.closeEditModal()
+      this.getTrainerTrainings()
+    },
+
+    openDeleteModal(training) {
+      this.selectedTraining = training
+      this.deleteModalIsOpen = true
+    },
+
+    closeDeleteModal() {
+      this.deleteModalIsOpen = false
+    },
+
+    deleteTraining() {
+      TrainingService.deleteTrainingDateRequest(this.selectedTraining.trainingDateId)
+        .then(() => this.handleDeleteTrainingResponse())
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    handleDeleteTrainingResponse() {
+      this.closeDeleteModal()
+      this.getTrainerTrainings()
+    },
+
+    goToCreateTrainingGroup() {
+      NavigationService.navigateToCreateTrainingGroupView()
+    },
+
+    closeInfoModal() {
+      this.infoModalIsOpen = false
     },
 
     handleSportclubSelected(sportclubId) {
@@ -127,6 +201,7 @@ export default {
               <th>Treeninggrupp</th>
               <th>Kuupäev/Aeg</th>
               <th>Täituvus</th>
+              <th>Toimingud</th>
             </tr>
           </thead>
           <tbody>
@@ -136,10 +211,110 @@ export default {
               <td>{{ training.sportName }} - {{ training.skillLevelName }}</td>
               <td>{{ formatDateTime(training.trainingDate, training.trainingTime) }}</td>
               <td>{{ training.userCount }}/{{ training.maxSize }}</td>
+              <td class="text-nowrap">
+                <button
+                  type="button"
+                  class="btn btn-link p-1"
+                  title="Info"
+                  @click="openInfoModal(training)"
+                >
+                  <PhInfo :size="22" />
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-link p-1"
+                  title="Muuda"
+                  @click="openEditModal(training)"
+                >
+                  <PhPencilSimple :size="22" />
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-link p-1"
+                  title="Kustuta"
+                  @click="openDeleteModal(training)"
+                >
+                  <PhTrash :size="22" />
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+    <div class="row mb-4">
+      <div class="col">
+        <button type="button" class="btn btn-primary" @click="goToCreateTrainingGroup">
+          Loo uus Treeninggrupp
+        </button>
+      </div>
+    </div>
+    <div class="row mt-5 mb-2">
+      <div class="col">
+        <h2 class="h4">Treeninggruppide liitumistaotlused</h2>
+      </div>
+    </div>
+    <div class="row justify-content-center mb-5">
+      <div class="col">
+        <table class="table table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>Nimi</th>
+              <th>Spordiklubi</th>
+              <th>Treeninggrupp</th>
+              <th>Grupi hetketäituvus</th>
+              <th>Kinnitus</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="joinApplication in joinApplications"
+              :key="joinApplication.joinApplicationId"
+            >
+              <td>{{ joinApplication.userFullName }}</td>
+              <td>{{ joinApplication.sportclubName }}</td>
+              <td>{{ joinApplication.trainingGroupName }}</td>
+              <td>{{ joinApplication.trainingGroupMemberCount }}</td>
+              <td class="text-nowrap">
+                <button type="button" class="btn btn-link p-1" title="Kinnita">
+                  <PhCheck :size="22" />
+                </button>
+                <button type="button" class="btn btn-link p-1" title="Lükka tagasi">
+                  <PhX :size="22" />
+                </button>
+              </td>
+            </tr>
+            <tr v-if="joinApplications.length === 0">
+              <td colspan="5" class="text-center">Ootel liitumistaotlusi ei ole</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <TrainingEditModal
+      :edit-modal-is-open="editModalIsOpen"
+      :training="selectedTraining"
+      @event-edit-modal-closed="closeEditModal"
+      @event-training-updated="handleTrainingUpdated"
+    />
+    <TrainingDeleteModal
+      :delete-modal-is-open="deleteModalIsOpen"
+      :training="selectedTraining"
+      :date-time="
+        selectedTraining &&
+        formatDateTime(selectedTraining.trainingDate, selectedTraining.trainingTime)
+      "
+      @event-delete-modal-closed="closeDeleteModal"
+      @event-delete-confirmed="deleteTraining"
+    />
+    <TrainingInfoModal
+      :info-modal-is-open="infoModalIsOpen"
+      :training="selectedTraining"
+      :date-time="
+        selectedTraining &&
+        formatDateTime(selectedTraining.trainingDate, selectedTraining.trainingTime)
+      "
+      @event-info-modal-closed="closeInfoModal"
+    />
   </div>
 </template>

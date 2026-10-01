@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from "@/views/HomeView.vue";
-import TestView from "@/views/TestView.vue";
+import HomeView from '@/views/HomeView.vue'
+import TestView from '@/views/TestView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ErrorView from '@/views/ErrorView.vue'
 import InfoView from '@/views/InfoView.vue'
 import ManageTrainingsView from '@/views/ManageTrainingsView.vue'
-
+import CreateTrainingGroupView from '@/views/CreateTrainingGroupView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +39,11 @@ const router = createRouter({
       path: '/manage-trainings',
       name: 'manageTrainingsRoute',
       component: ManageTrainingsView,
+    },
+    {
+      path: '/create-training-group',
+      name: 'createTrainingGroupRoute',
+      component: CreateTrainingGroupView,
     },
     {
       path: '/training',

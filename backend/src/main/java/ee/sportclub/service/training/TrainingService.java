@@ -65,7 +65,9 @@ public class TrainingService {
     public void updateTrainingDateDetails(Integer trainingDateId, UpdateTrainingDateRequestDto updateTrainingDateRequestDto) {
         TrainingDate trainingDate = getValidTrainingDateBy(trainingDateId);
         validateTrainingDateNewMaxSizeIsAllowed(trainingDate.getUserCount(), updateTrainingDateRequestDto.getMaxSize());
-        trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
+        if (updateTrainingDateRequestDto.getDescription() != null) {
+            trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
+        }
         trainingDate.setMaxSize(updateTrainingDateRequestDto.getMaxSize());
         trainingDate.setStartDate(updateTrainingDateRequestDto.getTrainingDate());
         trainingDate.setStartTime(updateTrainingDateRequestDto.getTrainingTime());

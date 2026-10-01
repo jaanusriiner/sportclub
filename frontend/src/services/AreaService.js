@@ -1,12 +1,7 @@
-import axios from "axios";
+import axios from 'axios'
 
 export default {
-
   getAreasRequest() {
-
-    return axios.get("/api/areas")
-
+    return axios.get('/api/areas')
   },
-
-
 }
