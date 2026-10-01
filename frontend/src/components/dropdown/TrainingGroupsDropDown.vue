@@ -7,6 +7,11 @@ export default {
       default: 0,
     },
     trainingGroups: Array,
+    // kui true, lisatakse eraldusjoon üldvaliku ja üksikvalikute vahele
+    showSeparator: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['event-new-training-group-selected'],
 }
@@ -20,6 +25,7 @@ export default {
     aria-label="Vali treeninggrupp"
   >
     <option :value="0">Kõik treeninggrupid</option>
+    <option v-if="showSeparator" disabled>──────────</option>
     <option
       v-for="trainingGroup in trainingGroups"
       :key="trainingGroup.trainingGroupId"

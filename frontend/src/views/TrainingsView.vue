@@ -1,6 +1,7 @@
 <script>
 import AlertSuccess from '@/components/alert/AlertSuccess.vue'
 import AreasDropDown from '@/components/dropdown/AreasDropDown.vue'
+import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
 import SportsDropDown from '@/components/dropdown/SportsDropDown.vue'
 import TrainingConfirmModal from '@/components/modal/TrainingConfirmModal.vue'
 import TrainingInfoModal from '@/components/modal/TrainingInfoModal.vue'
@@ -18,6 +19,7 @@ export default {
   components: {
     AlertSuccess,
     AreasDropDown,
+    SportclubsDropDown,
     SportsDropDown,
     TrainingConfirmModal,
     TrainingInfoModal,
@@ -38,6 +40,11 @@ export default {
       sports: [],
       selectedAreaId: 0,
       selectedSportId: 0,
+      // 0 = kõik spordiklubid, -1 = minu spordiklubid, muu = konkreetse spordiklubi id
+      selectedSportclubId: 0,
+      // treeninguid kuvatakse alates valitud kuupäeva kellaajast 00:00
+      todayDate: new Date().toLocaleDateString('sv-SE'),
+      selectedDateFrom: new Date().toLocaleDateString('sv-SE'),
       isLoggedIn: SessionStorageService.userIsLoggedIn(),
       successMessage: '',
       modalErrorMessage: '',
@@ -51,7 +58,39 @@ export default {
   computed: {
     // kasutaja registreeritud treeningud on tabelis "Minu ..." ega kuvata alumises tabelis uuesti
     availableTrainings() {
-      return this.trainings.filter((training) => !training.userIsRegistered)
+      return this.trainings.filter(
+        (training) => !training.userIsRegistered && this.matchesSportclubFilter(training),
+      )
+    },
+
+    // /api/trainings ei toeta sportclubId filtrit, seepärast tuletame valikud laaditud treeningutest
+    sportclubs() {
+      const sportclubs = new Map()
+      this.trainings.forEach((training) =>
+        sportclubs.set(training.sportclubId, {
+          sportclubId: training.sportclubId,
+          sportclubName: training.sportclubName,
+        }),
+      )
+      return [...sportclubs.values()]
+    },
+
+    hasActiveFilters() {
+      return (
+        this.selectedAreaId !== 0 ||
+        this.selectedSportclubId !== 0 ||
+        this.selectedSportId !== 0 ||
+        this.selectedDateFrom !== this.todayDate
+      )
+    },
+
+    // spordiklubid, kus kasutaja on vähemalt ühe treeninggrupi liige
+    mySportclubIds() {
+      return new Set(
+        this.trainings
+          .filter((training) => training.userIsTrainingGroupMember)
+          .map((training) => training.sportclubId),
+      )
     },
   },
   methods: {
@@ -75,6 +114,36 @@ export default {
         .catch(() => NavigationService.navigateToErrorView())
     },
 
+    clearFilters() {
+      this.selectedAreaId = 0
+      this.selectedSportclubId = 0
+      this.selectedSportId = 0
+      this.selectedDateFrom = this.todayDate
+      this.getTrainings()
+    },
+
+    handleDateFromChanged() {
+      // käsitsi sisestatud minevikukuupäev asendatakse tänasega
+      if (!this.selectedDateFrom || this.selectedDateFrom < this.todayDate) {
+        this.selectedDateFrom = this.todayDate
+      }
+      this.getTrainings()
+    },
+
+    handleSportclubSelected(sportclubId) {
+      this.selectedSportclubId = sportclubId
+    },
+
+    matchesSportclubFilter(training) {
+      if (this.selectedSportclubId === 0) {
+        return true
+      }
+      if (this.selectedSportclubId === -1) {
+        return this.mySportclubIds.has(training.sportclubId)
+      }
+      return training.sportclubId === this.selectedSportclubId
+    },
+
     handleAreaSelected(areaId) {
       this.selectedAreaId = areaId
       this.getTrainings()
@@ -91,7 +160,7 @@ export default {
         areaId: this.selectedAreaId,
         sportId: this.selectedSportId,
         trainerId: 0,
-        dateFrom: new Date().toLocaleDateString('sv-SE'),
+        dateFrom: this.selectedDateFrom || this.todayDate,
         timeFrom: '00:00',
         page: 1,
         size: 100,
@@ -294,21 +363,55 @@ export default {
         <h2 class="h4">Kõik treeningud</h2>
       </div>
     </div>
-    <div class="row mb-3">
-      <div class="col-3">
+    <div class="row g-2 mb-3">
+      <div class="col-auto">
         <AreasDropDown
           :areas="areas"
           :area-id="selectedAreaId"
           all-label="Kõik piirkonnad"
+          show-separator
           @event-new-area-selected="handleAreaSelected"
         />
       </div>
-      <div class="col-3">
+      <div class="col-auto">
+        <SportclubsDropDown
+          :sportclubs="sportclubs"
+          :sportclub-id="selectedSportclubId"
+          all-label="Kõik spordiklubid"
+          my-label="Minu spordiklubid"
+          :show-my-option="isLoggedIn"
+          show-separator
+          @event-new-sportclub-selected="handleSportclubSelected"
+        />
+      </div>
+      <div class="col-auto">
         <SportsDropDown
           :sports="sports"
           :sport-id="selectedSportId"
+          show-separator
           @event-new-sport-selected="handleSportSelected"
         />
+      </div>
+      <div class="col-auto">
+        <input
+          v-model="selectedDateFrom"
+          type="date"
+          :min="todayDate"
+          class="form-control border border-dark"
+          aria-label="Treeningud alates kuupäevast"
+          title="Treeningud alates kuupäevast"
+          @change="handleDateFromChanged"
+        />
+      </div>
+      <div class="col-auto">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          :disabled="!hasActiveFilters"
+          @click="clearFilters"
+        >
+          Kustuta filtrid
+        </button>
       </div>
     </div>
     <div class="row justify-content-center">

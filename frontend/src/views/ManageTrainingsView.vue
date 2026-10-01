@@ -41,6 +41,9 @@ export default {
       joinApplications: [],
       selectedSportclubId: 0,
       selectedTrainingGroupId: 0,
+      todayDate: new Date().toLocaleDateString('sv-SE'),
+      // treeninguid kuvatakse alates valitud kuupäeva kellaajast 00:00
+      selectedDateFrom: new Date().toLocaleDateString('sv-SE'),
       infoModalIsOpen: false,
       deleteModalIsOpen: false,
       editModalIsOpen: false,
@@ -51,6 +54,14 @@ export default {
     }
   },
   computed: {
+    hasActiveFilters() {
+      return (
+        this.selectedSportclubId !== 0 ||
+        this.selectedTrainingGroupId !== 0 ||
+        this.selectedDateFrom !== this.todayDate
+      )
+    },
+
     sportclubs() {
       const sportclubs = new Map()
       this.trainerTrainingGroups.forEach((trainingGroup) =>
@@ -148,6 +159,21 @@ export default {
       this.selectedTrainingGroupId = 0
     },
 
+    clearFilters() {
+      this.selectedSportclubId = 0
+      this.selectedTrainingGroupId = 0
+      this.selectedDateFrom = this.todayDate
+      this.getTrainerTrainings()
+    },
+
+    handleDateFromChanged() {
+      // käsitsi sisestatud minevikukuupäev asendatakse tänasega
+      if (!this.selectedDateFrom || this.selectedDateFrom < this.todayDate) {
+        this.selectedDateFrom = this.todayDate
+      }
+      this.getTrainerTrainings()
+    },
+
     handleTrainingGroupSelected(trainingGroupId) {
       this.selectedTrainingGroupId = trainingGroupId
     },
@@ -159,7 +185,7 @@ export default {
         areaId: 0,
         sportId: 0,
         trainerId: trainerId,
-        dateFrom: new Date().toLocaleDateString('sv-SE'),
+        dateFrom: this.selectedDateFrom || this.todayDate,
         timeFrom: '00:00',
         page: 1,
         size: 100,
@@ -228,20 +254,43 @@ export default {
         <h2 class="h4">Treeningud</h2>
       </div>
     </div>
-    <div class="row mb-3">
-      <div class="col-3">
+    <div class="row g-2 mb-3">
+      <div class="col-auto">
         <SportclubsDropDown
           :sportclubs="sportclubs"
           :sportclub-id="selectedSportclubId"
+          show-separator
           @event-new-sportclub-selected="handleSportclubSelected"
         />
       </div>
-      <div class="col-3">
+      <div class="col-auto">
         <TrainingGroupsDropDown
           :training-groups="trainingGroups"
           :training-group-id="selectedTrainingGroupId"
+          show-separator
           @event-new-training-group-selected="handleTrainingGroupSelected"
         />
+      </div>
+      <div class="col-auto">
+        <input
+          v-model="selectedDateFrom"
+          type="date"
+          :min="todayDate"
+          class="form-control border border-dark"
+          aria-label="Treeningud alates kuupäevast"
+          title="Treeningud alates kuupäevast"
+          @change="handleDateFromChanged"
+        />
+      </div>
+      <div class="col-auto">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          :disabled="!hasActiveFilters"
+          @click="clearFilters"
+        >
+          Kustuta filtrid
+        </button>
       </div>
     </div>
     <div class="row justify-content-center">
