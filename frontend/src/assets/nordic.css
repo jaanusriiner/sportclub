@@ -476,3 +476,34 @@ blockquote.blockquote {
 .alert {
   border-radius: 10px;
 }
+
+/* ---- Lehekülgede valik ---- */
+.pagination {
+  --bs-pagination-color: var(--sc-ink);
+  --bs-pagination-bg: var(--sc-surface);
+  --bs-pagination-border-color: var(--sc-line);
+  --bs-pagination-border-radius: 8px;
+  --bs-pagination-hover-color: var(--sc-ink);
+  --bs-pagination-hover-bg: #eff0ec;
+  --bs-pagination-hover-border-color: var(--sc-line);
+  --bs-pagination-focus-color: var(--sc-ink);
+  --bs-pagination-focus-bg: #eff0ec;
+  --bs-pagination-focus-box-shadow: 0 0 0 0.2rem rgba(47, 81, 72, 0.2);
+  --bs-pagination-active-bg: var(--sc-accent);
+  --bs-pagination-active-border-color: var(--sc-accent);
+  --bs-pagination-disabled-color: var(--sc-muted);
+  --bs-pagination-disabled-bg: var(--sc-surface);
+  --bs-pagination-disabled-border-color: var(--sc-line);
+  gap: 6px;
+}
+.page-link {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+.page-item:not(:first-child) .page-link {
+  margin-left: 0;
+}
