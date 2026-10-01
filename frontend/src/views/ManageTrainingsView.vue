@@ -1,5 +1,4 @@
 <script>
-import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
 import TrainingGroupsDropDown from '@/components/dropdown/TrainingGroupsDropDown.vue'
 import TrainingDeleteModal from '@/components/modal/TrainingDeleteModal.vue'
 import TrainingEditModal from '@/components/modal/TrainingEditModal.vue'
@@ -9,6 +8,9 @@ import TrainingService from '@/services/TrainingService.js'
 import NavigationService from '@/services/NavigationService.js'
 import SessionStorageService from '@/services/SessionStorageService.js'
 import { PhCheck, PhInfo, PhPencilSimple, PhTrash, PhX } from '@phosphor-icons/vue'
+import JoinApplicationService from '@/services/JoinApplicationService.js'
+import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
+import AlertDanger from '@/components/alert/AlertDanger.vue'
 
 export default {
   name: 'ManageTrainingsView',
@@ -23,6 +25,7 @@ export default {
     PhPencilSimple,
     PhTrash,
     PhX,
+    AlertDanger,
   },
   beforeMount() {
     this.getTrainerJoinApplications()
@@ -40,6 +43,8 @@ export default {
       deleteModalIsOpen: false,
       editModalIsOpen: false,
       selectedTraining: null,
+      joinApplicationErrorMessage: '',
+      isProcessingJoinApplication: false,
     }
   },
   computed: {
@@ -164,6 +169,41 @@ export default {
       const [year, month, day] = trainingDate.split('-')
       return `${day}.${month}.${year} ${trainingTime.substring(0, 5)}`
     },
+
+    confirmJoinApplication(joinApplicationId) {
+      this.joinApplicationErrorMessage = ''
+      this.isProcessingJoinApplication = true
+
+      JoinApplicationService.putConfirmRequest(joinApplicationId)
+        .then(() => this.handleJoinApplicationProcessed())
+        .catch((error) => this.handleJoinApplicationError(error))
+    },
+
+    rejectJoinApplication(joinApplicationId) {
+      this.joinApplicationErrorMessage = ''
+      this.isProcessingJoinApplication = true
+
+      JoinApplicationService.putRejectRequest(joinApplicationId)
+        .then(() => this.handleJoinApplicationProcessed())
+        .catch((error) => this.handleJoinApplicationError(error))
+    },
+
+    handleJoinApplicationProcessed() {
+      this.isProcessingJoinApplication = false
+      this.getTrainerJoinApplications()
+    },
+
+    handleJoinApplicationError(error) {
+      this.isProcessingJoinApplication = false
+      this.getTrainerJoinApplications()
+
+      const response = error.response
+      if (response && (response.status === 403 || response.status === 404)) {
+        this.joinApplicationErrorMessage = response.data.message || 'Midagi läks valesti.'
+      } else {
+        NavigationService.navigateToErrorView()
+      }
+    },
   },
 }
 </script>
@@ -254,6 +294,11 @@ export default {
         <h2 class="h4">Treeninggruppide liitumistaotlused</h2>
       </div>
     </div>
+    <div class="row justify-content-center mb-3">
+      <div class="col">
+        <AlertDanger :error-message="joinApplicationErrorMessage" />
+      </div>
+    </div>
     <div class="row justify-content-center mb-5">
       <div class="col">
         <table class="table table-bordered align-middle">
@@ -276,10 +321,22 @@ export default {
               <td>{{ joinApplication.trainingGroupName }}</td>
               <td>{{ joinApplication.trainingGroupMemberCount }}</td>
               <td class="text-nowrap">
-                <button type="button" class="btn btn-link p-1" title="Kinnita">
+                <button
+                  type="button"
+                  class="btn btn-link p-1"
+                  title="Kinnita"
+                  :disabled="isProcessingJoinApplication"
+                  @click="confirmJoinApplication(joinApplication.joinApplicationId)"
+                >
                   <PhCheck :size="22" />
                 </button>
-                <button type="button" class="btn btn-link p-1" title="Lükka tagasi">
+                <button
+                  type="button"
+                  class="btn btn-link p-1"
+                  title="Lükka tagasi"
+                  :disabled="isProcessingJoinApplication"
+                  @click="rejectJoinApplication(joinApplication.joinApplicationId)"
+                >
                   <PhX :size="22" />
                 </button>
               </td>
