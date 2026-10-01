@@ -6,6 +6,7 @@ import ErrorView from '@/views/ErrorView.vue'
 import InfoView from '@/views/InfoView.vue'
 import ManageTrainingsView from '@/views/ManageTrainingsView.vue'
 import CreateTrainingGroupView from '@/views/CreateTrainingGroupView.vue'
+import TrainingsView from '@/views/TrainingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,9 +47,9 @@ const router = createRouter({
       component: CreateTrainingGroupView,
     },
     {
-      path: '/training',
-      name: 'trainingRoute',
-      component: HomeView,
+      path: '/trainings',
+      name: 'trainingsRoute',
+      component: TrainingsView,
     },
   ],
 })
