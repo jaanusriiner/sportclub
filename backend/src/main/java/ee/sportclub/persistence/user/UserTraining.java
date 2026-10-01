@@ -1,6 +1,6 @@
 package ee.sportclub.persistence.user;
 
-import ee.sportclub.persistence.training.TrainingDate;
+import ee.sportclub.persistence.training.trainingdate.TrainingDate;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

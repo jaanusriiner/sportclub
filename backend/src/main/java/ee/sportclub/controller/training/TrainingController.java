@@ -1,10 +1,7 @@
 package ee.sportclub.controller.training;
 
 
-import ee.sportclub.controller.training.dto.TrainingDateRegisterRequestDto;
-import ee.sportclub.controller.training.dto.TrainingGroupOverviewPageDto;
-import ee.sportclub.controller.training.dto.TrainingRegisterResponseDto;
-import ee.sportclub.controller.training.dto.UpdateTrainingDateRequestDto;
+import ee.sportclub.controller.training.dto.*;
 import ee.sportclub.infrastructure.error.ApiError;
 import ee.sportclub.service.training.TrainingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -87,9 +84,65 @@ public class TrainingController {
 
     }
 
+    @PostMapping("/api/trainings")
+    @Operation(
+            summary = "Loob uue treeningseeria koos treeningkordadega",
+            description = """
+                    - Vajab sisse request bodyt
+                    - {
+                    -   "trainerId": Int,
+                    -   "trainingGroupId": Int,
+                    -   "facilityId": Int,
+                    -   "weekdays": "E,N",
+                    -   "startTime": "18:45",
+                    -   "duration": Int,
+                    -   "startDate": "2026-10-05",
+                    -   "endDate": "2026-10-15",
+                    -   "maxSize": Int,
+                    -   "description": ""
+                    - }
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = """
+                            - 'message': Ei leidnud primary keyd 'trainerId'
+                            - 'message': Ei leidnud primary keyd 'trainingGroupId'
+                            - 'message': Ei leidnud primary keyd 'facilityId'
+                            """,
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = """
+                            - 'message': Antud treeninggrupp ei kuulu antud treenerile
+                            - 'message': Valitud perioodi ei jää ühtegi valitud nädalapäeva
+                            """,
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = """
+                            - 'message': Lõpu kuupäev ei tohi olla enne alguse kuupäeva
+                            - 'message': 'weekdays': lubatud väärtused on 'E,T,K,N,R,L,P'
+                            - 'message': 'maxSize': peab olema suurem kui'0'
+                            - 'message': '<väli>': ei tohi olla tühi
+                            """,
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            )
+    })
+    public void createNewTraining(@RequestBody @Valid CreateTrainingRequestDto createTrainingRequestDto) {
+        trainingService.createNewTraining(createTrainingRequestDto);
+    }
+
     @DeleteMapping("/api/training-dates/{trainingDateId}")
     @Operation(
-            summary = "Kustutab ühe treeningu trainingDateId järgi",
+            summary = "Kustutab ühe treeningkorra trainingDateId järgi",
             description = "Ootab sisse trainingDateId"
     )
     @ApiResponses(value = {

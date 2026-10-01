@@ -1,4 +1,4 @@
-package ee.sportclub.persistence.training;
+package ee.sportclub.persistence.training.traininggroup;
 
 import ee.sportclub.persistence.skilllevel.SkillLevel;
 import ee.sportclub.persistence.sportclub.Sportclub;

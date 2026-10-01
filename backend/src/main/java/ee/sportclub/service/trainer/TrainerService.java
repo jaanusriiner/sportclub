@@ -6,10 +6,9 @@ import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainer;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainerMapper;
 import ee.sportclub.persistence.sportclubtrainer.SportclubTrainerRepository;
-import ee.sportclub.persistence.training.TrainingGroup;
-import ee.sportclub.persistence.training.TrainingGroupMapper;
-import ee.sportclub.persistence.training.TrainingGroupRepository;
-import ee.sportclub.persistence.user.User;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroup;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroupMapper;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroupRepository;
 import ee.sportclub.persistence.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,8 +27,7 @@ public class TrainerService {
 
     public List<TrainerSportclubDto> findTrainerSportclubs(Integer trainerId) {
         List<SportclubTrainer> sportclubTrainers = sportclubTrainerRepository.findSportClubsByTrainer(trainerId);
-        List<TrainerSportclubDto> trainerSportclubDtos = sportclubTrainerMapper.toTrainerSportclubDtos(sportclubTrainers);
-        return trainerSportclubDtos;
+        return sportclubTrainerMapper.toTrainerSportclubDtos(sportclubTrainers);
     }
 
 

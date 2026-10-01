@@ -1,5 +1,6 @@
 package ee.sportclub.controller.traininggroup;
 
+import ee.sportclub.persistence.training.traininggroup.TrainingGroup;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Value;
@@ -7,7 +8,7 @@ import lombok.Value;
 import java.io.Serializable;
 
 /**
- * DTO for {@link ee.sportclub.persistence.training.TrainingGroup}
+ * DTO for {@link TrainingGroup}
  */
 @Value
 public class TrainingGroupDto implements Serializable {

@@ -8,7 +8,7 @@ import ee.sportclub.persistence.joinapplication.JoinApplication;
 import ee.sportclub.persistence.joinapplication.JoinApplicationRepository;
 import ee.sportclub.persistence.joinapplication.JoinApplicationMapper;
 import ee.sportclub.persistence.user.UserTrainingGroupRepository;
-import ee.sportclub.persistence.training.TrainingGroupRepository;
+import ee.sportclub.persistence.training.traininggroup.TrainingGroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.Set;

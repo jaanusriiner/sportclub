@@ -1,4 +1,4 @@
-package ee.sportclub.persistence.training;
+package ee.sportclub.persistence.training.trainingdate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
