@@ -18,6 +18,13 @@ CREATE TABLE facility (
                           description varchar(255)  NULL,
                           CONSTRAINT facility_pk PRIMARY KEY (id)
 );
+-- Table: facility_image
+CREATE TABLE facility_image (
+                          id serial  NOT NULL,
+                          facility_id int  NOT NULL,
+                          image_bytes bytea NOT NULL,
+                          CONSTRAINT facilityimage_pk PRIMARY KEY (id)
+);
 
 -- Table: join_application
 CREATE TABLE join_application (
@@ -185,6 +192,14 @@ CREATE TABLE user_training_group (
 ALTER TABLE facility ADD CONSTRAINT facility_area
     FOREIGN KEY (area_id)
         REFERENCES area (id)
+        NOT DEFERRABLE
+            INITIALLY IMMEDIATE
+;
+
+-- Reference: facility_image_facility (table: facility_image)
+ALTER TABLE facility_image ADD CONSTRAINT facility_image_facility
+    FOREIGN KEY (facility_id)
+        REFERENCES facility (id)
         NOT DEFERRABLE
             INITIALLY IMMEDIATE
 ;

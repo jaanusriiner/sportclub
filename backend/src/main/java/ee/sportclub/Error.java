@@ -18,6 +18,8 @@ public enum Error {
     NO_TRAINING_DATES("Valitud perioodi ei jää ühtegi valitud nädalapäeva"),
     ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud"),
     NOT_REGISTERED("Sa ei ole sellele treeningule registreerunud"),
+    NOT_ADMIN("Selle toimingu jaoks on vaja administraatori õigusi"),
+    FACILITY_NAME_UNAVAILABLE("Sellise nimega asukoht on juba olemas"),
     JOIN_APPLICATION_ALREADY_PROCESSED("Taotlus on juba menetletud");
 
     private final String message;

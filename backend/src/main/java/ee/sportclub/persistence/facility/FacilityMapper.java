@@ -1,5 +1,6 @@
 package ee.sportclub.persistence.facility;
 
+import ee.sportclub.controller.facility.dto.CreateFacilityRequestDto;
 import ee.sportclub.controller.facility.dto.FacilityDto;
 import org.mapstruct.*;
 
@@ -15,4 +16,12 @@ public interface FacilityMapper {
     FacilityDto toFacilityDto(Facility facility);
 
     List<FacilityDto> toFacilityDtos(List<Facility> facilities);
+
+
+    @Mapping(ignore = true, target = "id")
+    @Mapping(ignore = true, target = "area")
+    @Mapping(source = "facilityName", target = "name")
+    @Mapping(source = "address", target = "address")
+    @Mapping(source = "description", target = "description")
+    Facility toFacility(CreateFacilityRequestDto createFacilityRequestDto);
 }
