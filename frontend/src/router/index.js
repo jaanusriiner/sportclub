@@ -6,6 +6,7 @@ import ErrorView from '@/views/ErrorView.vue'
 import InfoView from '@/views/InfoView.vue'
 import ManageTrainingsView from '@/views/ManageTrainingsView.vue'
 import CreateTrainingGroupView from '@/views/CreateTrainingGroupView.vue'
+import CreateTrainingView from '@/views/CreateTrainingView.vue'
 import TrainingsView from '@/views/TrainingsView.vue'
 import SessionStorageService from '@/services/SessionStorageService.js'
 
@@ -47,6 +48,12 @@ const router = createRouter({
       path: '/create-training-group',
       name: 'createTrainingGroupRoute',
       component: CreateTrainingGroupView,
+    },
+    {
+      path: '/create-training',
+      name: 'createTrainingRoute',
+      component: CreateTrainingView,
+      meta: { requiresAdminOrTrainer: true },
     },
     {
       path: '/trainings',

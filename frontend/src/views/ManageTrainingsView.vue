@@ -146,6 +146,10 @@ export default {
       this.getTrainerTrainings()
     },
 
+    goToCreateTraining() {
+      NavigationService.navigateToCreateTrainingView()
+    },
+
     goToCreateTrainingGroup() {
       NavigationService.navigateToCreateTrainingGroupView()
     },
@@ -362,7 +366,9 @@ export default {
     </div>
     <div class="row mb-4">
       <div class="col">
-        <button type="button" class="btn btn-primary">Loo uus Treening</button>
+        <button type="button" class="btn btn-primary" @click="goToCreateTraining">
+          Loo uus Treening
+        </button>
       </div>
     </div>
     <div class="row mt-5 mb-2">

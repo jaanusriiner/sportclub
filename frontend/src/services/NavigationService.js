@@ -25,6 +25,10 @@ export default {
     router.push({ name: 'manageTrainingsRoute' })
   },
 
+  navigateToCreateTrainingView() {
+    router.push({ name: 'createTrainingRoute' })
+  },
+
   navigateToCreateTrainingGroupView() {
     router.push({ name: 'createTrainingGroupRoute' })
   },
