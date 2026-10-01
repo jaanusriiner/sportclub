@@ -7,6 +7,10 @@ export default {
     return Number(sessionStorage.getItem('userId'))
   },
 
+  getUserFullName() {
+    return sessionStorage.getItem('userFullName') || ''
+  },
+
   userIsAdmin() {
     return sessionStorage.getItem('roleName') === 'admin'
   },

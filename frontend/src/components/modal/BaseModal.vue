@@ -8,9 +8,30 @@ export default {
     },
   },
   emits: ['event-modal-closed'],
+  watch: {
+    // Escape sulgeb modaali ainult siis, kui see on avatud
+    isOpen: {
+      immediate: true,
+      handler(isOpen) {
+        if (isOpen) {
+          document.addEventListener('keydown', this.closeOnEscape)
+        } else {
+          document.removeEventListener('keydown', this.closeOnEscape)
+        }
+      },
+    },
+  },
+  beforeUnmount() {
+    document.removeEventListener('keydown', this.closeOnEscape)
+  },
   methods: {
     close() {
       this.$emit('event-modal-closed')
+    },
+    closeOnEscape(event) {
+      if (event.key === 'Escape') {
+        this.close()
+      }
     },
   },
 }

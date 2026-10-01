@@ -135,44 +135,42 @@ export default {
         <AlertSuccess :success-message="successMessage" />
       </div>
     </div>
-    <div class="row justify-content-center mb-4">
-      <div class="col">
-        <h2 class="text-center">Minu Treeninggrupid ja Treeningud</h2>
-      </div>
-    </div>
-    <div class="row justify-content-center mb-5">
-      <div class="col">
-        <div v-if="!isLoggedIn" class="text-center">
-          <p>Oma treeningute nägemiseks pead olema sisse logitud</p>
-          <button type="button" class="btn btn-primary" @click="openLoginModal">Logi sisse</button>
+    <template v-if="isLoggedIn">
+      <div class="row justify-content-center mb-4">
+        <div class="col">
+          <h2 class="text-center">Minu Treeninggrupid ja Treeningud</h2>
         </div>
-        <p v-else-if="myTrainings.length === 0" class="text-center">
-          Hetkel pole ühelegi treeningule registreeritud.
-        </p>
-        <table v-else class="table table-bordered align-middle">
-          <thead>
-            <tr>
-              <th>Sport</th>
-              <th>Asukoht</th>
-              <th>Treener</th>
-              <th>Järgmine treening</th>
-              <th>Täituvus</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="myTraining in myTrainings" :key="myTraining.trainingDateId">
-              <td>{{ myTraining.sportName }}</td>
-              <td>{{ myTraining.facilityName }}</td>
-              <td>{{ myTraining.trainerName }}</td>
-              <td>
-                {{ formatDateTime(myTraining.nextTrainingDate, myTraining.nextTrainingTime) }}
-              </td>
-              <td>{{ myTraining.userCount }}/{{ myTraining.maxSize }}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
-    </div>
+      <div class="row justify-content-center mb-5">
+        <div class="col">
+          <p v-if="myTrainings.length === 0" class="text-center">
+            Hetkel pole ühelegi treeningule registreeritud.
+          </p>
+          <table v-else class="table table-bordered align-middle">
+            <thead>
+              <tr>
+                <th>Sport</th>
+                <th>Asukoht</th>
+                <th>Treener</th>
+                <th>Järgmine treening</th>
+                <th>Täituvus</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="myTraining in myTrainings" :key="myTraining.trainingDateId">
+                <td>{{ myTraining.sportName }}</td>
+                <td>{{ myTraining.facilityName }}</td>
+                <td>{{ myTraining.trainerName }}</td>
+                <td>
+                  {{ formatDateTime(myTraining.nextTrainingDate, myTraining.nextTrainingTime) }}
+                </td>
+                <td>{{ myTraining.userCount }}/{{ myTraining.maxSize }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
     <div class="row justify-content-center mb-4">
       <div class="col">
         <h2 class="text-center">Treeningud</h2>

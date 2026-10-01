@@ -11,6 +11,7 @@ import { PhCheck, PhInfo, PhPencilSimple, PhTrash, PhX } from '@phosphor-icons/v
 import JoinApplicationService from '@/services/JoinApplicationService.js'
 import SportclubsDropDown from '@/components/dropdown/SportclubsDropDown.vue'
 import AlertDanger from '@/components/alert/AlertDanger.vue'
+import AlertSuccess from '@/components/alert/AlertSuccess.vue'
 
 export default {
   name: 'ManageTrainingsView',
@@ -26,6 +27,7 @@ export default {
     PhTrash,
     PhX,
     AlertDanger,
+    AlertSuccess,
   },
   beforeMount() {
     this.getTrainerJoinApplications()
@@ -44,6 +46,7 @@ export default {
       editModalIsOpen: false,
       selectedTraining: null,
       joinApplicationErrorMessage: '',
+      successMessage: '',
       isProcessingJoinApplication: false,
     }
   },
@@ -95,6 +98,7 @@ export default {
     },
 
     openEditModal(training) {
+      this.successMessage = ''
       this.selectedTraining = training
       this.editModalIsOpen = true
     },
@@ -105,10 +109,12 @@ export default {
 
     handleTrainingUpdated() {
       this.closeEditModal()
+      this.successMessage = 'Treeningu muudatused on salvestatud'
       this.getTrainerTrainings()
     },
 
     openDeleteModal(training) {
+      this.successMessage = ''
       this.selectedTraining = training
       this.deleteModalIsOpen = true
     },
@@ -125,6 +131,7 @@ export default {
 
     handleDeleteTrainingResponse() {
       this.closeDeleteModal()
+      this.successMessage = 'Treening on kustutatud'
       this.getTrainerTrainings()
     },
 
@@ -213,6 +220,7 @@ export default {
     <div class="row justify-content-center mb-4">
       <div class="col">
         <h1 class="text-center">Halda treeninggruppe ja treeninguid</h1>
+        <AlertSuccess :success-message="successMessage" />
       </div>
     </div>
     <div class="row mb-3">

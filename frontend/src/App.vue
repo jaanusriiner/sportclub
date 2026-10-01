@@ -18,6 +18,7 @@ export default {
       isLoggedIn: SessionStorageService.userIsLoggedIn(),
       isAdmin: SessionStorageService.userIsAdmin(),
       isTrainer: SessionStorageService.userIsTrainer(),
+      userFullName: SessionStorageService.getUserFullName(),
     }
   },
   methods: {
@@ -32,6 +33,7 @@ export default {
       this.isLoggedIn = false
       this.isAdmin = false
       this.isTrainer = false
+      this.userFullName = ''
       NavigationService.navigateToHomeView()
     },
     updateNavMenu() {
@@ -40,6 +42,7 @@ export default {
       this.routerViewKey++
       this.isAdmin = SessionStorageService.userIsAdmin()
       this.isTrainer = SessionStorageService.userIsTrainer()
+      this.userFullName = SessionStorageService.getUserFullName()
     },
   },
 }
@@ -64,6 +67,7 @@ export default {
       </div>
       <div class="navbar-nav">
         <template v-if="isLoggedIn">
+          <span v-if="userFullName" class="navbar-text me-3">{{ userFullName }}</span>
           <RouterLink v-if="isTrainer" class="nav-link" to="/manage-trainings">Halda</RouterLink>
           <button type="button" class="nav-link btn btn-link text-start" @click="executeLogOut">
             Logi välja
