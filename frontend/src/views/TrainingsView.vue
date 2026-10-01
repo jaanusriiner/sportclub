@@ -264,6 +264,7 @@ export default {
                       Registreeru
                     </button>
                   </template>
+                  <span v-else-if="training.userHasPendingJoinApplication">Taotlus edastatud</span>
                   <button
                     v-else
                     type="button"

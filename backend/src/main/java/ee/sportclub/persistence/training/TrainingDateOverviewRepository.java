@@ -23,7 +23,11 @@ public interface TrainingDateOverviewRepository extends JpaRepository<TrainingDa
                                     and ut.user.id = :userId) then true else false end,
                 case when exists (select 1 from UserTrainingGroup utg
                                   where utg.trainingGroup.id = v.trainingGroupId
-                                    and utg.user.id = :userId) then true else false end)
+                                    and utg.user.id = :userId) then true else false end,
+                case when exists (select 1 from JoinApplication ja
+                                  where ja.trainingGroupId = v.trainingGroupId
+                                    and ja.userId = :userId
+                                    and ja.status = 'PEN') then true else false end)
             from TrainingDateOverview v
             where (:areaId = 0 or v.areaId = :areaId)
               and (:sportId = 0 or v.sportId = :sportId)

@@ -33,5 +33,6 @@ public class TrainingGroupOverviewDto implements Serializable {
     private Integer maxSize;
     private Boolean userIsRegistered;
     private Boolean userIsTrainingGroupMember;
+    private Boolean userHasPendingJoinApplication;
 
 }

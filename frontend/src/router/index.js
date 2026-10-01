@@ -7,6 +7,7 @@ import InfoView from '@/views/InfoView.vue'
 import ManageTrainingsView from '@/views/ManageTrainingsView.vue'
 import CreateTrainingGroupView from '@/views/CreateTrainingGroupView.vue'
 import TrainingsView from '@/views/TrainingsView.vue'
+import SessionStorageService from '@/services/SessionStorageService.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +41,7 @@ const router = createRouter({
       path: '/manage-trainings',
       name: 'manageTrainingsRoute',
       component: ManageTrainingsView,
+      meta: { requiresAdminOrTrainer: true },
     },
     {
       path: '/create-training-group',
@@ -52,6 +54,17 @@ const router = createRouter({
       component: TrainingsView,
     },
   ],
+})
+
+// lubab admin/trainer-only marsruudile ligi vaid sisse logitud admin või trainer rolliga kasutajal
+router.beforeEach((to) => {
+  if (!to.meta.requiresAdminOrTrainer) {
+    return true
+  }
+  const isAllowed =
+    SessionStorageService.userIsLoggedIn() &&
+    (SessionStorageService.userIsAdmin() || SessionStorageService.userIsTrainer())
+  return isAllowed ? true : { name: 'homeRoute' }
 })
 
 export default router
