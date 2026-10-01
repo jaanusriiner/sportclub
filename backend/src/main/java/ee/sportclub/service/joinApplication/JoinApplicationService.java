@@ -1,20 +1,21 @@
 package ee.sportclub.service.joinApplication;
 
+import ee.sportclub.Status;
 import ee.sportclub.controller.joinapplication.dto.JoinApplicationRequest;
 import ee.sportclub.controller.joinapplication.dto.JoinApplicationResponse;
-import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.infrastructure.exception.DataNotFoundException; // Veendu, et see klass on olemas (või kasuta ResourceNotFoundException)
+import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.persistence.joinapplication.JoinApplication;
-import ee.sportclub.persistence.joinapplication.JoinApplicationRepository;
 import ee.sportclub.persistence.joinapplication.JoinApplicationMapper;
-import ee.sportclub.persistence.user.UserTrainingGroupRepository;
+import ee.sportclub.persistence.joinapplication.JoinApplicationRepository;
 import ee.sportclub.persistence.training.traininggroup.TrainingGroupRepository;
+import ee.sportclub.persistence.user.UserTrainingGroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.Set;
 
-import static ee.sportclub.Error.PRIMARY_KEY_NOT_FOUND;
-import static ee.sportclub.Error.JOIN_APPLICATION_UNAVAILABLE;
+import static ee.sportclub.Error.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,5 +50,33 @@ public class JoinApplicationService {
         joinApplicationRepository.save(joinApplication);
 
         return joinApplicationMapper.toJoinApplicationResponse("Taotlus esitatud");
+    }
+
+    public void confirmJoinApplication(Integer joinApplicationId) {
+        JoinApplication application = getValidatedApplication(joinApplicationId);
+
+        userTrainingGroupRepository.save(joinApplicationMapper.toUserTrainingGroup(application));
+        application.setStatus(Status.STATUS_ACCEPTED.getCode());
+        joinApplicationRepository.save(application);
+    }
+
+    public void rejectJoinApplication(Integer joinApplicationId) {
+        JoinApplication application = getValidatedApplication(joinApplicationId);
+
+        application.setStatus(Status.STATUS_REJECTED.getCode());
+        joinApplicationRepository.save(application);
+    }
+
+    private JoinApplication getValidatedApplication(Integer joinApplicationId) {
+        JoinApplication application = joinApplicationRepository.findById(joinApplicationId)
+                .orElseThrow(() -> new DataNotFoundException(
+                        "Ei leidnud primary keyd 'joinApplicationId' väärtusega: " + joinApplicationId,
+                        PRIMARY_KEY_NOT_FOUND.name()
+                ));
+
+        if (!"PEN".equals(application.getStatus())) {
+            throw new ForbiddenException(JOIN_APPLICATION_ALREADY_PROCESSED.getMessage(), JOIN_APPLICATION_ALREADY_PROCESSED.name());
+        }
+        return application;
     }
 }

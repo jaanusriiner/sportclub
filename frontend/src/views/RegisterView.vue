@@ -154,7 +154,7 @@ export default {
               <input
                 v-model="registerRequest.firstName"
                 type="text"
-                class="form-control border border-dark"
+                class="form-control"
                 placeholder=""
               />
               <label>Eesnimi</label>
@@ -165,7 +165,7 @@ export default {
               <input
                 v-model="registerRequest.lastName"
                 type="text"
-                class="form-control border border-dark"
+                class="form-control"
                 placeholder=""
               />
               <label>Perenimi</label>
@@ -178,7 +178,7 @@ export default {
               <input
                 v-model="registerRequest.phoneNumber"
                 type="number"
-                class="form-control border border-dark"
+                class="form-control"
                 placeholder=""
               />
               <label>Kontakttelefon</label>
@@ -205,7 +205,7 @@ export default {
               <input
                 v-model="registerRequest.email"
                 type="email"
-                class="form-control border border-dark"
+                class="form-control"
                 placeholder=""
               />
               <label>Email</label>
@@ -216,18 +216,13 @@ export default {
               <input
                 v-model="registerRequest.password"
                 type="password"
-                class="form-control border border-dark"
+                class="form-control"
                 placeholder=""
               />
               <label>Salasõna</label>
             </div>
             <div class="form-floating">
-              <input
-                v-model="passwordRepeat"
-                type="password"
-                class="form-control border border-dark"
-                placeholder=""
-              />
+              <input v-model="passwordRepeat" type="password" class="form-control" placeholder="" />
               <label>Korda Salasõna</label>
             </div>
           </div>
@@ -237,7 +232,7 @@ export default {
             <div class="form-check">
               <input
                 v-model="termsAccepted"
-                class="form-check-input border border-dark"
+                class="form-check-input"
                 type="checkbox"
                 value=""
                 id="checkDefault"

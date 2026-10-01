@@ -1,27 +1,54 @@
 <template>
-  <div class="container text-center">
+  <div class="container">
     <div class="row justify-content-center">
-      <div class="col">
-        <div class="alert alert-primary" role="alert">See on koduvaade, see asub rajal (/)</div>
-        <TestComponent />
+      <div class="col-12 col-lg-8 home-text">
+        <h1 class="home-headline">Liikumine on elu.</h1>
+        <p class="home-lead">
+          Iga samm, iga trenn, iga kord kui valid liikumise paigalseisu asemel — see on investeering
+          sinu tervisesse, energiasse ja heaolusse.
+        </p>
+        <p class="home-closing">Alustamiseks pole vaja täiuslikku hetke. Piisab ühest klikist.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import TestComponent from '@/components/TestComponent.vue'
-
 export default {
   name: 'HomeView',
-  components: {
-    TestComponent,
-  },
-  data() {
-    return {
-    }
-  },
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.home-text {
+  padding-top: 40px;
+}
+
+.home-headline {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 72px;
+  line-height: 1.05;
+  margin-bottom: 32px;
+}
+
+.home-lead {
+  font-size: 20px;
+  color: var(--sc-muted);
+  margin-bottom: 24px;
+  max-width: 640px;
+}
+
+.home-closing {
+  font-size: 20px;
+  font-weight: 500;
+  max-width: 640px;
+}
+
+@media (max-width: 640px) {
+  .home-headline {
+    font-size: 48px;
+  }
+}
+</style>

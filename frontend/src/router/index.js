@@ -1,11 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from "@/views/HomeView.vue";
-import TestView from "@/views/TestView.vue";
+import HomeView from '@/views/HomeView.vue'
+import TestView from '@/views/TestView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ErrorView from '@/views/ErrorView.vue'
 import InfoView from '@/views/InfoView.vue'
 import ManageTrainingsView from '@/views/ManageTrainingsView.vue'
-
+import CreateTrainingGroupView from '@/views/CreateTrainingGroupView.vue'
+import CreateTrainingView from '@/views/CreateTrainingView.vue'
+import TrainingsView from '@/views/TrainingsView.vue'
+import SessionStorageService from '@/services/SessionStorageService.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,16 +39,39 @@ const router = createRouter({
       component: InfoView,
     },
     {
-      path: '/managetrainings',
+      path: '/manage-trainings',
       name: 'manageTrainingsRoute',
       component: ManageTrainingsView,
+      meta: { requiresAdminOrTrainer: true },
     },
     {
-      path: '/training',
-      name: 'trainingRoute',
-      component: HomeView,
+      path: '/create-training-group',
+      name: 'createTrainingGroupRoute',
+      component: CreateTrainingGroupView,
+    },
+    {
+      path: '/create-training',
+      name: 'createTrainingRoute',
+      component: CreateTrainingView,
+      meta: { requiresAdminOrTrainer: true },
+    },
+    {
+      path: '/trainings',
+      name: 'trainingsRoute',
+      component: TrainingsView,
     },
   ],
+})
+
+// lubab admin/trainer-only marsruudile ligi vaid sisse logitud admin või trainer rolliga kasutajal
+router.beforeEach((to) => {
+  if (!to.meta.requiresAdminOrTrainer) {
+    return true
+  }
+  const isAllowed =
+    SessionStorageService.userIsLoggedIn() &&
+    (SessionStorageService.userIsAdmin() || SessionStorageService.userIsTrainer())
+  return isAllowed ? true : { name: 'homeRoute' }
 })
 
 export default router

@@ -29,7 +29,8 @@ public interface TrainingDateMapper {
             @Mapping(source = "userCount", target = "userCount"),
             @Mapping(source = "maxSize", target = "maxSize"),
             @Mapping(ignore = true, target = "userIsRegistered"),
-            @Mapping(ignore = true, target = "userIsTrainingGroupMember")
+            @Mapping(ignore = true, target = "userIsTrainingGroupMember"),
+            @Mapping(ignore = true, target = "userHasPendingJoinApplication")
 
     })
     TrainingGroupOverviewDto toTrainingGroupOverviewDto(TrainingDate trainingDate);

@@ -9,6 +9,8 @@ export default {
 
 <template>
   <div>
-    <div v-if="errorMessage !== ''" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+    <div v-if="errorMessage !== ''" class="alert alert-danger text-center" role="alert">
+      {{ errorMessage }}
+    </div>
   </div>
 </template>

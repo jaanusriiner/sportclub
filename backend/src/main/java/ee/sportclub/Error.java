@@ -16,8 +16,9 @@ public enum Error {
     MAX_SIZE_TOO_LOW("Maksimaalne osalejate arv ei tohi olla väiksem juba registreerunud kasutajate arvust"),
     NOT_TRAINING_GROUP_TRAINER("Antud treeninggrupp ei kuulu valitud treenerile"),
     NO_TRAINING_DATES("Valitud perioodi ei jää ühtegi valitud nädalapäeva"),
-    ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud");
-
+    ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud"),
+    NOT_REGISTERED("Sa ei ole sellele treeningule registreerunud"),
+    JOIN_APPLICATION_ALREADY_PROCESSED("Taotlus on juba menetletud");
 
     private final String message;
 

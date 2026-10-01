@@ -10,6 +10,7 @@
             id="emailInput"
             v-model="email"
             type="email"
+            @keyup.enter="handleLogin"
             class="form-control"
             placeholder="Nimi@eesnimi.ee"
           />
@@ -21,6 +22,7 @@
             id="passwordInput"
             v-model="password"
             type="password"
+            @keyup.enter="handleLogin"
             class="form-control"
             placeholder="********"
           />
@@ -72,9 +74,10 @@ export default {
           const data = response.data
           sessionStorage.setItem('userId', data.userId)
           sessionStorage.setItem('roleName', data.roleName)
+          sessionStorage.setItem('userFullName', data.userFullName || '')
           this.$emit('event-login-successful')
           this.closeModal()
-          this.$router.push('/training')
+          this.$router.push(data.roleName === 'trainer' ? '/manage-trainings' : '/trainings')
         })
         .catch((error) => {
           if (error.response && error.response.status === 403) {

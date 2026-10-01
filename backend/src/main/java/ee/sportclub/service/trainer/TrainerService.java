@@ -1,5 +1,6 @@
 package ee.sportclub.service.trainer;
 
+import ee.sportclub.controller.joinapplication.dto.PendingJoinApplicationDto;
 import ee.sportclub.controller.trainer.TrainerSportclubDto;
 import ee.sportclub.controller.trainer.TrainerTrainingGroupDto;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
@@ -24,19 +25,25 @@ public class TrainerService {
     private final TrainingGroupRepository trainingGroupRepository;
     private final TrainingGroupMapper trainingGroupMapper;
     private final UserRepository userRepository;
+    private final JoinApplicationRepository joinApplicationRepository;
 
     public List<TrainerSportclubDto> findTrainerSportclubs(Integer trainerId) {
         List<SportclubTrainer> sportclubTrainers = sportclubTrainerRepository.findSportClubsByTrainer(trainerId);
         return sportclubTrainerMapper.toTrainerSportclubDtos(sportclubTrainers);
     }
 
-
     public List<TrainerTrainingGroupDto> findTrainerTrainingGroups(Integer trainerId) {
-
         userRepository.findById(trainerId)
                 .orElseThrow(() -> new PrimaryKeyNotFoundException("trainerId", trainerId));
 
         List<TrainingGroup> trainingGroups = trainingGroupRepository.findByTrainerId(trainerId);
         return trainingGroupMapper.toTrainerTrainingGroupDtos(trainingGroups);
+    }
+
+    public List<PendingJoinApplicationDto> findTrainerPendingJoinApplications(Integer trainerId) {
+        userRepository.findById(trainerId)
+                .orElseThrow(() -> new PrimaryKeyNotFoundException("trainerId", trainerId));
+
+        return joinApplicationRepository.findPendingApplicationsByTrainerId(trainerId);
     }
 }

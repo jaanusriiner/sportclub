@@ -15,5 +15,4 @@ public interface UserTrainingGroupRepository extends JpaRepository<UserTrainingG
             where u.trainingGroup.id = :trainingGroupId and u.user.id = :userId""")
     boolean userIsTrainingGroupMember(Integer trainingGroupId, Integer userId);
 
-
 }

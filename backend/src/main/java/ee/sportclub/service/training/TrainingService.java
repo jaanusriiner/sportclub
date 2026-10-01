@@ -79,7 +79,9 @@ public class TrainingService {
     public void updateTrainingDateDetails(Integer trainingDateId, UpdateTrainingDateRequestDto updateTrainingDateRequestDto) {
         TrainingDate trainingDate = getValidTrainingDateBy(trainingDateId);
         validateTrainingDateNewMaxSizeIsAllowed(trainingDate.getUserCount(), updateTrainingDateRequestDto.getMaxSize());
-        trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
+        if (updateTrainingDateRequestDto.getDescription() != null) {
+            trainingDate.getTraining().setDescription(updateTrainingDateRequestDto.getDescription());
+        }
         trainingDate.setMaxSize(updateTrainingDateRequestDto.getMaxSize());
         trainingDate.setStartDate(updateTrainingDateRequestDto.getTrainingDate());
         trainingDate.setStartTime(updateTrainingDateRequestDto.getTrainingTime());
@@ -97,6 +99,20 @@ public class TrainingService {
         return createRegisteredToTrainingSuccessMessage();
 
 
+    }
+
+    @Transactional
+    public TrainingRegisterResponseDto unregisterFromTraining(Integer trainingDateId, Integer userId) {
+        getValidUser(userId);
+        TrainingDate trainingDate = getValidTrainingDateByIdAndLockIt(trainingDateId);
+        int deletedCount = userTrainingRepository.deleteUserTrainingBy(userId, trainingDateId);
+        if (deletedCount == 0) {
+            throw new ForbiddenException(NOT_REGISTERED.getMessage(), NOT_REGISTERED.name());
+        }
+        trainingDate.setUserCount(trainingDate.getUserCount() - 1);
+        TrainingRegisterResponseDto trainingRegisterResponseDto = new TrainingRegisterResponseDto();
+        trainingRegisterResponseDto.setMessage("Oled treeningult edukalt maha võetud");
+        return trainingRegisterResponseDto;
     }
 
     private TrainingDate getValidTrainingDateByIdAndLockIt(Integer trainingDateId) {
