@@ -174,6 +174,17 @@ export default {
       }
     },
 
+    // täis -> hall, vähemalt 75% täis -> kollakas, muidu roheline
+    capacityClass(userCount, maxSize) {
+      if (userCount >= maxSize) {
+        return 'fw-bold text-secondary'
+      }
+      if (userCount / maxSize >= 0.75) {
+        return 'fw-bold text-warning-emphasis'
+      }
+      return 'fw-bold text-success'
+    },
+
     formatDateTime(trainingDate, trainingTime) {
       const [year, month, day] = trainingDate.split('-')
       return `${day}.${month}.${year} ${trainingTime.substring(0, 5)}`
@@ -227,7 +238,9 @@ export default {
                   <td class="text-nowrap">
                     {{ formatDateTime(myTraining.nextTrainingDate, myTraining.nextTrainingTime) }}
                   </td>
-                  <td>{{ myTraining.userCount }}/{{ myTraining.maxSize }}</td>
+                  <td :class="capacityClass(myTraining.userCount, myTraining.maxSize)">
+                    {{ myTraining.userCount }}/{{ myTraining.maxSize }}
+                  </td>
                   <td>
                     <button
                       type="button"
@@ -309,15 +322,15 @@ export default {
                 </td>
                 <td>
                   <template v-if="training.userIsTrainingGroupMember">
-                    <div>{{ training.userCount }}/{{ training.maxSize }}</div>
-                    <span
-                      v-if="training.userIsRegistered"
-                      class="badge rounded-pill text-bg-success mt-1"
+                    <div :class="capacityClass(training.userCount, training.maxSize)">
+                      {{ training.userCount }}/{{ training.maxSize }}
+                    </div>
+                    <span v-if="training.userIsRegistered" class="fw-bold text-success mt-1"
                       >Registreeritud</span
                     >
                     <span
                       v-else-if="training.userCount >= training.maxSize"
-                      class="badge rounded-pill text-bg-secondary mt-1"
+                      class="fw-bold text-secondary mt-1"
                       >Kohad on täis</span
                     >
                     <button
@@ -331,7 +344,7 @@ export default {
                   </template>
                   <span
                     v-else-if="training.userHasPendingJoinApplication"
-                    class="badge rounded-pill text-bg-warning"
+                    class="fw-bold text-warning-emphasis"
                     >Taotlus edastatud</span
                   >
                   <button
