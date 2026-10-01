@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-12 col-lg-8 home-text">
-        <h1 class="home-headline">Liikumine on elu.</h1>
+        <h1 class="home-headline">Liikumine on elu</h1>
         <p class="home-lead">
           Iga samm, iga trenn, iga kord kui valid liikumise paigalseisu asemel — see on investeering
           sinu tervisesse, energiasse ja heaolusse.
@@ -25,11 +25,11 @@ export default {
 }
 
 .home-headline {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 72px;
-  line-height: 1.05;
+  font-family: 'Manrope', 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 200;
+  font-size: 64px;
+  letter-spacing: -0.035em;
+  line-height: 1;
   margin-bottom: 32px;
 }
 
@@ -48,7 +48,7 @@ export default {
 
 @media (max-width: 640px) {
   .home-headline {
-    font-size: 48px;
+    font-size: 44px;
   }
 }
 </style>

@@ -93,7 +93,7 @@ export default {
 </script>
 
 <template>
-  <div class="container text-center mt-5">
+  <div class="container text-center mt-0">
     <div class="row justify-content-center">
       <div class="col-md-8">
         <figure class="mt-3 mb-5">

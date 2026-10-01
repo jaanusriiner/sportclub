@@ -279,7 +279,7 @@ export default {
   <div class="container">
     <div class="row justify-content-center mb-4">
       <div class="col">
-        <p class="eyebrow">Treeningud</p>
+        <p class="eyebrow">Harrastaja vaade</p>
         <h1>Treeninggrupid ja treeningud</h1>
         <AlertSuccess :success-message="successMessage" />
       </div>
@@ -420,7 +420,7 @@ export default {
 
                 <th>Spordiklubi</th>
                 <th>Oskustase</th>
-                <th>Järgmine treening</th>
+                <th class="text-nowrap">Järgmine treening</th>
                 <th>Täituvus</th>
                 <th>Info</th>
               </tr>
