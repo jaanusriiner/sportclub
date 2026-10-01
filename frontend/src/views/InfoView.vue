@@ -55,6 +55,16 @@ export default {
   <div class="container text-center mt-5">
     <div class="row justify-content-center">
       <div class="col-md-8">
+        <figure class="mt-5 mb-5">
+          <blockquote class="blockquote fs-3 fst-italic">
+            <p>
+              “Just remember, you can’t climb the ladder of success with your hands in your
+              pockets.”
+            </p>
+          </blockquote>
+          <figcaption class="blockquote-footer">Arnold Schwarzenegger</figcaption>
+        </figure>
+
         <p class="fs-5 intro-text">
           Siit saad küsida harrastatavate spordialade, spordiklubide, treenerite, treeningrühmade ja
           trenniaegade kohta

@@ -7,8 +7,13 @@ import SessionStorageService from '@/services/SessionStorageService.js'
 export default {
   name: 'App',
   components: { RouterLink, RouterView, LoginModal },
+  // Lubab vaadetel (nt TrainingsView) login modaali avada
+  provide() {
+    return { openLoginModal: this.openModal }
+  },
   data() {
     return {
+      routerViewKey: 0,
       loginModalIsOpen: false,
       isLoggedIn: SessionStorageService.userIsLoggedIn(),
       isAdmin: SessionStorageService.userIsAdmin(),
@@ -26,11 +31,15 @@ export default {
       sessionStorage.clear()
       this.isLoggedIn = false
       this.isAdmin = false
+      this.isTrainer = false
       NavigationService.navigateToHomeView()
     },
     updateNavMenu() {
       this.isLoggedIn = true
-      this.isAdmin = SessionStorageService.userIsLoggedIn()
+      // laeb aktiivse vaate uuesti, et see näeks uut sisselogimise olekut
+      this.routerViewKey++
+      this.isAdmin = SessionStorageService.userIsAdmin()
+      this.isTrainer = SessionStorageService.userIsTrainer()
     },
   },
 }
@@ -49,9 +58,9 @@ export default {
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-nav me-auto">
-        <RouterLink class="nav-link" to="/">Kodu</RouterLink>
-        <RouterLink class="nav-link" to="/info">Info</RouterLink>
-        <RouterLink class="nav-link" to="/">Treeningud</RouterLink>
+        <!--        <RouterLink class="nav-link" to="/">Kodu</RouterLink>-->
+        <RouterLink class="nav-link" to="/info">Meist</RouterLink>
+        <RouterLink class="nav-link" to="/trainings">Treeningud</RouterLink>
       </div>
       <div class="navbar-nav">
         <template v-if="isLoggedIn">
@@ -70,7 +79,7 @@ export default {
     </div>
   </nav>
 
-  <RouterView />
+  <RouterView :key="routerViewKey" />
   <LoginModal
     :login-modal-is-open="loginModalIsOpen"
     @event-login-modal-closed="closeModal"

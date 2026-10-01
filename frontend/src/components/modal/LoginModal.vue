@@ -74,7 +74,7 @@ export default {
           sessionStorage.setItem('roleName', data.roleName)
           this.$emit('event-login-successful')
           this.closeModal()
-          this.$router.push('/training')
+          this.$router.push('/trainings')
         })
         .catch((error) => {
           if (error.response && error.response.status === 403) {
