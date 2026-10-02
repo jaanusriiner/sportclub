@@ -168,9 +168,11 @@ public class TrainingController {
         trainingService.createNewTraining(createTrainingRequestDto);
     }
 
+
+
     @DeleteMapping("/api/training-dates/{trainingDateId}")
     @Operation(
-            summary = "Kustutab ühe treeningu trainingDateId järgi",
+            summary = "Kustutab ühe treeningkorra trainingDateId järgi",
             description = "Ootab sisse trainingDateId"
     )
     @ApiResponses(value = {

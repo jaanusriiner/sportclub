@@ -20,7 +20,6 @@ public enum Error {
     NO_TRAINING_DATES("Valitud perioodi ei jää ühtegi valitud nädalapäeva"),
     ALREADY_REGISTERED("Oled juba sellele treeningule registreerunud");
 
-
     private final String message;
 
     Error(String message) {
