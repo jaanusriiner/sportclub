@@ -21,6 +21,7 @@ public interface TrainingGroupMapper {
     @Mapping(source = "name", target = "trainingGroupName")
     @Mapping(source = "sportclub.id", target = "sportclubId")
     @Mapping(source = "sportclub.name", target = "sportclubName")
+    @Mapping(source = "user.id", target = "trainerId")
     TrainerTrainingGroupDto toTrainerTrainingGroupDto(TrainingGroup trainingGroup);
 
 

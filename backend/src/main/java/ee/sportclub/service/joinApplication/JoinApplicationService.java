@@ -3,12 +3,11 @@ package ee.sportclub.service.joinApplication;
 import ee.sportclub.Status;
 import ee.sportclub.controller.joinapplication.dto.JoinApplicationRequest;
 import ee.sportclub.controller.joinapplication.dto.JoinApplicationResponse;
-import ee.sportclub.infrastructure.exception.DataNotFoundException;
+import ee.sportclub.infrastructure.exception.DataNotFoundException; // Veendu, et see klass on olemas (või kasuta ResourceNotFoundException)
 import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.persistence.joinapplication.JoinApplication;
 import ee.sportclub.persistence.joinapplication.JoinApplicationMapper;
 import ee.sportclub.persistence.joinapplication.JoinApplicationRepository;
-//import ee.sportclub.persistence.training.TrainingGroupRepository;
 import ee.sportclub.persistence.training.traininggroup.TrainingGroupRepository;
 import ee.sportclub.persistence.user.UserTrainingGroupRepository;
 import lombok.RequiredArgsConstructor;

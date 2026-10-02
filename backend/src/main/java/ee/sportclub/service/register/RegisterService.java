@@ -111,7 +111,7 @@ public class RegisterService {
 
     public Area getValidArea(@NotNull Integer areaId) {
         Area area = areaRepository.findById(areaId)
-                .orElseThrow(() -> new PrimaryKeyNotFoundException("AreaId", areaId));
+                .orElseThrow(() -> new PrimaryKeyNotFoundException("areaId", areaId));
         return area;
 
     }

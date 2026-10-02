@@ -42,6 +42,7 @@ export default {
   },
   data() {
     return {
+      isAdmin: SessionStorageService.userIsAdmin(),
       trainings: [],
       trainerTrainingGroups: [],
       joinApplications: [],
@@ -217,12 +218,13 @@ export default {
     },
 
     getTrainerTrainings() {
-      const trainerId = SessionStorageService.getUserId()
+      const userId = SessionStorageService.getUserId()
       TrainingService.getTrainingsRequest({
-        requestUserId: trainerId,
+        requestUserId: userId,
         areaId: 0,
         sportId: 0,
-        trainerId: trainerId,
+        // trainerId = 0 tähendab "kõik treenerid" - admin näeb kõiki treeninguid
+        trainerId: this.isAdmin ? 0 : userId,
         dateFrom: this.selectedDateFrom || this.todayDate,
         timeFrom: '00:00',
         page: 1,
@@ -283,7 +285,7 @@ export default {
   <div class="container">
     <div class="row justify-content-center mb-4">
       <div class="col">
-        <p class="eyebrow">Treeneri vaade</p>
+        <p class="eyebrow">{{ isAdmin ? 'Admini vaade' : 'Treeneri vaade' }}</p>
         <h1>Halda treeninggruppe ja treeninguid</h1>
         <AlertSuccess :success-message="successMessage" />
       </div>
@@ -341,6 +343,7 @@ export default {
                 <th>Asukoht</th>
                 <th>Spordiklubi</th>
                 <th>Treeninggrupp</th>
+                <th v-if="isAdmin">Treener</th>
                 <th>Kuupäev/Aeg</th>
                 <th>Täituvus</th>
                 <th>Toimingud</th>
@@ -356,6 +359,7 @@ export default {
                 <td>{{ training.facilityName }}</td>
                 <td>{{ training.sportclubName }}</td>
                 <td>{{ training.sportName }} - {{ training.skillLevelName }}</td>
+                <td v-if="isAdmin">{{ training.trainerName }}</td>
                 <td class="text-nowrap">
                   {{ formatDateTime(training.trainingDate, training.trainingTime) }}
                 </td>

@@ -3,6 +3,7 @@ import AlertDanger from '@/components/alert/AlertDanger.vue'
 import NavigationService from '@/services/NavigationService.js'
 import SessionStorageService from '@/services/SessionStorageService.js'
 import SportService from '@/services/SportService.js'
+import SportclubService from '@/services/SportclubService.js'
 import TrainerService from '@/services/TrainerService.js'
 import TrainingGroupService from '@/services/TrainingGroupService.js'
 
@@ -15,13 +16,16 @@ export default {
   },
   data() {
     return {
+      isAdmin: SessionStorageService.userIsAdmin(),
       errorMessage: '',
       sportclubs: [],
+      sportclubTrainers: [],
       sports: [],
       skillLevels: [],
 
       trainingGroupRequest: {
-        trainerId: SessionStorageService.getUserId(),
+        // admin valib treeneri vormis, treener loob grupi iseenda nimel
+        trainerId: SessionStorageService.userIsAdmin() ? 0 : SessionStorageService.getUserId(),
         sportclubId: 0,
         sportId: 0,
         skillLevelId: 0,
@@ -32,7 +36,7 @@ export default {
   },
   methods: {
     getTrainerSportclubs() {
-      TrainerService.getTrainerSportclubsRequest(this.trainingGroupRequest.trainerId)
+      TrainerService.getTrainerSportclubsRequest(SessionStorageService.getUserId())
         .then((response) => (this.sportclubs = response.data))
         .catch(() => NavigationService.navigateToErrorView())
     },
@@ -40,6 +44,23 @@ export default {
     getSports() {
       SportService.getSportsRequest()
         .then((response) => (this.sports = response.data))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    handleSportclubChanged() {
+      if (!this.isAdmin) {
+        return
+      }
+      this.trainingGroupRequest.trainerId = 0
+      this.sportclubTrainers = []
+      if (this.trainingGroupRequest.sportclubId !== 0) {
+        this.getSportclubTrainers()
+      }
+    },
+
+    getSportclubTrainers() {
+      SportclubService.getSportclubTrainersRequest(this.trainingGroupRequest.sportclubId)
+        .then((response) => (this.sportclubTrainers = response.data))
         .catch(() => NavigationService.navigateToErrorView())
     },
 
@@ -62,7 +83,7 @@ export default {
       this.checkFormForErrors()
       if (this.errorMessage === '') {
         TrainingGroupService.postTrainingGroupRequest(this.trainingGroupRequest)
-          .then(() => NavigationService.navigateToManageTrainingsView())
+          .then(() => NavigationService.navigateToManageTrainingGroupsView())
           .catch((error) => this.handleCreateError(error))
       }
     },
@@ -70,6 +91,8 @@ export default {
     checkFormForErrors() {
       if (this.trainingGroupRequest.sportclubId === 0) {
         this.errorMessage = 'Vali spordiklubi'
+      } else if (this.trainingGroupRequest.trainerId === 0) {
+        this.errorMessage = 'Vali treener'
       } else if (this.trainingGroupRequest.sportId === 0) {
         this.errorMessage = 'Vali spordiala'
       } else if (this.trainingGroupRequest.skillLevelId === 0) {
@@ -88,7 +111,7 @@ export default {
     },
 
     goBack() {
-      NavigationService.navigateToManageTrainingsView()
+      this.$router.back()
     },
   },
 }
@@ -106,7 +129,11 @@ export default {
       <div class="col-12 col-md-8 col-lg-6 card p-4">
         <div class="mb-3">
           <label class="form-label">Spordiklubi</label>
-          <select v-model="trainingGroupRequest.sportclubId" class="form-select">
+          <select
+            v-model="trainingGroupRequest.sportclubId"
+            class="form-select"
+            @change="handleSportclubChanged"
+          >
             <option :value="0">Vali spordiklubi...</option>
             <option
               v-for="sportclub in sportclubs"
@@ -114,6 +141,24 @@ export default {
               :value="sportclub.sportclubId"
             >
               {{ sportclub.sportclubName }}
+            </option>
+          </select>
+        </div>
+
+        <div v-if="isAdmin" class="mb-3">
+          <label class="form-label">Treener</label>
+          <select
+            v-model="trainingGroupRequest.trainerId"
+            class="form-select"
+            :disabled="trainingGroupRequest.sportclubId === 0"
+          >
+            <option :value="0">Vali treener...</option>
+            <option
+              v-for="trainer in sportclubTrainers"
+              :key="trainer.trainerId"
+              :value="trainer.trainerId"
+            >
+              {{ trainer.trainerName }}
             </option>
           </select>
         </div>
