@@ -1,5 +1,6 @@
 <script>
 import AreasDropDown from '@/components/dropdown/AreasDropDown.vue'
+import FacilityInfoModal from '@/components/modal/FacilityInfoModal.vue'
 import AreaService from '@/services/AreaService.js'
 import FacilityService from '@/services/FacilityService.js'
 import NavigationService from '@/services/NavigationService.js'
@@ -7,7 +8,7 @@ import SessionStorageService from '@/services/SessionStorageService.js'
 
 export default {
   name: 'FacilitiesView',
-  components: { AreasDropDown },
+  components: { AreasDropDown, FacilityInfoModal },
   beforeMount() {
     this.getAreas()
     this.getFacilities()
@@ -20,6 +21,10 @@ export default {
       facilities: [],
       selectedAreaId: 0,
       searchText: '',
+      infoModalIsOpen: false,
+      selectedFacility: null,
+      selectedFacilityImageData: '',
+      imageIsLoading: false,
     }
   },
   computed: {
@@ -65,6 +70,29 @@ export default {
     clearFilters() {
       this.selectedAreaId = 0
       this.searchText = ''
+    },
+
+    openFacilityInfoModal(facility) {
+      this.selectedFacility = facility
+      this.selectedFacilityImageData = ''
+      this.imageIsLoading = true
+      this.infoModalIsOpen = true
+      FacilityService.getFacilityImageRequest(facility.facilityId)
+        .then((response) => this.handleFacilityImageResponse(facility, response.data.imageData))
+        .catch(() => NavigationService.navigateToErrorView())
+        .finally(() => (this.imageIsLoading = false))
+    },
+
+    handleFacilityImageResponse(facility, imageData) {
+      // kasutaja võis vahepeal teise asukoha avada - vana vastus ei tohi uut pilti üle kirjutada
+      if (this.selectedFacility === facility) {
+        this.selectedFacilityImageData = imageData
+      }
+    },
+
+    closeFacilityInfoModal() {
+      this.infoModalIsOpen = false
+      this.selectedFacility = null
     },
 
     goToCreateFacility() {
@@ -131,7 +159,13 @@ export default {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="facility in filteredFacilities" :key="facility.facilityId">
+              <tr
+                v-for="facility in filteredFacilities"
+                :key="facility.facilityId"
+                class="facility-row"
+                title="Vaata asukoha infot"
+                @click="openFacilityInfoModal(facility)"
+              >
                 <td class="sc-strong">{{ facility.facilityName }}</td>
                 <td>{{ facility.facilityAddress }}</td>
                 <td>{{ getAreaName(facility.areaId) }}</td>
@@ -153,5 +187,20 @@ export default {
         </p>
       </div>
     </div>
+
+    <FacilityInfoModal
+      :info-modal-is-open="infoModalIsOpen"
+      :facility="selectedFacility"
+      :area-name="selectedFacility ? getAreaName(selectedFacility.areaId) : ''"
+      :image-data="selectedFacilityImageData"
+      :image-is-loading="imageIsLoading"
+      @event-info-modal-closed="closeFacilityInfoModal"
+    />
   </div>
 </template>
+
+<style scoped>
+.facility-row {
+  cursor: pointer;
+}
+</style>

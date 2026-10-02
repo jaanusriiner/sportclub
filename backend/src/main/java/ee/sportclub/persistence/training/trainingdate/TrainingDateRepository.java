@@ -30,6 +30,9 @@ public interface TrainingDateRepository extends JpaRepository<TrainingDate, Inte
 
     List<TrainingDate> training(Training training);
 
+    @Query("select (count(t) > 0) from TrainingDate t where t.facility.id = :facilityId")
+    boolean facilityIsUsedInTrainingDates(Integer facilityId);
+
     @Modifying
     @Query("""
             delete from TrainingDate t

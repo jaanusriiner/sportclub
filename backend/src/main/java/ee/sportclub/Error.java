@@ -20,6 +20,7 @@ public enum Error {
     NOT_REGISTERED("Sa ei ole sellele treeningule registreerunud"),
     NOT_ADMIN("Selle toimingu jaoks on vaja administraatori õigusi"),
     FACILITY_NAME_UNAVAILABLE("Sellise nimega asukoht on juba olemas"),
+    FACILITY_IN_USE("Asukohta kasutatakse treeningutes, seda ei saa kustutada"),
     CANNOT_MODIFY_SELF("Iseenda rolli ega staatust ei saa muuta"),
     USER_NOT_TRAINER("Spordiklubidega saab siduda ainult treeneri rolliga kasutajat"),
     JOIN_APPLICATION_ALREADY_PROCESSED("Taotlus on juba menetletud");

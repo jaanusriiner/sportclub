@@ -3,7 +3,10 @@ package ee.sportclub.service.facility;
 import ee.sportclub.Error;
 import ee.sportclub.UserRole;
 import ee.sportclub.controller.facility.dto.CreateFacilityRequestDto;
+import ee.sportclub.controller.facility.dto.FacilityDetailDto;
 import ee.sportclub.controller.facility.dto.FacilityDto;
+import ee.sportclub.controller.facility.dto.FacilityImageDto;
+import ee.sportclub.controller.facility.dto.UpdateFacilityRequestDto;
 import ee.sportclub.infrastructure.exception.ForbiddenException;
 import ee.sportclub.infrastructure.exception.PrimaryKeyNotFoundException;
 import ee.sportclub.infrastructure.util.StringBytesConverter;
@@ -11,6 +14,8 @@ import ee.sportclub.persistence.area.Area;
 import ee.sportclub.persistence.facility.*;
 import ee.sportclub.persistence.sport.Sport;
 import ee.sportclub.persistence.sport.SportRepository;
+import ee.sportclub.persistence.training.TrainingRepository;
+import ee.sportclub.persistence.training.trainingdate.TrainingDateRepository;
 import ee.sportclub.persistence.user.User;
 import ee.sportclub.persistence.user.UserRepository;
 import ee.sportclub.service.register.RegisterService;
@@ -35,6 +40,8 @@ public class FacilityService {
     private final SportRepository sportRepository;
     private final SportFacilityRepository sportFacilityRepository;
     private final FacilityImageRepository facilityImageRepository;
+    private final TrainingRepository trainingRepository;
+    private final TrainingDateRepository trainingDateRepository;
 
 
     public List<FacilityDto> findFacilities() {
@@ -43,10 +50,29 @@ public class FacilityService {
         return facilityMapper.toFacilityDtos(facilities);
     }
 
+    public FacilityDetailDto findFacility(Integer facilityId) {
+        Facility facility = getValidFacilityBy(facilityId);
+        FacilityDetailDto facilityDetailDto = facilityMapper.toFacilityDetailDto(facility);
+        facilityDetailDto.setSportIds(sportFacilityRepository.findSportIdsBy(facilityId));
+        return facilityDetailDto;
+    }
+
+    public FacilityImageDto findFacilityImage(Integer facilityId) {
+        getValidFacilityBy(facilityId);
+        String imageData = facilityImageRepository.findFacilityImageBy(facilityId)
+                .map(facilityImage -> StringBytesConverter.bytesToString(facilityImage.getImageBytes()))
+                .orElse("");
+        return new FacilityImageDto(imageData);
+    }
+
+    public Facility getValidFacilityBy(Integer facilityId) {
+        return facilityRepository.findById(facilityId)
+                .orElseThrow(() -> new PrimaryKeyNotFoundException("facilityId", facilityId));
+    }
+
     @Transactional
     public void addFacilityLocation(CreateFacilityRequestDto createFacilityRequestDto) {
-        User user = getValidAdminUserBy(createFacilityRequestDto.getAdminId());
-        validateUserHasAdminRole(user);
+        validateUserIsAdmin(createFacilityRequestDto.getAdminId());
         Area area = registerService.getValidArea(createFacilityRequestDto.getAreaId());
         List<Sport> sports = getValidSports(createFacilityRequestDto.getSportIds());
         validateFacilityNameIsAvailable(createFacilityRequestDto.getFacilityName());
@@ -55,6 +81,36 @@ public class FacilityService {
         facilityRepository.save(facility);
         createSportFacilities(sports, facility);
         handleFacilityImage(createFacilityRequestDto.getImageData(), facility);
+    }
+
+    @Transactional
+    public void updateFacility(Integer facilityId, UpdateFacilityRequestDto updateFacilityRequestDto) {
+        validateUserIsAdmin(updateFacilityRequestDto.getAdminId());
+        Facility facility = getValidFacilityBy(facilityId);
+        Area area = registerService.getValidArea(updateFacilityRequestDto.getAreaId());
+        List<Sport> sports = getValidSports(updateFacilityRequestDto.getSportIds());
+        validateFacilityNameIsAvailableForOtherFacility(updateFacilityRequestDto.getFacilityName(), facilityId);
+        facilityMapper.updateFacility(updateFacilityRequestDto, facility);
+        facility.setArea(area);
+        facilityRepository.save(facility);
+        sportFacilityRepository.deleteSportFacilitiesBy(facilityId);
+        createSportFacilities(sports, facility);
+        handleReplaceFacilityImage(updateFacilityRequestDto.getImageData(), facility);
+    }
+
+    @Transactional
+    public void deleteFacility(Integer facilityId, Integer adminId) {
+        validateUserIsAdmin(adminId);
+        Facility facility = getValidFacilityBy(facilityId);
+        validateFacilityIsNotInUse(facilityId);
+        facilityImageRepository.deleteFacilityImagesBy(facilityId);
+        sportFacilityRepository.deleteSportFacilitiesBy(facilityId);
+        facilityRepository.delete(facility);
+    }
+
+    private void validateUserIsAdmin(Integer adminId) {
+        User user = getValidAdminUserBy(adminId);
+        validateUserHasAdminRole(user);
     }
 
     private User getValidAdminUserBy(@NotNull Integer adminId) {
@@ -95,6 +151,20 @@ public class FacilityService {
         }
     }
 
+    private void validateFacilityNameIsAvailableForOtherFacility(String facilityName, Integer facilityId) {
+        boolean facilityNameIsUnavailable = facilityRepository.facilityNameIsUnavailableForOtherFacility(facilityName, facilityId);
+        if (facilityNameIsUnavailable) {
+            throw new ForbiddenException(Error.FACILITY_NAME_UNAVAILABLE.getMessage(), Error.FACILITY_NAME_UNAVAILABLE.name());
+        }
+    }
+
+    private void validateFacilityIsNotInUse(Integer facilityId) {
+        if (trainingRepository.facilityIsUsedInTrainings(facilityId)
+                || trainingDateRepository.facilityIsUsedInTrainingDates(facilityId)) {
+            throw new ForbiddenException(Error.FACILITY_IN_USE.getMessage(), Error.FACILITY_IN_USE.name());
+        }
+    }
+
     private void createSportFacilities(List<Sport> sports, Facility facility) {
         List<SportFacility> sportFacilities = new ArrayList<>();
         sports.forEach(sport -> {
@@ -113,6 +183,13 @@ public class FacilityService {
             facilityImage.setFacility(facility);
             facilityImage.setImageBytes(StringBytesConverter.stringToBytes(imageData));
             facilityImageRepository.save(facilityImage);
+        }
+    }
+
+    private void handleReplaceFacilityImage(String imageData, Facility facility) {
+        if (imageData != null && !imageData.isEmpty()) {
+            facilityImageRepository.deleteFacilityImagesBy(facility.getId());
+            handleFacilityImage(imageData, facility);
         }
     }
 }

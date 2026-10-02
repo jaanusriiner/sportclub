@@ -9,4 +9,7 @@ public interface FacilityRepository extends JpaRepository<Facility, Integer> {
 
     @Query("select (count(f) > 0) from Facility f where upper(f.name) = upper(:facilityName)")
     boolean facilityNameIsUnavailable(@NotEmpty @Size(min=1, max=60) String facilityName);
+
+    @Query("select (count(f) > 0) from Facility f where upper(f.name) = upper(:facilityName) and f.id <> :facilityId")
+    boolean facilityNameIsUnavailableForOtherFacility(String facilityName, Integer facilityId);
 }

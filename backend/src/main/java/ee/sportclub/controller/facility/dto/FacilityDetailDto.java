@@ -5,17 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
-/**
- * DTO for {@link ee.sportclub.persistence.facility.Facility}
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FacilityDto implements Serializable {
+public class FacilityDetailDto implements Serializable {
     Integer facilityId;
     String facilityName;
-    String facilityAddress;
+    String address;
+    String description;
     Integer areaId;
-    String facilityDescription;
+    List<Integer> sportIds;
 }

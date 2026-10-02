@@ -18,6 +18,14 @@ export default {
   beforeMount() {
     this.getAreas()
     this.getSports()
+    this.initializeForm()
+  },
+  watch: {
+    // "Lisa asukoht" ja "Muuda asukohta" kasutavad sama komponenti - marsruudi vahetusel
+    // komponenti uuesti ei looda, seega tuleb vorm ise lähtestada
+    facilityId() {
+      this.initializeForm()
+    },
   },
   data() {
     return {
@@ -27,11 +35,61 @@ export default {
       sports: [],
       // muutmine sunnib vormi (sh Tom Selecti spordialade valiku) uuesti looma
       formKey: 0,
+      facilityIsLoaded: false,
+      currentImageData: '',
 
       facilityRequest: this.createEmptyFacilityRequest(),
     }
   },
+  computed: {
+    facilityId() {
+      const facilityId = this.$route.params.facilityId
+      return facilityId ? Number(facilityId) : null
+    },
+
+    isEditMode() {
+      return this.facilityId !== null
+    },
+
+    previewImageData() {
+      return this.facilityRequest.imageData || this.currentImageData
+    },
+  },
   methods: {
+    initializeForm() {
+      this.errorMessage = ''
+      this.successMessage = ''
+      this.facilityRequest = this.createEmptyFacilityRequest()
+      this.currentImageData = ''
+      this.facilityIsLoaded = false
+      this.formKey++
+      if (this.isEditMode) {
+        this.getFacility()
+        this.getFacilityImage()
+      }
+    },
+
+    getFacility() {
+      FacilityService.getFacilityRequest(this.facilityId)
+        .then((response) => this.handleGetFacilityResponse(response.data))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    handleGetFacilityResponse(facilityDetail) {
+      this.facilityRequest.areaId = facilityDetail.areaId
+      this.facilityRequest.facilityName = facilityDetail.facilityName
+      this.facilityRequest.address = facilityDetail.address
+      this.facilityRequest.description = facilityDetail.description || ''
+      this.facilityRequest.sportIds = facilityDetail.sportIds
+      this.facilityIsLoaded = true
+    },
+
+    getFacilityImage() {
+      FacilityService.getFacilityImageRequest(this.facilityId)
+        .then((response) => (this.currentImageData = response.data.imageData))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
     createEmptyFacilityRequest() {
       return {
         adminId: SessionStorageService.getUserId(),
@@ -89,15 +147,29 @@ export default {
       this.$refs.imageInput.value = ''
     },
 
-    createFacility() {
+    saveFacility() {
       this.errorMessage = ''
       this.successMessage = ''
       this.checkFormForErrors()
       if (this.errorMessage === '') {
-        FacilityService.postFacilityRequest(this.facilityRequest)
-          .then(() => this.handleCreateFacilityResponse())
-          .catch((error) => this.handleCreateError(error))
+        if (this.isEditMode) {
+          this.updateFacility()
+        } else {
+          this.createFacility()
+        }
       }
+    },
+
+    createFacility() {
+      FacilityService.postFacilityRequest(this.facilityRequest)
+        .then(() => this.handleCreateFacilityResponse())
+        .catch((error) => this.handleCreateError(error))
+    },
+
+    updateFacility() {
+      FacilityService.putFacilityRequest(this.facilityId, this.facilityRequest)
+        .then(() => this.handleUpdateFacilityResponse())
+        .catch((error) => this.handleCreateError(error))
     },
 
     checkFormForErrors() {
@@ -116,6 +188,14 @@ export default {
       this.successMessage = `Asukoht "${this.facilityRequest.facilityName}" on lisatud`
       this.facilityRequest = this.createEmptyFacilityRequest()
       this.formKey++
+    },
+
+    handleUpdateFacilityResponse() {
+      this.successMessage = `Asukoha "${this.facilityRequest.facilityName}" muudatused on salvestatud`
+      if (this.facilityRequest.imageData) {
+        this.currentImageData = this.facilityRequest.imageData
+        this.removeImage()
+      }
     },
 
     handleCreateError(error) {
@@ -137,13 +217,20 @@ export default {
   <div class="container">
     <div class="row justify-content-center mb-4">
       <div class="col-12 col-md-8 col-lg-6">
-        <h1>Lisa uus asukoht</h1>
+        <p v-if="isEditMode" class="eyebrow">Admini vaade</p>
+        <h1>{{ isEditMode ? 'Muuda asukohta' : 'Lisa uus asukoht' }}</h1>
         <AlertDanger :error-message="errorMessage" />
         <AlertSuccess :success-message="successMessage" />
       </div>
     </div>
     <div class="row justify-content-center mb-4">
-      <div :key="formKey" class="col-12 col-md-8 col-lg-6 card p-4">
+      <div
+        v-if="isEditMode && !facilityIsLoaded"
+        class="col-12 col-md-8 col-lg-6 text-center sc-sub"
+      >
+        Asukoha andmete laadimine...
+      </div>
+      <div v-else :key="formKey" class="col-12 col-md-8 col-lg-6 card p-4">
         <div class="mb-3">
           <label class="form-label" for="facilityName">Asukoha nimi</label>
           <input
@@ -178,7 +265,11 @@ export default {
 
         <div class="mb-3">
           <label class="form-label" for="sports">Spordialad</label>
-          <SportsMultiSelect :sports="sports" @event-new-sports-selected="handleSportsSelected" />
+          <SportsMultiSelect
+            :sports="sports"
+            :selected-sport-ids="facilityRequest.sportIds"
+            @event-new-sports-selected="handleSportsSelected"
+          />
         </div>
 
         <div class="mb-3">
@@ -193,7 +284,9 @@ export default {
         </div>
 
         <div class="mb-3">
-          <label class="form-label" for="image">Pilt (JPEG või PNG, kuni 10 MB)</label>
+          <label class="form-label" for="image">
+            {{ isEditMode ? 'Uus pilt' : 'Pilt' }} (JPEG või PNG, kuni 10 MB)
+          </label>
           <input
             id="image"
             ref="imageInput"
@@ -202,17 +295,14 @@ export default {
             accept="image/jpeg,image/png"
             @change="handleImageSelected"
           />
-          <div v-if="facilityRequest.imageData" class="mt-3 text-center">
-            <img
-              :src="facilityRequest.imageData"
-              alt="Asukoha pildi eelvaade"
-              class="img-preview"
-            />
-            <div>
+          <div v-if="previewImageData" class="mt-3 text-center">
+            <img :src="previewImageData" alt="Asukoha pildi eelvaade" class="img-preview" />
+            <div v-if="facilityRequest.imageData">
               <button type="button" class="btn btn-link btn-sm" @click="removeImage">
-                Eemalda pilt
+                {{ isEditMode ? 'Loobu uuest pildist' : 'Eemalda pilt' }}
               </button>
             </div>
+            <div v-else class="sc-sub small mt-1">Praegune pilt</div>
           </div>
         </div>
       </div>
@@ -222,7 +312,7 @@ export default {
         <button @click="goBack" class="btn btn-secondary action-button me-3" type="button">
           Tagasi
         </button>
-        <button @click="createFacility" class="btn btn-primary action-button" type="submit">
+        <button @click="saveFacility" class="btn btn-primary action-button" type="submit">
           Salvesta
         </button>
       </div>

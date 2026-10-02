@@ -10,6 +10,11 @@ export default {
       default: 0,
     },
     sports: Array,
+    // muutmisvormis eelvalitud spordialad (vorm luuakse alles siis, kui need on teada)
+    selectedSportIds: {
+      type: Array,
+      default: () => [],
+    },
   },
   emits: ['event-new-sports-selected'],
   mounted() {
@@ -53,6 +58,8 @@ export default {
           this.tomSelect.addOption({ value: sport.sportId, text: sport.sportName }),
         )
       this.tomSelect.refreshOptions(false)
+      // silent=true - vanem teab eelvalitud spordialasid juba ise, onChange'i pole vaja
+      this.tomSelect.addItems(this.selectedSportIds, true)
     },
   },
 }

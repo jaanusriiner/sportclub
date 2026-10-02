@@ -118,6 +118,11 @@ export default {
               <li v-if="isAdmin">
                 <RouterLink class="dropdown-item" to="/manage-users">Halda kasutajaid</RouterLink>
               </li>
+              <li v-if="isAdmin">
+                <RouterLink class="dropdown-item" to="/manage-facilities"
+                  >Halda asukohti</RouterLink
+                >
+              </li>
               <li><hr class="dropdown-divider" /></li>
             </template>
             <li>

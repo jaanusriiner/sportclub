@@ -9,4 +9,7 @@ public interface TrainingRepository extends JpaRepository<Training, Integer> {
     @Modifying
     @Query("delete from Training t where t.trainingGroup.id = :trainingGroupId")
     void deleteTrainingsBy(Integer trainingGroupId);
+
+    @Query("select (count(t) > 0) from Training t where t.defaultFacility.id = :facilityId")
+    boolean facilityIsUsedInTrainings(Integer facilityId);
 }

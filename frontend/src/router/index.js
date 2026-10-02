@@ -12,6 +12,7 @@ import CreateFacilityView from '@/views/CreateFacilityView.vue'
 import FacilitiesView from '@/views/FacilitiesView.vue'
 import ManageTrainingGroupsView from '@/views/ManageTrainingGroupsView.vue'
 import ManageUsersView from '@/views/ManageUsersView.vue'
+import ManageFacilitiesView from '@/views/ManageFacilitiesView.vue'
 import SessionStorageService from '@/services/SessionStorageService.js'
 
 const router = createRouter({
@@ -86,6 +87,18 @@ const router = createRouter({
       path: '/create-facility',
       name: 'createFacilityRoute',
       component: CreateFacilityView,
+      meta: { requiresAdmin: true },
+    },
+    {
+      path: '/edit-facility/:facilityId',
+      name: 'editFacilityRoute',
+      component: CreateFacilityView,
+      meta: { requiresAdmin: true },
+    },
+    {
+      path: '/manage-facilities',
+      name: 'manageFacilitiesRoute',
+      component: ManageFacilitiesView,
       meta: { requiresAdmin: true },
     },
   ],

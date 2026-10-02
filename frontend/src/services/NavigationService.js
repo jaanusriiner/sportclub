@@ -40,4 +40,12 @@ export default {
   navigateToCreateFacilityView() {
     router.push({ name: 'createFacilityRoute' })
   },
+
+  navigateToEditFacilityView(facilityId) {
+    router.push({ name: 'editFacilityRoute', params: { facilityId } })
+  },
+
+  navigateToManageFacilitiesView() {
+    router.push({ name: 'manageFacilitiesRoute' })
+  },
 }
