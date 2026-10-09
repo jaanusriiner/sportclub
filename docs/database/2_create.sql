@@ -35,6 +35,23 @@ CREATE TABLE join_application (
                                   CONSTRAINT joinapplication_pk PRIMARY KEY (id)
 );
 
+-- Table: llm_model
+-- Benchmark-vaates võrreldavad LLM mudelid. Hinnad USD-s 1M tokeni kohta (EUR-iks teisendab backend).
+-- cached_input_price_usd - vahemälust (prompt caching) tulnud input tokenite soodushind.
+-- API võtmed EI ole siin, vaid backendi keskkonnamuutujates.
+CREATE TABLE llm_model (
+                           id serial  NOT NULL,
+                           provider varchar(50)  NOT NULL,
+                           name varchar(100)  NOT NULL,
+                           input_price_usd numeric(10,4)  NOT NULL,
+                           cached_input_price_usd numeric(10,4)  NOT NULL,
+                           output_price_usd numeric(10,4)  NOT NULL,
+                           max_temperature numeric(2,1)  NOT NULL DEFAULT 2.0,
+                           is_active boolean  NOT NULL DEFAULT true,
+                           CONSTRAINT llm_model_name_ak UNIQUE (name),
+                           CONSTRAINT llm_model_pk PRIMARY KEY (id)
+);
+
 -- Table: profile
 CREATE TABLE profile (
                          id serial  NOT NULL,
@@ -97,6 +114,16 @@ CREATE TABLE sportclub_trainer (
                                    sportclub_id int  NOT NULL,
                                    user_id int  NOT NULL,
                                    CONSTRAINT sportclub_trainer_pk PRIMARY KEY (id)
+);
+
+-- Table: tone
+-- Benchmark-vaate vastuse toon. description lisatakse LLM-i system prompti lõppu (NEUTRAL puhul tühi).
+CREATE TABLE tone (
+                      id serial  NOT NULL,
+                      name varchar(50)  NOT NULL,
+                      description varchar(1000)  NULL,
+                      CONSTRAINT tone_name_ak UNIQUE (name),
+                      CONSTRAINT tone_pk PRIMARY KEY (id)
 );
 
 -- Table: trainer_application

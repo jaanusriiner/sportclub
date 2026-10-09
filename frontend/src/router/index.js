@@ -47,6 +47,7 @@ const router = createRouter({
       path: '/benchmark',
       name: 'benchmarkRoute',
       component: BenchmarkView,
+      meta: { requiresAdmin: true },
     },
     {
       path: '/manage-trainings',

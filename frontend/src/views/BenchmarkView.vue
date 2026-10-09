@@ -1,35 +1,50 @@
 <script>
 import AlertDanger from '@/components/alert/AlertDanger.vue'
 import AskService from '@/services/AskService.js'
+import LlmModelService from '@/services/LlmModelService.js'
+import NavigationService from '@/services/NavigationService.js'
+import ToneService from '@/services/ToneService.js'
 
-const MAX_HISTORY_ENTRIES = 5
 const MAX_ANSWER_LENGTH = 2000 // sama piir mis backendi AskHistoryEntry.answer
 const ERROR_ANSWER = 'Kahjuks ei oska ma sellele küsimusele vastata'
 const NO_VALUE = '–'
 const MIN_TEMPERATURE = 0
 const MAX_TEMPERATURE = 2
 const DEFAULT_TEMPERATURE = 1
-
-// võrreldavad mudelid - model väärtus saadetakse backendile, label kuvatakse paneeli päises
-const MODELS = [
-  { model: 'model-1', label: 'Mudel 1' },
-  { model: 'model-2', label: 'Mudel 2' },
-  { model: 'model-3', label: 'Mudel 3' },
-  { model: 'model-4', label: 'Mudel 4' },
-]
+const PANEL_COUNT = 4
+const DEFAULT_TONE_NAME = 'NEUTRAL'
+const CACHED_TOKENS_HINT =
+  'Input tokenite osa, mis tuli providerile vahemälust - soodushind on input kulus juba arvestatud'
+// TODO: thinking level on praegu ainult UI marker - backendile veel ei saadeta.
+// Väärtused Gemini thinkingLevel järgi; null = mudeli vaikimisi käitumine
+const THINKING_LEVELS = ['MINIMAL', 'LOW', 'MEDIUM', 'HIGH']
 
 export default {
   name: 'BenchmarkView',
   components: { AlertDanger },
+  beforeMount() {
+    this.getLlmModels()
+    this.getTones()
+  },
   data() {
     return {
       errorMessage: '',
       question: '',
 
-      // iga mudeli kohta eraldi vestlus, sest LLM-i kontekstiks läheb vaid selle mudeli ajalugu
-      panels: MODELS.map((modelInfo) => ({
-        model: modelInfo.model,
-        label: modelInfo.label,
+      llmModels: [],
+      tones: [],
+      thinkingLevels: THINKING_LEVELS,
+      CACHED_TOKENS_HINT: CACHED_TOKENS_HINT,
+
+      // iga paneeli kohta eraldi vestlus, sest LLM-i kontekstiks läheb vaid selle paneeli ajalugu
+      panels: Array.from({ length: PANEL_COUNT }, (_, index) => ({
+        panelId: index + 1,
+        selectedLlmModelId: null,
+        // täidetakse NEUTRAL tooniga, kui toonid on backendist laetud
+        selectedToneId: null,
+        selectedThinkingLevel: null,
+        // backend hoiab selle id järgi vestluse andmestikku; uus id = uus vestlus (vt clearPanelChat)
+        conversationId: crypto.randomUUID(),
         // hoiame tekstina, et väljal püsiks kuju "1.0"; backendile saadame numbrina
         temperature: DEFAULT_TEMPERATURE.toFixed(1),
         chatHistory: [],
@@ -43,10 +58,10 @@ export default {
       return this.pendingRequestCount > 0
     },
 
-    panelTotalsByModel() {
-      const totalsByModel = {}
-      this.panels.forEach((panel) => (totalsByModel[panel.model] = this.getPanelTotals(panel)))
-      return totalsByModel
+    panelTotalsByPanelId() {
+      const totalsByPanelId = {}
+      this.panels.forEach((panel) => (totalsByPanelId[panel.panelId] = this.getPanelTotals(panel)))
+      return totalsByPanelId
     },
   },
   methods: {
@@ -55,9 +70,15 @@ export default {
         this.errorMessage = 'Palun sisesta küsimus'
         return
       }
+      // päring tehakse ainult paneelidele, kus mudel on valitud
+      const selectedPanels = this.panels.filter((panel) => panel.selectedLlmModelId !== null)
+      if (selectedPanels.length === 0) {
+        this.errorMessage = 'Vali vähemalt ühele aknale mudel'
+        return
+      }
       this.errorMessage = ''
       this.chatEntryCount++
-      this.panels.forEach((panel) => this.askModel(panel, this.question))
+      selectedPanels.forEach((panel) => this.askModel(panel, this.question))
       this.question = ''
       this.scrollChatsToTop()
     },
@@ -67,8 +88,10 @@ export default {
       const askRequest = {
         question: question,
         history: this.getHistoryForRequest(panel),
-        model: panel.model,
+        llmModelId: panel.selectedLlmModelId,
         temperature: Number(panel.temperature),
+        toneId: panel.selectedToneId,
+        conversationId: panel.conversationId,
       }
       panel.chatHistory.push({
         id: this.chatEntryCount,
@@ -77,6 +100,7 @@ export default {
         isError: false,
         responseTimeMs: null,
         inputTokens: null,
+        cachedTokens: null,
         outputTokens: null,
         inputCost: null,
         outputCost: null,
@@ -91,12 +115,11 @@ export default {
         .finally(() => this.handleAskFinished(chatEntry, startTime))
     },
 
-    // saadame backendile selle mudeli viimased vastatud küsimused/vastused LLM-i kontekstiks
+    // saadame backendile selle paneeli kõik vastatud küsimused/vastused LLM-i kontekstiks (piiranguta)
     getHistoryForRequest(panel) {
       return panel.chatHistory
         .filter((chatEntry) => !chatEntry.isError)
         .filter((chatEntry) => chatEntry.answer && chatEntry.answer.trim() !== '')
-        .slice(-MAX_HISTORY_ENTRIES)
         .map((chatEntry) => ({
           question: chatEntry.question,
           answer: chatEntry.answer.slice(0, MAX_ANSWER_LENGTH),
@@ -116,6 +139,7 @@ export default {
     handleAskResponse(response, chatEntry) {
       chatEntry.answer = response.data.answer
       chatEntry.inputTokens = response.data.inputTokens ?? null
+      chatEntry.cachedTokens = response.data.cachedTokens ?? null
       chatEntry.outputTokens = response.data.outputTokens ?? null
       chatEntry.inputCost = response.data.inputCost ?? null
       chatEntry.outputCost = response.data.outputCost ?? null
@@ -141,6 +165,11 @@ export default {
       return label + ': ' + this.formatTokenCount(tokens) + ' (Cost: ' + this.formatCost(cost) + ')'
     },
 
+    // cached tokenid on input tokenite osa (mitte lisaks); nende soodushind on input kulus juba arvestatud
+    formatCachedTokens(cachedTokens) {
+      return 'Cached tokens: ' + this.formatTokenCount(cachedTokens)
+    },
+
     formatTokenCount(tokens) {
       if (tokens === null) {
         return NO_VALUE
@@ -159,8 +188,10 @@ export default {
       )
     },
 
+    // tühjendamine alustab uue vestluse - backend pärib uue vestluse esimesel küsimusel värske andmestiku
     clearPanelChat(panel) {
       panel.chatHistory = []
+      panel.conversationId = crypto.randomUUID()
     },
 
     // paneel ootab vastust, kui mõnel tema küsimusel pole veel vastust
@@ -172,8 +203,46 @@ export default {
         panel.temperature = this.formatTemperature(DEFAULT_TEMPERATURE)
         return
       }
-      const clampedTemperature = Math.min(MAX_TEMPERATURE, Math.max(MIN_TEMPERATURE, temperature))
+      const maxTemperature = this.getMaxTemperature(panel)
+      const clampedTemperature = Math.min(maxTemperature, Math.max(MIN_TEMPERATURE, temperature))
       panel.temperature = this.formatTemperature(clampedTemperature)
+    },
+
+    // mõni provider lubab väiksemat ülempiiri (nt Anthropic 1.0) - see tuleb mudeli andmetest
+    getMaxTemperature(panel) {
+      const llmModel = this.getSelectedLlmModel(panel)
+      return llmModel ? llmModel.maxTemperature : MAX_TEMPERATURE
+    },
+
+    getSelectedLlmModel(panel) {
+      return this.llmModels.find((llmModel) => llmModel.llmModelId === panel.selectedLlmModelId)
+    },
+
+    getLlmModels() {
+      LlmModelService.getLlmModelsRequest()
+        .then((response) => (this.llmModels = response.data))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    getTones() {
+      ToneService.getTonesRequest()
+        .then((response) => this.handleGetTonesResponse(response))
+        .catch(() => NavigationService.navigateToErrorView())
+    },
+
+    handleGetTonesResponse(response) {
+      this.tones = response.data
+      const defaultTone =
+        this.tones.find((tone) => tone.toneName === DEFAULT_TONE_NAME) ?? this.tones[0]
+      if (defaultTone) {
+        this.panels.forEach((panel) => (panel.selectedToneId = defaultTone.toneId))
+      }
+    },
+
+    // uus mudel alustab puhtalt lehelt: eelmise mudeli ajalugu ei lähe kontekstiks ja summad ei segune
+    handleLlmModelChange(panel) {
+      this.clearPanelChat(panel)
+      this.normalizeTemperature(panel)
     },
 
     formatTemperature(temperature) {
@@ -190,6 +259,7 @@ export default {
       const outputCost = this.sumField(panel.chatHistory, 'outputCost')
       return {
         inputTokens: this.sumField(panel.chatHistory, 'inputTokens'),
+        cachedTokens: this.sumField(panel.chatHistory, 'cachedTokens'),
         outputTokens: this.sumField(panel.chatHistory, 'outputTokens'),
         inputCost: inputCost,
         outputCost: outputCost,
@@ -256,59 +326,110 @@ export default {
 
     <!-- vastused alati kõrvuti; kitsal ekraanil keritakse horisontaalselt -->
     <div class="d-flex gap-3 overflow-x-auto pb-2">
-      <div v-for="panel in panels" :key="panel.model" class="answer-panel">
+      <div v-for="panel in panels" :key="panel.panelId" class="answer-panel">
         <div class="border border-secondary rounded text-start">
           <div
-            class="d-flex justify-content-between align-items-start border-bottom border-secondary bg-body-tertiary rounded-top px-3 py-2"
+            class="d-flex flex-column border-bottom border-secondary bg-body-tertiary rounded-top px-3 py-2"
           >
-            <div class="d-flex flex-column">
-              <span>
-                <span class="fw-semibold">{{ panel.label }}</span>
-                <span class="small text-secondary ms-1">
-                  (temperature:
-                  <input
-                    v-model="panel.temperature"
-                    type="number"
-                    class="form-control form-control-sm border-secondary d-inline-block temperature-input"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    aria-label="Temperature"
-                    @change="normalizeTemperature(panel)"
-                  />)
-                </span>
-              </span>
+            <!-- mudeli valik ja Tühjenda nupp ühel real, sama kõrgusega (mõlemad -sm) ja keskjoondatud;
+                 temperatuur eraldi real, et kitsas paneelis ei läheks rida üle ääre -->
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <select
+                v-model="panel.selectedLlmModelId"
+                class="form-select form-select-sm border-secondary fw-semibold model-select"
+                aria-label="Mudel"
+                :disabled="isPanelLoading(panel)"
+                @change="handleLlmModelChange(panel)"
+              >
+                <option :value="null" disabled>Vali mudel</option>
+                <option
+                  v-for="llmModel in llmModels"
+                  :key="llmModel.llmModelId"
+                  :value="llmModel.llmModelId"
+                >
+                  {{ llmModel.modelName }}
+                </option>
+              </select>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary flex-shrink-0"
+                :class="{ invisible: panel.chatHistory.length === 0 }"
+                :disabled="isPanelLoading(panel)"
+                @click="clearPanelChat(panel)"
+              >
+                Tühjenda
+              </button>
+            </div>
+            <span class="small text-secondary text-nowrap mb-1">
+              Temperature:
+              <input
+                v-model="panel.temperature"
+                type="number"
+                class="form-control form-control-sm border-secondary d-inline-block temperature-input"
+                min="0"
+                :max="getMaxTemperature(panel)"
+                step="0.1"
+                aria-label="Temperature"
+                @change="normalizeTemperature(panel)"
+              />
+            </span>
+            <span class="small text-secondary text-nowrap mb-1">
+              Thinking level:
+              <select
+                v-model="panel.selectedThinkingLevel"
+                class="form-select border-secondary d-inline-block w-auto param-select"
+                aria-label="Thinking level"
+                title="Ei mõjuta veel vastust - backendi tugi lisandub hiljem"
+              >
+                <option :value="null">DEFAULT</option>
+                <option
+                  v-for="thinkingLevel in thinkingLevels"
+                  :key="thinkingLevel"
+                  :value="thinkingLevel"
+                >
+                  {{ thinkingLevel }}
+                </option>
+              </select>
+            </span>
+            <span class="small text-secondary text-nowrap mb-1">
+              Tone:
+              <select
+                v-model="panel.selectedToneId"
+                class="form-select border-secondary d-inline-block w-auto param-select"
+                aria-label="Tone"
+              >
+                <option v-for="tone in tones" :key="tone.toneId" :value="tone.toneId">
+                  {{ tone.toneName }}
+                </option>
+              </select>
+            </span>
+            <!-- paneeli kokkuvõtte meetrika, sisenditest kerge joonega eraldatud -->
+            <div class="d-flex flex-column border-top pt-2 mt-1 metrics-block">
               <span class="small text-secondary">
                 {{
                   formatTokens(
                     'Input tokens',
-                    panelTotalsByModel[panel.model].inputTokens,
-                    panelTotalsByModel[panel.model].inputCost,
+                    panelTotalsByPanelId[panel.panelId].inputTokens,
+                    panelTotalsByPanelId[panel.panelId].inputCost,
                   )
                 }}
+              </span>
+              <span class="small text-secondary ps-3" :title="CACHED_TOKENS_HINT">
+                {{ formatCachedTokens(panelTotalsByPanelId[panel.panelId].cachedTokens) }}
               </span>
               <span class="small text-secondary">
                 {{
                   formatTokens(
                     'Output tokens',
-                    panelTotalsByModel[panel.model].outputTokens,
-                    panelTotalsByModel[panel.model].outputCost,
+                    panelTotalsByPanelId[panel.panelId].outputTokens,
+                    panelTotalsByPanelId[panel.panelId].outputCost,
                   )
                 }}
               </span>
               <span class="small fw-semibold">
-                Total cost: {{ formatCost(panelTotalsByModel[panel.model].totalCost) }}
+                Total cost: {{ formatCost(panelTotalsByPanelId[panel.panelId].totalCost) }}
               </span>
             </div>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              :class="{ invisible: panel.chatHistory.length === 0 }"
-              :disabled="isPanelLoading(panel)"
-              @click="clearPanelChat(panel)"
-            >
-              Tühjenda
-            </button>
           </div>
           <div ref="chatBoxes" class="chat-box p-3">
             <p v-if="panel.chatHistory.length === 0" class="text-secondary text-center mb-0">
@@ -343,6 +464,9 @@ export default {
                     <span>
                       {{ formatTokens('Input tokens', chatEntry.inputTokens, chatEntry.inputCost) }}
                     </span>
+                    <span class="ps-3" :title="CACHED_TOKENS_HINT">
+                      {{ formatCachedTokens(chatEntry.cachedTokens) }}
+                    </span>
                     <span>
                       {{
                         formatTokens('Output tokens', chatEntry.outputTokens, chatEntry.outputCost)
@@ -364,7 +488,37 @@ export default {
   flex: 1 0 18rem;
 }
 
+/* kerge eraldusjoon sisendite ja meetrika vahel (heledam kui paneeli border-secondary ääris) */
+.metrics-block {
+  border-color: var(--bs-border-color-translucent) !important;
+}
+
+/* väike tekstireaga samas mõõdus valik (nagu temperature-input); ületab nordic.css form-select mõõdud */
+.param-select {
+  min-height: 0;
+  height: 1.4em;
+  padding: 0 1.5rem 0 0.25rem;
+  font-size: inherit;
+  line-height: 1.2;
+  vertical-align: baseline;
+  background-position: right 0.25rem center;
+  background-size: 10px 8px;
+}
+
 /* väike tekstireaga samas mõõdus väli; ületab form-control-sm min-height'i ja fondisuuruse */
+/* täidab rea vaba laiuse, kuid kahaneb kitsas paneelis (pikk mudeli nimi lõigatakse).
+   nordic.css annab .form-select'ile min-height 44px / 15px, .btn-sm'ile 36px / 13px -
+   võtame Tühjenda nupu mõõdud, et mõlemad oleks ühel real sama suured */
+.model-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 36px;
+  height: 36px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 13px;
+}
+
 .temperature-input {
   width: 3.5rem;
   min-height: 0;

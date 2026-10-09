@@ -88,7 +88,7 @@ export default {
       <div class="navbar-nav me-auto">
         <!--        <RouterLink class="nav-link" to="/">Kodu</RouterLink>-->
         <RouterLink class="nav-link" to="/info">Küsi</RouterLink>
-        <RouterLink class="nav-link" to="/benchmark">Benchmark</RouterLink>
+        <RouterLink v-if="isAdmin" class="nav-link" to="/benchmark">Benchmark</RouterLink>
         <RouterLink class="nav-link" to="/trainings">Treeningud</RouterLink>
         <RouterLink class="nav-link" to="/facilities">Asukohad</RouterLink>
         <RouterLink v-if="isAdmin" class="nav-link" to="/create-facility">Lisa asukoht</RouterLink>

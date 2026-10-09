@@ -102,3 +102,14 @@ INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (defa
 INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (default, 2, 2);
 INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (default, 1, 3);
 
+
+-- Benchmark-vaate LLM mudelid. Hinnad USD / 1M tokenit (input, cached input, output) (Google paid tier, standard, ai.google.dev/gemini-api/docs/pricing, okt 2026)
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.5-flash-lite', 0.30, 0.03, 2.50, 2.0, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.5-flash', 1.50, 0.15, 9.00, 2.0, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.1-flash-lite', 0.25, 0.025, 1.50, 2.0, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-2.5-flash-lite', 0.10, 0.01, 0.40, 2.0, true);
+
+-- Benchmark-vaate vastuse toonid. description lisatakse LLM-i system prompti (NEUTRAL puhul midagi ei lisata)
+INSERT INTO sportclub.tone (id, name, description) VALUES (default, 'NEUTRAL', ' ');
+INSERT INTO sportclub.tone (id, name, description) VALUES (default, 'SUPPORTIVE', 'Answer in a warm, encouraging and supportive tone. Show genuine interest in the customer''s goals, motivate them to start or keep training, and end your answer with a friendly follow-up question that invites them to continue the conversation.');
+INSERT INTO sportclub.tone (id, name, description) VALUES (default, 'HARSH', 'Answer like a strict, no-nonsense old-school coach with tough love. Be blunt and demanding: ask where the customer has been all this time and tell them they should have started training long ago. Stay respectful - never insult or humiliate - and keep all facts accurate.');
