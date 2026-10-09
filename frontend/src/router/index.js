@@ -4,6 +4,7 @@ import TestView from '@/views/TestView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ErrorView from '@/views/ErrorView.vue'
 import InfoView from '@/views/InfoView.vue'
+import BenchmarkView from '@/views/BenchmarkView.vue'
 import ManageTrainingsView from '@/views/ManageTrainingsView.vue'
 import CreateTrainingGroupView from '@/views/CreateTrainingGroupView.vue'
 import CreateTrainingView from '@/views/CreateTrainingView.vue'
@@ -41,6 +42,11 @@ const router = createRouter({
       path: '/info',
       name: 'infoRoute',
       component: InfoView,
+    },
+    {
+      path: '/benchmark',
+      name: 'benchmarkRoute',
+      component: BenchmarkView,
     },
     {
       path: '/manage-trainings',
