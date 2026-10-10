@@ -48,7 +48,6 @@ public class NlToSearchService {
               training_time TIME,
               training_date_duration INTEGER,
               status TEXT,
-              user_count INTEGER,
               training_date_max_size INTEGER,
               training_weekdays TEXT,
               review_description TEXT

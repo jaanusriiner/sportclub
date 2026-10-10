@@ -37,37 +37,13 @@ public class NlToSearchService2 {
             
             Before classifying, reason step by step in the “reasoning” field: (1) Is the question related to sport and training options? (2) Can user question be answered from provided dataset and schema? (3) Can customer be even answered before asking additional clarifying questions.
             
-            SCHEMA:
-            SCHEMA:
-            v_training_date_extended(
-              training_date_id UUID,
-              training_group_id UUID,
-              training_group_name TEXT,
-              training_group_description TEXT,
-              sport_id UUID,
-              sport_name TEXT,
-              facility_id UUID,
-              facility_name TEXT,
-              facility_address TEXT,
-              facility_description TEXT,
-              area_id UUID,
-              area_name TEXT,
-              trainer_id UUID,
-              trainer_name TEXT,
-              trainer_email TEXT,
-              sportclub_id UUID,
-              sportclub_name TEXT,
-              skill_level_id UUID,
-              skill_level_name TEXT,
-              training_date DATE,
-              training_time TIME,
-              training_date_duration INTEGER,
-              status TEXT,
-              user_count INTEGER,
-              training_date_max_size INTEGER,
-              training_weekdays TEXT,
-              review_description TEXT
-            )
+            DATA FORMAT:
+            DATA contains two semicolon-separated CSV tables (first line is the header, values with ';' are quoted).
+            FACILITIES - every facility that has upcoming trainings:
+              facility, address, area, description
+            TRAININGS - every upcoming active training session, ordered by date and time:
+              date (YYYY-MM-DD), time (HH:MM), duration_min, sport, level, club, trainer, facility, max_participants, reviews
+            TRAININGS.facility refers to FACILITIES.facility.
             
             RULES:
             1. If you cannot answer from this schema, return: Põnev küsimus :) , aga kahjuks minu teadmiste väline
@@ -75,9 +51,11 @@ public class NlToSearchService2 {
 
     private static final String DATASET_TEMPLATE = """
             
-            DATA (%d rows):
+            DATA:
+            FACILITIES (%d rows):
             %s
-            """;
+            TRAININGS (%d rows):
+            %s""";
 
     private static final String SUMMARY_USER_PROMPT_TEMPLATE = """
             Answer this question in 1-3 plain sentences using the DATA in the system prompt.
@@ -86,7 +64,25 @@ public class NlToSearchService2 {
             Question: %s
             """;
 
-    private static final String DATASET_SQL = "SELECT * FROM v_training_date_extended WHERE training_date >= CURRENT_DATE;";
+    // andmestik kompaktselt: ainult vastamiseks vajalikud veerud (ilma id-de ja e-postideta), asukoha andmed
+    // eraldi tabelis, et pikad kirjeldused ei korduks igas treeningureas; veerunimed on CSV päis
+    private static final String FACILITIES_SQL = """
+            SELECT DISTINCT facility_name AS facility, facility_address AS address, area_name AS area,
+                            facility_description AS description
+            FROM v_training_date_extended
+            WHERE training_date >= CURRENT_DATE
+            ORDER BY facility_name""";
+
+    private static final String TRAININGS_SQL = """
+            SELECT training_date AS date, to_char(training_time, 'HH24:MI') AS time,
+                   training_date_duration AS duration_min, sport_name AS sport, skill_level_name AS level,
+                   sportclub_name AS club, trainer_name AS trainer, facility_name AS facility,
+                   training_date_max_size AS max_participants, review_description AS reviews
+            FROM v_training_date_extended
+            WHERE training_date >= CURRENT_DATE
+            ORDER BY training_date, training_time, facility_name""";
+
+    private static final String CSV_SEPARATOR = ";";
 
     private static final BigDecimal TOKENS_PER_PRICE_UNIT = BigDecimal.valueOf(1_000_000);
     private static final int COST_SCALE = 6;
@@ -127,10 +123,40 @@ public class NlToSearchService2 {
                 return savedDataset.get();
             }
         }
-        List<Map<String, Object>> databaseResults = jdbcTemplate.queryForList(DATASET_SQL);
-        String dataset = DATASET_TEMPLATE.formatted(databaseResults.size(), databaseResults);
+        List<Map<String, Object>> facilities = jdbcTemplate.queryForList(FACILITIES_SQL);
+        List<Map<String, Object>> trainings = jdbcTemplate.queryForList(TRAININGS_SQL);
+        String dataset = DATASET_TEMPLATE.formatted(facilities.size(), toCsv(facilities), trainings.size(), toCsv(trainings));
         conversationDataStore.saveDataset(request.conversationId(), dataset);
         return dataset;
+    }
+
+    // CSV: päis veerunimedest, iga rida eraldi real; null -> tühi väli
+    private String toCsv(List<Map<String, Object>> rows) {
+        if (rows.isEmpty()) {
+            return "";
+        }
+        StringBuilder csv = new StringBuilder();
+        csv.append(String.join(CSV_SEPARATOR, rows.getFirst().keySet())).append('\n');
+        for (Map<String, Object> row : rows) {
+            List<String> fields = new ArrayList<>();
+            for (Object value : row.values()) {
+                fields.add(toCsvField(value));
+            }
+            csv.append(String.join(CSV_SEPARATOR, fields)).append('\n');
+        }
+        return csv.toString();
+    }
+
+    // eraldaja, jutumärgi või reavahetusega väärtus pannakse jutumärkidesse (jutumärgid kahekordistatakse)
+    private String toCsvField(Object value) {
+        if (value == null) {
+            return "";
+        }
+        String text = value.toString();
+        if (text.contains(CSV_SEPARATOR) || text.contains("\"") || text.contains("\n")) {
+            return "\"" + text.replace("\"", "\"\"") + "\"";
+        }
+        return text;
     }
 
     private BenchmarkAskResponse generateResponse(BenchmarkAskRequest request, LlmModel llmModel, Tone tone,

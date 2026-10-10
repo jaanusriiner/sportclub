@@ -509,7 +509,6 @@ SELECT td.id                                 AS training_date_id,
        td.start_time                         AS training_time,
        td.duration                           AS training_date_duration,
        td.status                             AS status,
-       td.user_count                         AS user_count,
        td.max_size                           AS training_date_max_size,
        t.weekdays                            AS training_weekdays,
        (SELECT string_agg(r.description, ' | ' ORDER BY r.id)
