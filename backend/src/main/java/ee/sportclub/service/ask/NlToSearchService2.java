@@ -4,6 +4,8 @@ import ee.sportclub.controller.ask.dto.AskHistoryEntry;
 import ee.sportclub.controller.ask.dto.BenchmarkAskRequest;
 import ee.sportclub.controller.ask.dto.BenchmarkAskResponse;
 import ee.sportclub.infrastructure.llm.LlmChatClients;
+import ee.sportclub.infrastructure.llm.LlmChatOptionsFactory;
+import ee.sportclub.infrastructure.llm.LlmTokenUsage;
 import ee.sportclub.persistence.llmmodel.LlmModel;
 import ee.sportclub.persistence.tone.Tone;
 import ee.sportclub.service.llmmodel.LlmModelService;
@@ -13,7 +15,6 @@ import org.springframework.ai.chat.client.ResponseEntity;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,9 +32,12 @@ import java.util.Optional;
 public class NlToSearchService2 {
 
     private static final String SUMMARY_SYSTEM_PROMPT_TEMPLATE = """
-            You are search engine for customers visiting Sportclub webpage.
+            You are customer support agent for customers visiting Sportclub webpage.
             As input along with customer/user prompt, you will get database printout with all active trainings from current date forward in system according to schema below
             User question might be in Estonian, use both Estonian and English language to search data.
+            
+            Once user shows interest to join trainings, guide user first to Register to system as new user (or login as existing one) to complete the registration to traininggroup and training.
+            You are not capable to register user yourself to training. User has to do it himself after logging into portal.
             
             Before classifying, reason step by step in the “reasoning” field: (1) Is the question related to sport and training options? (2) Can user question be answered from provided dataset and schema? (3) Can customer be even answered before asking additional clarifying questions.
             
@@ -89,17 +93,20 @@ public class NlToSearchService2 {
 
     private final JdbcTemplate jdbcTemplate;
     private final LlmChatClients llmChatClients;
+    private final LlmChatOptionsFactory llmChatOptionsFactory;
     private final LlmModelService llmModelService;
     private final ToneService toneService;
     private final ConversationDataStore conversationDataStore;
     private final BigDecimal usdToEurRate;
 
     public NlToSearchService2(JdbcTemplate jdbcTemplate, LlmChatClients llmChatClients,
+                              LlmChatOptionsFactory llmChatOptionsFactory,
                               LlmModelService llmModelService, ToneService toneService,
                               ConversationDataStore conversationDataStore,
                               @Value("${llm.usd-to-eur-rate}") BigDecimal usdToEurRate) {
         this.jdbcTemplate = jdbcTemplate;
         this.llmChatClients = llmChatClients;
+        this.llmChatOptionsFactory = llmChatOptionsFactory;
         this.llmModelService = llmModelService;
         this.toneService = toneService;
         this.conversationDataStore = conversationDataStore;
@@ -162,26 +169,27 @@ public class NlToSearchService2 {
     private BenchmarkAskResponse generateResponse(BenchmarkAskRequest request, LlmModel llmModel, Tone tone,
                                                  String dataset) {
         String userPrompt = SUMMARY_USER_PROMPT_TEMPLATE.formatted(request.question());
-        ChatOptions.Builder<?> chatOptionsBuilder = ChatOptions.builder()
-                .model(llmModel.getName())
-                .temperature(getAllowedTemperature(request.temperature(), llmModel));
+        // reasoning mudelid (nt OpenAI GPT-6, Gemini 3.x) ei luba temperatuuri muuta - siis jätame selle saatmata
+        Double temperature = llmModel.getSupportsTemperature()
+                ? getAllowedTemperature(request.temperature(), llmModel)
+                : null;
+        ChatOptions.Builder<?> chatOptionsBuilder = llmChatOptionsFactory.createChatOptionsBuilder(
+                llmModel, temperature, request.thinkingLevel());
 
         ResponseEntity<ChatResponse, LlmAnswer> responseEntity = callLlm(llmModel, chatOptionsBuilder,
                 getSystemPrompt(dataset, tone), toHistoryMessages(request.history()), userPrompt);
 
-        Usage usage = responseEntity.getResponse().getMetadata().getUsage();
-        Integer inputTokens = usage.getPromptTokens();
-        Integer cachedTokens = getCachedTokens(usage);
-        Integer outputTokens = usage.getCompletionTokens();
+        LlmTokenUsage tokenUsage = LlmTokenUsage.from(responseEntity.getResponse().getMetadata().getUsage());
 
         return BenchmarkAskResponse.builder()
                 .answer(responseEntity.getEntity().answer())
                 .reasoning(responseEntity.getEntity().reasoning())
-                .inputTokens(inputTokens)
-                .cachedTokens(cachedTokens)
-                .outputTokens(outputTokens)
-                .inputCost(calculateInputCostEur(inputTokens, cachedTokens, llmModel))
-                .outputCost(calculateCostEur(outputTokens, llmModel.getOutputPriceUsd()))
+                .inputTokens(tokenUsage.inputTokens())
+                .cachedTokens(tokenUsage.cachedTokens())
+                .outputTokens(tokenUsage.outputTokens())
+                .thinkingTokens(tokenUsage.thinkingTokens())
+                .inputCost(calculateInputCostEur(tokenUsage, llmModel))
+                .outputCost(calculateCostEur(tokenUsage.outputTokens(), llmModel.getOutputPriceUsd()))
                 .build();
     }
 
@@ -201,20 +209,20 @@ public class NlToSearchService2 {
         return Math.min(temperature, llmModel.getMaxTemperature().doubleValue());
     }
 
-    // provider ei pruugi vahemälu infot tagastada - siis loeme, et vahemälust ei tulnud midagi
-    private Integer getCachedTokens(Usage usage) {
-        Long cacheReadInputTokens = usage.getCacheReadInputTokens();
-        return cacheReadInputTokens == null ? 0 : cacheReadInputTokens.intValue();
-    }
-
-    // inputTokens sisaldab cached tokeneid: need arvestatakse soodushinnaga, ülejäänud tavahinnaga
-    private BigDecimal calculateInputCostEur(Integer inputTokens, Integer cachedTokens, LlmModel llmModel) {
-        if (inputTokens == null) {
+    // inputTokens sisaldab cached ja cache write tokeneid: cached soodushinnaga, cache write (Anthropic) kirjutamise
+    // hinnaga, ülejäänud tavahinnaga
+    private BigDecimal calculateInputCostEur(LlmTokenUsage tokenUsage, LlmModel llmModel) {
+        if (tokenUsage.inputTokens() == null) {
             return null;
         }
-        int uncachedTokens = inputTokens - cachedTokens;
+        int cacheWriteTokens = tokenUsage.cacheWriteTokens();
+        int uncachedTokens = tokenUsage.inputTokens() - tokenUsage.cachedTokens() - cacheWriteTokens;
+        BigDecimal cacheWritePriceUsd = llmModel.getCacheWritePriceUsd() != null
+                ? llmModel.getCacheWritePriceUsd()
+                : llmModel.getInputPriceUsd();
         return calculateCostEur(uncachedTokens, llmModel.getInputPriceUsd())
-                .add(calculateCostEur(cachedTokens, llmModel.getCachedInputPriceUsd()));
+                .add(calculateCostEur(tokenUsage.cachedTokens(), llmModel.getCachedInputPriceUsd()))
+                .add(calculateCostEur(cacheWriteTokens, cacheWritePriceUsd));
     }
 
     // hind on USD / 1M tokenit -> kulu EUR = tokenid * hind / 1 000 000 * kurss

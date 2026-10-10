@@ -38,6 +38,9 @@ CREATE TABLE join_application (
 -- Table: llm_model
 -- Benchmark-vaates võrreldavad LLM mudelid. Hinnad USD-s 1M tokeni kohta (EUR-iks teisendab backend).
 -- cached_input_price_usd - vahemälust (prompt caching) tulnud input tokenite soodushind.
+-- cache_write_price_usd - vahemällu kirjutamise hind (Anthropic, 5 min TTL = 1.25x input); NULL = eraldi tasu pole.
+-- supports_temperature - false nt OpenAI reasoning mudelitel, mis ei luba temperatuuri muuta (siis seda ei saadeta).
+-- supports_thinking_level - true mudelitel, millele saab anda mõtlemistaseme (Gemini 3.x thinkingLevel, OpenAI reasoning_effort).
 -- API võtmed EI ole siin, vaid backendi keskkonnamuutujates.
 CREATE TABLE llm_model (
                            id serial  NOT NULL,
@@ -45,8 +48,11 @@ CREATE TABLE llm_model (
                            name varchar(100)  NOT NULL,
                            input_price_usd numeric(10,4)  NOT NULL,
                            cached_input_price_usd numeric(10,4)  NOT NULL,
+                           cache_write_price_usd numeric(10,4)  NULL,
                            output_price_usd numeric(10,4)  NOT NULL,
                            max_temperature numeric(2,1)  NOT NULL DEFAULT 2.0,
+                           supports_temperature boolean  NOT NULL DEFAULT true,
+                           supports_thinking_level boolean  NOT NULL DEFAULT false,
                            is_active boolean  NOT NULL DEFAULT true,
                            CONSTRAINT llm_model_name_ak UNIQUE (name),
                            CONSTRAINT llm_model_pk PRIMARY KEY (id)

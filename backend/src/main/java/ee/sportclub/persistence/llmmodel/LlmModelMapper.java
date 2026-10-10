@@ -12,6 +12,8 @@ public interface LlmModelMapper {
     @Mapping(source = "provider", target = "provider")
     @Mapping(source = "name", target = "modelName")
     @Mapping(source = "maxTemperature", target = "maxTemperature")
+    @Mapping(source = "supportsTemperature", target = "supportsTemperature")
+    @Mapping(source = "supportsThinkingLevel", target = "supportsThinkingLevel")
     LlmModelDto toLlmModelDto(LlmModel llmModel);
 
     List<LlmModelDto> toLlmModelDtos(List<LlmModel> llmModels);

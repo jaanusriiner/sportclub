@@ -19,4 +19,6 @@ public class LlmModelDto implements Serializable {
     String provider;
     String modelName;
     BigDecimal maxTemperature;
+    Boolean supportsTemperature;
+    Boolean supportsThinkingLevel;
 }

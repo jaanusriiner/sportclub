@@ -36,6 +36,10 @@ public class LlmModel {
     @Column(name = "cached_input_price_usd", nullable = false, precision = 10, scale = 4)
     private BigDecimal cachedInputPriceUsd;
 
+    // null = vahemällu kirjutamise eest eraldi tasu ei ole (Gemini, OpenAI)
+    @Column(name = "cache_write_price_usd", precision = 10, scale = 4)
+    private BigDecimal cacheWritePriceUsd;
+
     @NotNull
     @Column(name = "output_price_usd", nullable = false, precision = 10, scale = 4)
     private BigDecimal outputPriceUsd;
@@ -43,6 +47,14 @@ public class LlmModel {
     @NotNull
     @Column(name = "max_temperature", nullable = false, precision = 2, scale = 1)
     private BigDecimal maxTemperature;
+
+    @NotNull
+    @Column(name = "supports_temperature", nullable = false)
+    private Boolean supportsTemperature;
+
+    @NotNull
+    @Column(name = "supports_thinking_level", nullable = false)
+    private Boolean supportsThinkingLevel;
 
     @NotNull
     @Column(name = "is_active", nullable = false)

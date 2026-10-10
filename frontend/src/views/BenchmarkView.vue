@@ -12,11 +12,17 @@ const MIN_TEMPERATURE = 0
 const MAX_TEMPERATURE = 2
 const DEFAULT_TEMPERATURE = 1
 const PANEL_COUNT = 4
+// llm_model.provider -> dropdowni grupi nimi
+const PROVIDER_LABELS = { 'google-genai': 'Google', openai: 'OpenAI', anthropic: 'Anthropic' }
 const DEFAULT_TONE_NAME = 'NEUTRAL'
+const TEMPERATURE_NOT_SUPPORTED_HINT =
+  'See mudel ei luba temperatuuri muuta (kasutatakse mudeli vaikeväärtust)'
 const CACHED_TOKENS_HINT =
   'Input tokenite osa, mis tuli providerile vahemälust - soodushind on input kulus juba arvestatud'
-// TODO: thinking level on praegu ainult UI marker - backendile veel ei saadeta.
-// Väärtused Gemini thinkingLevel järgi; null = mudeli vaikimisi käitumine
+// mõtlemistase: backend teisendab Gemini thinkingLevel'iks / OpenAI reasoning_effort'iks; null = mudeli vaikimisi
+const THINKING_LEVEL_NOT_SUPPORTED_HINT = 'See mudel ei toeta mõtlemistaseme valikut'
+const THINKING_TOKENS_HINT =
+  'Output tokenite osa, mis kulus mudeli mõtlemisele - arveldatakse output hinnaga'
 const THINKING_LEVELS = ['MINIMAL', 'LOW', 'MEDIUM', 'HIGH']
 
 export default {
@@ -35,6 +41,9 @@ export default {
       tones: [],
       thinkingLevels: THINKING_LEVELS,
       CACHED_TOKENS_HINT: CACHED_TOKENS_HINT,
+      TEMPERATURE_NOT_SUPPORTED_HINT: TEMPERATURE_NOT_SUPPORTED_HINT,
+      THINKING_LEVEL_NOT_SUPPORTED_HINT: THINKING_LEVEL_NOT_SUPPORTED_HINT,
+      THINKING_TOKENS_HINT: THINKING_TOKENS_HINT,
 
       // iga paneeli kohta eraldi vestlus, sest LLM-i kontekstiks läheb vaid selle paneeli ajalugu
       panels: Array.from({ length: PANEL_COUNT }, (_, index) => ({
@@ -54,6 +63,24 @@ export default {
     }
   },
   computed: {
+    // mudelid provideri kaupa dropdowni <optgroup>'ideks (backend tagastab need provideri ja nime järgi sorteeritult)
+    llmModelGroups() {
+      const groups = []
+      this.llmModels.forEach((llmModel) => {
+        let group = groups.find((existingGroup) => existingGroup.provider === llmModel.provider)
+        if (!group) {
+          group = {
+            provider: llmModel.provider,
+            label: PROVIDER_LABELS[llmModel.provider] ?? llmModel.provider,
+            llmModels: [],
+          }
+          groups.push(group)
+        }
+        group.llmModels.push(llmModel)
+      })
+      return groups
+    },
+
     isLoading() {
       return this.pendingRequestCount > 0
     },
@@ -92,6 +119,7 @@ export default {
         temperature: Number(panel.temperature),
         toneId: panel.selectedToneId,
         conversationId: panel.conversationId,
+        thinkingLevel: this.supportsThinkingLevel(panel) ? panel.selectedThinkingLevel : null,
       }
       panel.chatHistory.push({
         id: this.chatEntryCount,
@@ -102,6 +130,7 @@ export default {
         responseTimeMs: null,
         inputTokens: null,
         cachedTokens: null,
+        thinkingTokens: null,
         outputTokens: null,
         inputCost: null,
         outputCost: null,
@@ -142,6 +171,7 @@ export default {
       chatEntry.reasoning = response.data.reasoning ?? null
       chatEntry.inputTokens = response.data.inputTokens ?? null
       chatEntry.cachedTokens = response.data.cachedTokens ?? null
+      chatEntry.thinkingTokens = response.data.thinkingTokens ?? null
       chatEntry.outputTokens = response.data.outputTokens ?? null
       chatEntry.inputCost = response.data.inputCost ?? null
       chatEntry.outputCost = response.data.outputCost ?? null
@@ -168,6 +198,11 @@ export default {
     },
 
     // cached tokenid on input tokenite osa (mitte lisaks); nende soodushind on input kulus juba arvestatud
+    // mõtlemistokenid on output tokenite osa; nende hind on output kulus juba arvestatud
+    formatThinkingTokens(thinkingTokens) {
+      return 'Thinking tokens: ' + this.formatTokenCount(thinkingTokens)
+    },
+
     formatCachedTokens(cachedTokens) {
       return 'Cached tokens: ' + this.formatTokenCount(cachedTokens)
     },
@@ -216,6 +251,17 @@ export default {
       return llmModel ? llmModel.maxTemperature : MAX_TEMPERATURE
     },
 
+    // reasoning mudelid (nt OpenAI GPT-6) ei luba temperatuuri muuta - backend jätab selle siis saatmata
+    supportsThinkingLevel(panel) {
+      const llmModel = this.getSelectedLlmModel(panel)
+      return llmModel ? llmModel.supportsThinkingLevel : true
+    },
+
+    supportsTemperature(panel) {
+      const llmModel = this.getSelectedLlmModel(panel)
+      return llmModel ? llmModel.supportsTemperature : true
+    },
+
     getSelectedLlmModel(panel) {
       return this.llmModels.find((llmModel) => llmModel.llmModelId === panel.selectedLlmModelId)
     },
@@ -262,6 +308,7 @@ export default {
       return {
         inputTokens: this.sumField(panel.chatHistory, 'inputTokens'),
         cachedTokens: this.sumField(panel.chatHistory, 'cachedTokens'),
+        thinkingTokens: this.sumField(panel.chatHistory, 'thinkingTokens'),
         outputTokens: this.sumField(panel.chatHistory, 'outputTokens'),
         inputCost: inputCost,
         outputCost: outputCost,
@@ -344,13 +391,19 @@ export default {
                 @change="handleLlmModelChange(panel)"
               >
                 <option :value="null" disabled>Vali mudel</option>
-                <option
-                  v-for="llmModel in llmModels"
-                  :key="llmModel.llmModelId"
-                  :value="llmModel.llmModelId"
+                <optgroup
+                  v-for="llmModelGroup in llmModelGroups"
+                  :key="llmModelGroup.provider"
+                  :label="llmModelGroup.label"
                 >
-                  {{ llmModel.modelName }}
-                </option>
+                  <option
+                    v-for="llmModel in llmModelGroup.llmModels"
+                    :key="llmModel.llmModelId"
+                    :value="llmModel.llmModelId"
+                  >
+                    {{ llmModel.modelName }}
+                  </option>
+                </optgroup>
               </select>
               <button
                 type="button"
@@ -372,6 +425,8 @@ export default {
                 :max="getMaxTemperature(panel)"
                 step="0.1"
                 aria-label="Temperature"
+                :disabled="!supportsTemperature(panel)"
+                :title="supportsTemperature(panel) ? null : TEMPERATURE_NOT_SUPPORTED_HINT"
                 @change="normalizeTemperature(panel)"
               />
             </span>
@@ -381,7 +436,8 @@ export default {
                 v-model="panel.selectedThinkingLevel"
                 class="form-select border-secondary d-inline-block w-auto param-select"
                 aria-label="Thinking level"
-                title="Ei mõjuta veel vastust - backendi tugi lisandub hiljem"
+                :disabled="!supportsThinkingLevel(panel)"
+                :title="supportsThinkingLevel(panel) ? null : THINKING_LEVEL_NOT_SUPPORTED_HINT"
               >
                 <option :value="null">DEFAULT</option>
                 <option
@@ -427,6 +483,9 @@ export default {
                     panelTotalsByPanelId[panel.panelId].outputCost,
                   )
                 }}
+              </span>
+              <span class="small text-secondary ps-3" :title="THINKING_TOKENS_HINT">
+                {{ formatThinkingTokens(panelTotalsByPanelId[panel.panelId].thinkingTokens) }}
               </span>
               <span class="small fw-semibold">
                 Total cost: {{ formatCost(panelTotalsByPanelId[panel.panelId].totalCost) }}
@@ -474,6 +533,9 @@ export default {
                       {{
                         formatTokens('Output tokens', chatEntry.outputTokens, chatEntry.outputCost)
                       }}
+                    </span>
+                    <span class="ps-3" :title="THINKING_TOKENS_HINT">
+                      {{ formatThinkingTokens(chatEntry.thinkingTokens) }}
                     </span>
                   </template>
                 </div>

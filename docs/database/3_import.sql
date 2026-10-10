@@ -2595,15 +2595,30 @@ INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (defa
 INSERT INTO sportclub.user_training (id, user_id, training_date_id) VALUES (default, 1, 3);
 
 
+-- Gemini 3.x: Google soovitab temperatuuri mitte muuta (vaikimisi 1.0); alates 3.6 Flash ja 3.5 Flash-Lite on
+-- temperature/top_p/top_k aegunud ja neid ignoreeritakse (tulevikus HTTP 400) -> supports_temperature = false.
 -- Benchmark-vaate LLM mudelid. Hinnad USD / 1M tokenit (input, cached input, output) (Google paid tier, standard, ai.google.dev/gemini-api/docs/pricing, okt 2026)
-INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.5-flash-lite', 0.30, 0.03, 2.50, 2.0, true);
-INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.5-flash', 1.50, 0.15, 9.00, 2.0, true);
-INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.1-flash-lite', 0.25, 0.025, 1.50, 2.0, true);
-INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-2.5-flash-lite', 0.10, 0.01, 0.40, 2.0, false); -- legacy, ei kuvata valikus
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'google-genai', 'gemini-3.5-flash-lite', 0.30, 0.03, 2.50, 2.0, false, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'google-genai', 'gemini-3.5-flash', 1.50, 0.15, 9.00, 2.0, false, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'google-genai', 'gemini-3.1-flash-lite', 0.25, 0.025, 1.50, 2.0, true, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'google-genai', 'gemini-2.5-flash-lite', 0.10, 0.01, 0.40, 2.0, true, false, false); -- legacy, ei kuvata valikus
 -- gemini-3.8-flash: sooduhind kuni 31.12.2026; alates 01.01.2027 input 1.50, cached 0.15, output 7.50
-INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.8-flash', 0.75, 0.075, 3.75, 2.0, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'google-genai', 'gemini-3.8-flash', 0.75, 0.075, 3.75, 2.0, false, true, true);
 -- gemini-3.1-pro-preview: hinnad promptidele <=200k tokenit (suurematele kehtib kõrgem hind)
-INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, is_active) VALUES (default, 'google-genai', 'gemini-3.1-pro-preview', 2.00, 0.20, 12.00, 2.0, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'google-genai', 'gemini-3.1-pro-preview', 2.00, 0.20, 12.00, 2.0, true, true, true);
+-- OpenAI mudelid (developers.openai.com/api/docs/pricing, Standard tier, okt 2026). GPT-6 on reasoning mudelid,
+-- mis ei luba temperatuuri muuta -> supports_temperature = false; gpt-4.1-mini on temperatuuri toetav baasmudel.
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'openai', 'gpt-6.1-sol', 2.00, 0.10, 10.00, 2.0, false, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'openai', 'gpt-6-luna', 0.10, 0.01, 0.50, 2.0, false, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'openai', 'gpt-4.1-mini', 0.40, 0.10, 1.60, 2.0, true, false, true);
+-- gpt-5-nano: odavaim GPT-5 reasoning mudel (lubab ainult vaiketemperatuuri)
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'openai', 'gpt-5-nano', 0.05, 0.005, 0.40, 2.0, false, true, true);
+-- Anthropic mudelid (platform.claude.com/docs/en/about-claude/pricing, okt 2026): input, cache hit, 5 min cache write,
+-- output. Opus 5.5 ja Sonnet 5.5 ei luba temperatuuri muuta (400) - sügavust juhitakse effort'iga (thinking level);
+-- Haiku 4.5 lubab temperatuuri 0-1, aga effort'it ei toeta.
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, cache_write_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'anthropic', 'claude-opus-5-5', 4.00, 0.20, 5.00, 20.00, 1.0, false, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, cache_write_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'anthropic', 'claude-sonnet-5-5', 2.00, 0.10, 2.50, 10.00, 1.0, false, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, cache_write_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'anthropic', 'claude-haiku-4-5', 1.00, 0.10, 1.25, 5.00, 1.0, true, false, true);
 
 -- Benchmark-vaate vastuse toonid. description lisatakse LLM-i system prompti (NEUTRAL puhul midagi ei lisata)
 INSERT INTO sportclub.tone (id, name, description) VALUES (default, 'NEUTRAL', ' ');

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
@@ -35,6 +36,10 @@ public record BenchmarkAskRequest(
         Double temperature,
 
         @NotNull(message = "Tone must be selected")
-        Integer toneId
+        Integer toneId,
+
+        // null = mudeli vaikimisi mõtlemistase; mudelitele, mis seda ei toeta, ei saadeta
+        @Pattern(regexp = "MINIMAL|LOW|MEDIUM|HIGH", message = "Thinking level must be MINIMAL, LOW, MEDIUM or HIGH")
+        String thinkingLevel
 
 ) {}

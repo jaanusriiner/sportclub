@@ -12,7 +12,8 @@ public record BenchmarkAskResponse(
         String answer,
         Integer inputTokens,   // sisaldab ka cachedTokens
         Integer cachedTokens,  // vahemälust tulnud osa inputTokens'ist (soodsam hind)
-        Integer outputTokens,
+        Integer outputTokens,   // sisaldab ka thinkingTokens
+        Integer thinkingTokens, // mõtlemiseks kulunud osa outputTokens'ist (arveldatakse output hinnaga)
         BigDecimal inputCost,  // EUR, cached tokenid soodushinnaga
         BigDecimal outputCost  // EUR
 
