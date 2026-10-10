@@ -6,7 +6,6 @@ import lombok.Builder;
 import java.math.BigDecimal;
 
 @Builder
-@JsonPropertyOrder({"reasoning", "answer", "inputTokens","cachedTokens","outputTokens", "inputCost", "outputCost"})
 public record BenchmarkAskResponse(
 
         String reasoning,      // LLM-i arutlus enne vastust (FE näitab vastuse peal hiirega)
