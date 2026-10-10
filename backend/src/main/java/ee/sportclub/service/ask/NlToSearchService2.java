@@ -150,6 +150,7 @@ public class NlToSearchService2 {
 
         return BenchmarkAskResponse.builder()
                 .answer(responseEntity.getEntity().answer())
+                .reasoning(responseEntity.getEntity().reasoning())
                 .inputTokens(inputTokens)
                 .cachedTokens(cachedTokens)
                 .outputTokens(outputTokens)

@@ -97,6 +97,7 @@ export default {
         id: this.chatEntryCount,
         question: question,
         answer: null,
+        reasoning: null,
         isError: false,
         responseTimeMs: null,
         inputTokens: null,
@@ -138,6 +139,7 @@ export default {
     // tokenite arvud ja kulud (EUR) arvutab backend; kuni neid vastuses pole, kuvame kriipsu
     handleAskResponse(response, chatEntry) {
       chatEntry.answer = response.data.answer
+      chatEntry.reasoning = response.data.reasoning ?? null
       chatEntry.inputTokens = response.data.inputTokens ?? null
       chatEntry.cachedTokens = response.data.cachedTokens ?? null
       chatEntry.outputTokens = response.data.outputTokens ?? null
@@ -446,6 +448,7 @@ export default {
               <div class="d-flex flex-column align-items-start">
                 <div
                   class="chat-bubble border"
+                  :title="chatEntry.reasoning ? 'Reasoning:\n' + chatEntry.reasoning : null"
                   :class="chatEntry.isError ? 'bg-danger-subtle text-danger-emphasis' : 'bg-light'"
                 >
                   <span
