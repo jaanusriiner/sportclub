@@ -5,7 +5,6 @@ import LlmModelService from '@/services/LlmModelService.js'
 import NavigationService from '@/services/NavigationService.js'
 import ToneService from '@/services/ToneService.js'
 
-const MAX_ANSWER_LENGTH = 2000 // sama piir mis backendi AskHistoryEntry.answer
 const ERROR_ANSWER = 'Kahjuks ei oska ma sellele küsimusele vastata'
 const NO_VALUE = '–'
 const MIN_TEMPERATURE = 0
@@ -128,10 +127,10 @@ export default {
       this.normalizeTemperature(panel)
       const askRequest = {
         question: question,
-        history: this.getHistoryForRequest(panel),
         llmModelId: panel.selectedLlmModelId,
         temperature: Number(panel.temperature),
         toneId: panel.selectedToneId,
+        // vestluse ajalugu hoiab server selle id järgi (kliendilt ajalugu ei saadeta)
         conversationId: panel.conversationId,
         thinkingLevel: this.supportsThinkingLevel(panel) ? panel.selectedThinkingLevel : null,
       }
@@ -161,17 +160,6 @@ export default {
         .then((response) => this.handleAskResponse(response, chatEntry))
         .catch(() => this.handleAskError(chatEntry))
         .finally(() => this.handleAskFinished(chatEntry, startTime))
-    },
-
-    // saadame backendile selle paneeli kõik vastatud küsimused/vastused LLM-i kontekstiks (piiranguta)
-    getHistoryForRequest(panel) {
-      return panel.chatHistory
-        .filter((chatEntry) => !chatEntry.isError)
-        .filter((chatEntry) => chatEntry.answer && chatEntry.answer.trim() !== '')
-        .map((chatEntry) => ({
-          question: chatEntry.question,
-          answer: chatEntry.answer.slice(0, MAX_ANSWER_LENGTH),
-        }))
     },
 
     getChatHistoryNewestFirst(panel) {

@@ -1,12 +1,12 @@
 package ee.sportclub.service.ask;
 
-import ee.sportclub.controller.ask.dto.AskHistoryEntry;
 import ee.sportclub.controller.ask.dto.BenchmarkAskRequest;
 import ee.sportclub.controller.ask.dto.BenchmarkAskResponse;
 import ee.sportclub.infrastructure.llm.LlmChatClients;
 import ee.sportclub.infrastructure.llm.LlmChatOptionsFactory;
 import ee.sportclub.infrastructure.llm.LlmCost;
 import ee.sportclub.infrastructure.llm.LlmCostCalculator;
+import ee.sportclub.infrastructure.llm.LlmStructuredOutput;
 import ee.sportclub.infrastructure.llm.LlmTokenUsage;
 import ee.sportclub.infrastructure.llm.MetricsAdvisor;
 import ee.sportclub.infrastructure.util.CsvFormatter;
@@ -16,15 +16,13 @@ import ee.sportclub.service.llmmodel.LlmModelService;
 import ee.sportclub.service.tone.ToneService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ResponseEntity;
-import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +39,7 @@ public class NlToSearchService2 {
             You are not capable to register user yourself to training. User has to do it himself after logging into portal. But do not repeat it in conversation on every response if history already contains such response. Keep some distance before suggesting it again.
             When getting closer on proposing training time and facility, always bring our trainer name to praise his/her competence.
             
-            Before answering, reason step by step in the “reasoning” field: (1) Is the question related to sport and training options? (2) Can user question be answered from provided dataset and schema? (3) Can customer be even answered before asking additional clarifying questions.
+            In the “reasoning” field, briefly explain which data the answer is based on: whether the question is related to sport and training options, whether it can be answered from the provided dataset, and whether a clarifying question to the customer is needed instead.
             
             DATA FORMAT:
             DATA contains two semicolon-separated CSV tables (first line is the header, values with ';' are quoted).
@@ -94,18 +92,21 @@ public class NlToSearchService2 {
     private final LlmModelService llmModelService;
     private final ToneService toneService;
     private final ConversationDataStore conversationDataStore;
+    private final BenchmarkConversationMemory benchmarkConversationMemory;
     private final LlmCostCalculator llmCostCalculator;
 
     public NlToSearchService2(JdbcTemplate jdbcTemplate, LlmChatClients llmChatClients,
                               LlmChatOptionsFactory llmChatOptionsFactory,
                               LlmModelService llmModelService, ToneService toneService,
-                              ConversationDataStore conversationDataStore, LlmCostCalculator llmCostCalculator) {
+                              ConversationDataStore conversationDataStore, LlmCostCalculator llmCostCalculator,
+                              BenchmarkConversationMemory benchmarkConversationMemory) {
         this.jdbcTemplate = jdbcTemplate;
         this.llmChatClients = llmChatClients;
         this.llmChatOptionsFactory = llmChatOptionsFactory;
         this.llmModelService = llmModelService;
         this.toneService = toneService;
         this.conversationDataStore = conversationDataStore;
+        this.benchmarkConversationMemory = benchmarkConversationMemory;
         this.llmCostCalculator = llmCostCalculator;
     }
 
@@ -119,7 +120,7 @@ public class NlToSearchService2 {
     // vestluse esimesel küsimusel (ajalugu tühi) päritakse andmestik andmebaasist ja jäetakse vestluse id järgi meelde;
     // jätkuküsimustel kasutatakse sama andmestikku (kui see on mälust kadunud, nt restardi järel, päritakse uuesti)
     private String getConversationDataset(BenchmarkAskRequest request) {
-        boolean isFirstQuestion = request.history() == null || request.history().isEmpty();
+        boolean isFirstQuestion = benchmarkConversationMemory.isNewConversation(request.conversationId());
         if (!isFirstQuestion) {
             Optional<String> savedDataset = conversationDataStore.findDatasetBy(request.conversationId());
             if (savedDataset.isPresent()) {
@@ -145,11 +146,13 @@ public class NlToSearchService2 {
                 llmModel, temperature, request.thinkingLevel());
 
         ResponseEntity<ChatResponse, LlmAnswer> responseEntity = callLlm(llmModel, chatOptionsBuilder,
-                getSystemPrompt(dataset, tone), toHistoryMessages(request.history()), userPrompt,
+                getSystemPrompt(dataset, tone), benchmarkConversationMemory.getHistoryMessages(request.conversationId()), userPrompt,
                 request.conversationId());
 
         LlmTokenUsage tokenUsage = LlmTokenUsage.from(responseEntity.getResponse().getMetadata().getUsage());
         LlmCost cost = llmCostCalculator.calculateCost(tokenUsage, llmModel);
+        benchmarkConversationMemory.saveExchange(request.conversationId(), request.question(),
+                responseEntity.getEntity().answer());
 
         return BenchmarkAskResponse.builder()
                 .answer(responseEntity.getEntity().answer())
@@ -179,37 +182,25 @@ public class NlToSearchService2 {
         return Math.min(temperature, llmModel.getMaxTemperature().doubleValue());
     }
 
-    private List<Message> toHistoryMessages(List<AskHistoryEntry> history) {
-        List<Message> messages = new ArrayList<>();
-        if (history != null) {
-            for (AskHistoryEntry entry : history) {
-                messages.add(new UserMessage(entry.question()));
-                messages.add(new AssistantMessage(entry.answer()));
-            }
-        }
-        return messages;
-    }
-
     private ResponseEntity<ChatResponse, LlmAnswer> callLlm(LlmModel llmModel, ChatOptions.Builder<?> chatOptionsBuilder,
                                                             String systemPrompt, List<Message> historyMessages,
                                                             String userPrompt, String conversationId) {
         ChatClient chatClient = llmChatClients.getChatClientBy(llmModel.getProvider());
-        ResponseEntity<ChatResponse, LlmAnswer> responseEntity = chatClient.prompt()
+        // JSON-vormingu juhis system prompti lõppu (muutumatu, vahemällu sobiv); vastuse teisendame ise, vt LlmStructuredOutput
+        BeanOutputConverter<LlmAnswer> outputConverter = new BeanOutputConverter<>(LlmAnswer.class);
+        ChatResponse chatResponse = chatClient.prompt()
                 .options(chatOptionsBuilder)
                 // MetricsAdvisor seob logirea mudeli hindade ja Benchmarki paneeli vestlusega
                 .advisors(advisorSpec -> advisorSpec
                         .param(MetricsAdvisor.LLM_MODEL_ID, llmModel.getId())
                         .param(MetricsAdvisor.CONVERSATION_ID, conversationId))
-                .system(systemPrompt)
+                .system(systemPrompt + "\n\n" + outputConverter.getFormat())
                 .messages(historyMessages)
                 .user(userPrompt)
                 .call()
-                .responseEntity(LlmAnswer.class);
+                .chatResponse();
 
-        if (responseEntity.getResponse() == null || responseEntity.getEntity() == null) {
-            throw new IllegalStateException("AI model returned an empty response");
-        }
-
-        return responseEntity;
+        LlmAnswer llmAnswer = LlmStructuredOutput.toEntity(chatResponse, outputConverter, llmModel.getName());
+        return new ResponseEntity<>(chatResponse, llmAnswer);
     }
 }

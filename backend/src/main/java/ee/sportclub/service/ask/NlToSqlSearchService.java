@@ -1,12 +1,12 @@
 package ee.sportclub.service.ask;
 
-import ee.sportclub.controller.ask.dto.AskHistoryEntry;
 import ee.sportclub.controller.ask.dto.BenchmarkAskRequest;
 import ee.sportclub.controller.ask.dto.BenchmarkAskResponse;
 import ee.sportclub.infrastructure.llm.LlmChatClients;
 import ee.sportclub.infrastructure.llm.LlmChatOptionsFactory;
 import ee.sportclub.infrastructure.llm.LlmCost;
 import ee.sportclub.infrastructure.llm.LlmCostCalculator;
+import ee.sportclub.infrastructure.llm.LlmStructuredOutput;
 import ee.sportclub.infrastructure.llm.LlmTokenUsage;
 import ee.sportclub.infrastructure.llm.MetricsAdvisor;
 import ee.sportclub.infrastructure.util.CsvFormatter;
@@ -19,17 +19,13 @@ import ee.sportclub.service.tone.ToneService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.ResponseEntity;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -70,9 +66,9 @@ public class NlToSqlSearchService {
             %s
             The view contains only active trainings.
 
-            Before deciding, reason step by step in the "reasoning" field: (1) Is the question about sport and
-            training options? (2) Can it be answered from CATALOG or from PREVIOUS QUERIES? (3) If not, which rows and
-            columns are needed?
+            In the "reasoning" field, briefly explain your decision: whether the question is about sport and
+            training options, whether CATALOG or PREVIOUS QUERIES already answer it, and if not, which data the query
+            fetches.
 
             DECISION:
             - Return "sql": null if the question is unrelated to sports, or can be answered from CATALOG or from the
@@ -110,9 +106,8 @@ public class NlToSqlSearchService {
             Answer the customer's question using QUERY RESULTS (trainings found for this conversation) and CATALOG
             (sports, areas and facilities). Question might be in Estonian, answer in the language of the question.
 
-            Before answering, reason step by step in the "reasoning" field: (1) Is the question related to sport and
-            training options? (2) Which rows of QUERY RESULTS answer it? (3) Can customer be even answered before
-            asking additional clarifying questions.
+            In the "reasoning" field, briefly explain which data the answer is based on (which QUERY RESULTS rows or
+            CATALOG entries), and whether a clarifying question to the customer is needed instead.
 
             RULES:
             1. Use only facts from QUERY RESULTS and CATALOG. If they do not contain the answer, say so honestly.
@@ -152,6 +147,7 @@ public class NlToSqlSearchService {
     private final LlmModelService llmModelService;
     private final ToneService toneService;
     private final SqlConversationStore sqlConversationStore;
+    private final BenchmarkConversationMemory benchmarkConversationMemory;
     private final SqlQueryValidator sqlQueryValidator;
     private final SqlQueryExecutor sqlQueryExecutor;
 
@@ -184,13 +180,14 @@ public class NlToSqlSearchService {
         // 2. samm: vastus kataloogi ja kõigi vestluse päringutulemuste põhjal
         LlmCallResult<LlmAnswer> answer = generateAnswer(request, llmModel, tone, sqlConversation);
         tokenUsage = tokenUsage.plus(answer.tokenUsage());
+        benchmarkConversationMemory.saveExchange(request.conversationId(), request.question(), answer.entity().answer());
 
         return createResponse(answer.entity(), tokenUsage, llmModel, sqlQueryResult);
     }
 
-    // uus vestlus (ajalugu tühi) või mälust kadunud vestlus (nt restart) -> loeme kataloogi uuesti
+    // uus vestlus (serveris pole selle id-ga ajalugu) või mälust kadunud olek (nt restart) -> loeme kataloogi uuesti
     private SqlConversation getSqlConversation(BenchmarkAskRequest request) {
-        boolean isFirstQuestion = request.history() == null || request.history().isEmpty();
+        boolean isFirstQuestion = benchmarkConversationMemory.isNewConversation(request.conversationId());
         if (!isFirstQuestion) {
             var savedConversation = sqlConversationStore.findConversationBy(request.conversationId());
             if (savedConversation.isPresent()) {
@@ -300,34 +297,23 @@ public class NlToSqlSearchService {
                 llmModel, temperature, request.thinkingLevel());
         ChatClient chatClient = llmChatClients.getChatClientBy(llmModel.getProvider());
 
-        ResponseEntity<ChatResponse, T> responseEntity = chatClient.prompt()
+        // JSON-vormingu juhis system prompti lõppu; vastuse teisendame ise, vt LlmStructuredOutput
+        BeanOutputConverter<T> outputConverter = new BeanOutputConverter<>(responseType);
+        ChatResponse chatResponse = chatClient.prompt()
                 .options(chatOptionsBuilder)
                 .advisors(advisorSpec -> advisorSpec
                         .param(MetricsAdvisor.LLM_MODEL_ID, llmModel.getId())
                         .param(MetricsAdvisor.CONVERSATION_ID, request.conversationId())
                         .param(MetricsAdvisor.STEP, step))
-                .system(systemPrompt)
-                .messages(toHistoryMessages(request.history()))
+                .system(systemPrompt + "\n\n" + outputConverter.getFormat())
+                .messages(benchmarkConversationMemory.getHistoryMessages(request.conversationId()))
                 .user(userPrompt)
                 .call()
-                .responseEntity(responseType);
+                .chatResponse();
 
-        if (responseEntity.getResponse() == null || responseEntity.getEntity() == null) {
-            throw new IllegalStateException("AI model returned an empty response (" + step + ")");
-        }
-        LlmTokenUsage tokenUsage = LlmTokenUsage.from(responseEntity.getResponse().getMetadata().getUsage());
-        return new LlmCallResult<>(responseEntity.getEntity(), tokenUsage);
-    }
-
-    private List<Message> toHistoryMessages(List<AskHistoryEntry> history) {
-        List<Message> messages = new ArrayList<>();
-        if (history != null) {
-            for (AskHistoryEntry entry : history) {
-                messages.add(new UserMessage(entry.question()));
-                messages.add(new AssistantMessage(entry.answer()));
-            }
-        }
-        return messages;
+        T entity = LlmStructuredOutput.toEntity(chatResponse, outputConverter, llmModel.getName() + " (" + step + ")");
+        LlmTokenUsage tokenUsage = LlmTokenUsage.from(chatResponse.getMetadata().getUsage());
+        return new LlmCallResult<>(entity, tokenUsage);
     }
 
     // tokenid ja kulu on mõlema (või parandus-katsega kolme) LLM kutse summa

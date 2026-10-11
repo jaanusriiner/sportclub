@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({"reasoning", "sql"})
 public record LlmSqlDecision(
 
-        @JsonPropertyDescription("Step-by-step reasoning: which data is needed and whether a new query is required. Fill this first.")
+        @JsonPropertyDescription("Brief explanation of which data is needed and whether a new query is required.")
         String reasoning,
 
         @JsonPropertyDescription("One PostgreSQL SELECT statement against v_training_date_extended, or null if no new query is needed.")

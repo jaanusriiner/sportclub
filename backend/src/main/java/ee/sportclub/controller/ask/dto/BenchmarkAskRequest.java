@@ -1,6 +1,5 @@
 package ee.sportclub.controller.ask.dto;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -9,8 +8,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
-import java.util.List;
-
 @Builder
 public record BenchmarkAskRequest(
 
@@ -18,13 +15,11 @@ public record BenchmarkAskRequest(
         @Size(max = 500, message = "Question must be at most 500 characters")
         String question,
 
-        // ajalugu ei piirata - andmestik on system promptis ja vestlus peab säilima tervikuna
-        @Valid
-        List<AskHistoryEntry> history,
-
-        // paneeli vestluse id (FE genereerib, uueneb vestluse tühjendamisel); selle järgi hoitakse vestluse andmestikku
+        // paneeli vestluse id (FE genereerib, uueneb vestluse tühjendamisel). Selle järgi hoiab server vestluse
+        // ajalugu (BenchmarkConversationMemory) ja andmestikku - klient ajalugu ei saada. UUID, et id-d ei saaks arvata.
         @NotBlank(message = "Conversation id must not be blank")
-        @Size(max = 36, message = "Conversation id must be at most 36 characters")
+        @Pattern(regexp = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+                message = "Conversation id must be a UUID")
         String conversationId,
 
         @NotNull(message = "LLM model must be selected")

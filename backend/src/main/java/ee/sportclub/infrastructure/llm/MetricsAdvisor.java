@@ -101,11 +101,12 @@ public class MetricsAdvisor implements CallAdvisor {
         return chatOptions == null ? null : chatOptions.getModel();
     }
 
+    // viimane Generation = mudeli lõplik vastus (Anthropicu mõtlemisplokid on eraldi Generation'id selle ees)
     private String getFinishReason(ChatResponse chatResponse) {
-        if (chatResponse.getResult() == null) {
+        if (chatResponse.getResults() == null || chatResponse.getResults().isEmpty()) {
             return null;
         }
-        return chatResponse.getResult().getMetadata().getFinishReason();
+        return chatResponse.getResults().getLast().getMetadata().getFinishReason();
     }
 
     // providerid nimetavad sama asja erinevalt: Gemini MAX_TOKENS, OpenAI/DeepSeek length, Anthropic max_tokens
