@@ -12,6 +12,12 @@ const MIN_TEMPERATURE = 0
 const MAX_TEMPERATURE = 2
 const DEFAULT_TEMPERATURE = 1
 const PANEL_COUNT = 4
+// andmete režiim: FULL = kogu andmestik promptis (/api/ask2), SQL = LLM koostab ise päringu (/api/ask3)
+const DATA_MODES = [
+  { value: 'FULL', label: 'Full dataset' },
+  { value: 'SQL', label: 'SQL query' },
+]
+const SQL_NO_QUERY_HINT = 'Uut päringut ei tehtud - vastus kataloogist või varasematest tulemustest'
 // llm_model.provider -> dropdowni grupi nimi
 const PROVIDER_LABELS = {
   'google-genai': 'Google',
@@ -45,6 +51,8 @@ export default {
       llmModels: [],
       tones: [],
       thinkingLevels: THINKING_LEVELS,
+      dataModes: DATA_MODES,
+      SQL_NO_QUERY_HINT: SQL_NO_QUERY_HINT,
       CACHED_TOKENS_HINT: CACHED_TOKENS_HINT,
       TEMPERATURE_NOT_SUPPORTED_HINT: TEMPERATURE_NOT_SUPPORTED_HINT,
       THINKING_LEVEL_NOT_SUPPORTED_HINT: THINKING_LEVEL_NOT_SUPPORTED_HINT,
@@ -57,6 +65,7 @@ export default {
         // täidetakse NEUTRAL tooniga, kui toonid on backendist laetud
         selectedToneId: null,
         selectedThinkingLevel: null,
+        dataMode: 'FULL',
         // backend hoiab selle id järgi vestluse andmestikku; uus id = uus vestlus (vt clearPanelChat)
         conversationId: crypto.randomUUID(),
         // hoiame tekstina, et väljal püsiks kuju "1.0"; backendile saadame numbrina
@@ -129,8 +138,12 @@ export default {
       panel.chatHistory.push({
         id: this.chatEntryCount,
         question: question,
+        // režiim jäetakse kirjele meelde, et SQL rida näidataks ainult SQL-režiimi vastustel
+        sqlMode: panel.dataMode === 'SQL',
         answer: null,
         reasoning: null,
+        generatedSql: null,
+        sqlRowCount: null,
         isError: false,
         responseTimeMs: null,
         inputTokens: null,
@@ -144,7 +157,7 @@ export default {
       const chatEntry = panel.chatHistory[panel.chatHistory.length - 1]
       this.pendingRequestCount++
       const startTime = performance.now()
-      AskService.postAsk2Request(askRequest)
+      this.postAskRequest(panel, askRequest)
         .then((response) => this.handleAskResponse(response, chatEntry))
         .catch(() => this.handleAskError(chatEntry))
         .finally(() => this.handleAskFinished(chatEntry, startTime))
@@ -174,6 +187,8 @@ export default {
     handleAskResponse(response, chatEntry) {
       chatEntry.answer = response.data.answer
       chatEntry.reasoning = response.data.reasoning ?? null
+      chatEntry.generatedSql = response.data.generatedSql ?? null
+      chatEntry.sqlRowCount = response.data.sqlRowCount ?? null
       chatEntry.inputTokens = response.data.inputTokens ?? null
       chatEntry.cachedTokens = response.data.cachedTokens ?? null
       chatEntry.thinkingTokens = response.data.thinkingTokens ?? null
@@ -293,6 +308,25 @@ export default {
     },
 
     // uus mudel alustab puhtalt lehelt: eelmise mudeli ajalugu ei lähe kontekstiks ja summad ei segune
+    postAskRequest(panel, askRequest) {
+      if (panel.dataMode === 'SQL') {
+        return AskService.postAsk3Request(askRequest)
+      }
+      return AskService.postAsk2Request(askRequest)
+    },
+
+    // režiimidel on backendis erinev vestluse olek (andmestik vs kataloog + päringud) - alustame uut vestlust
+    handleDataModeChange(panel) {
+      this.clearPanelChat(panel)
+    },
+
+    formatSqlInfo(chatEntry) {
+      if (chatEntry.generatedSql === null) {
+        return 'SQL: no query'
+      }
+      return 'SQL: ' + this.formatTokenCount(chatEntry.sqlRowCount) + ' rows'
+    },
+
     handleLlmModelChange(panel) {
       this.clearPanelChat(panel)
       this.normalizeTemperature(panel)
@@ -466,6 +500,20 @@ export default {
                 </option>
               </select>
             </span>
+            <span class="small text-secondary text-nowrap mb-1">
+              Data mode:
+              <select
+                v-model="panel.dataMode"
+                class="form-select border-secondary d-inline-block w-auto param-select"
+                aria-label="Data mode"
+                :disabled="isPanelLoading(panel)"
+                @change="handleDataModeChange(panel)"
+              >
+                <option v-for="dataMode in dataModes" :key="dataMode.value" :value="dataMode.value">
+                  {{ dataMode.label }}
+                </option>
+              </select>
+            </span>
             <!-- paneeli kokkuvõtte meetrika, sisenditest kerge joonega eraldatud -->
             <div class="d-flex flex-column border-top pt-2 mt-1 metrics-block">
               <span class="small text-secondary">
@@ -541,6 +589,12 @@ export default {
                     </span>
                     <span class="ps-3" :title="THINKING_TOKENS_HINT">
                       {{ formatThinkingTokens(chatEntry.thinkingTokens) }}
+                    </span>
+                    <span
+                      v-if="chatEntry.sqlMode"
+                      :title="chatEntry.generatedSql ?? SQL_NO_QUERY_HINT"
+                    >
+                      {{ formatSqlInfo(chatEntry) }}
                     </span>
                   </template>
                 </div>

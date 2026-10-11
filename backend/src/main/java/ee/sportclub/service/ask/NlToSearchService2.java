@@ -9,6 +9,7 @@ import ee.sportclub.infrastructure.llm.LlmCost;
 import ee.sportclub.infrastructure.llm.LlmCostCalculator;
 import ee.sportclub.infrastructure.llm.LlmTokenUsage;
 import ee.sportclub.infrastructure.llm.MetricsAdvisor;
+import ee.sportclub.infrastructure.util.CsvFormatter;
 import ee.sportclub.persistence.llmmodel.LlmModel;
 import ee.sportclub.persistence.tone.Tone;
 import ee.sportclub.service.llmmodel.LlmModelService;
@@ -87,8 +88,6 @@ public class NlToSearchService2 {
             WHERE training_date >= CURRENT_DATE
             ORDER BY training_date, training_time, facility_name""";
 
-    private static final String CSV_SEPARATOR = ";";
-
     private final JdbcTemplate jdbcTemplate;
     private final LlmChatClients llmChatClients;
     private final LlmChatOptionsFactory llmChatOptionsFactory;
@@ -129,38 +128,10 @@ public class NlToSearchService2 {
         }
         List<Map<String, Object>> facilities = jdbcTemplate.queryForList(FACILITIES_SQL);
         List<Map<String, Object>> trainings = jdbcTemplate.queryForList(TRAININGS_SQL);
-        String dataset = DATASET_TEMPLATE.formatted(facilities.size(), toCsv(facilities), trainings.size(), toCsv(trainings));
+        String dataset = DATASET_TEMPLATE.formatted(facilities.size(), CsvFormatter.toCsv(facilities), trainings.size(),
+                CsvFormatter.toCsv(trainings));
         conversationDataStore.saveDataset(request.conversationId(), dataset);
         return dataset;
-    }
-
-    // CSV: päis veerunimedest, iga rida eraldi real; null -> tühi väli
-    private String toCsv(List<Map<String, Object>> rows) {
-        if (rows.isEmpty()) {
-            return "";
-        }
-        StringBuilder csv = new StringBuilder();
-        csv.append(String.join(CSV_SEPARATOR, rows.getFirst().keySet())).append('\n');
-        for (Map<String, Object> row : rows) {
-            List<String> fields = new ArrayList<>();
-            for (Object value : row.values()) {
-                fields.add(toCsvField(value));
-            }
-            csv.append(String.join(CSV_SEPARATOR, fields)).append('\n');
-        }
-        return csv.toString();
-    }
-
-    // eraldaja, jutumärgi või reavahetusega väärtus pannakse jutumärkidesse (jutumärgid kahekordistatakse)
-    private String toCsvField(Object value) {
-        if (value == null) {
-            return "";
-        }
-        String text = value.toString();
-        if (text.contains(CSV_SEPARATOR) || text.contains("\"") || text.contains("\n")) {
-            return "\"" + text.replace("\"", "\"\"") + "\"";
-        }
-        return text;
     }
 
     private BenchmarkAskResponse generateResponse(BenchmarkAskRequest request, LlmModel llmModel, Tone tone,

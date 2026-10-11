@@ -28,6 +28,8 @@ public class MetricsAdvisor implements CallAdvisor {
 
     public static final String LLM_MODEL_ID = "metrics.llmModelId";
     public static final String CONVERSATION_ID = "metrics.conversationId";
+    // mitme sammuga voo (nt SQL-režiim: sql-decision, answer) samm, et logiread oleks eristatavad
+    public static final String STEP = "metrics.step";
 
     private final LlmModelRepository llmModelRepository;
     private final LlmCostCalculator llmCostCalculator;
@@ -37,26 +39,27 @@ public class MetricsAdvisor implements CallAdvisor {
         long startNanos = System.nanoTime();
         Optional<LlmModel> llmModel = findLlmModel(request);
         Object conversationId = request.context().get(CONVERSATION_ID);
+        Object step = request.context().get(STEP);
         try {
             ChatClientResponse response = chain.nextCall(request);  // kutse läheb ahelas edasi (lõpuks mudelini)
-            logSuccess(response, llmModel, conversationId, elapsedMillis(startNanos));
+            logSuccess(response, llmModel, conversationId, step, elapsedMillis(startNanos));
             return response;
         } catch (RuntimeException exception) {
             // ka ebaõnnestunud kutse (nt ajalõpp) on oluline mõõdik - logime ja viskame edasi
-            log.warn("[LlmMetrics] llm_call status=error model={} conversationId={} latencyMs={} error={}",
-                    llmModel.map(LlmModel::getName).orElse(getRequestedModelName(request)), conversationId,
+            log.warn("[LlmMetrics] llm_call status=error model={} conversationId={} step={} latencyMs={} error={}",
+                    llmModel.map(LlmModel::getName).orElse(getRequestedModelName(request)), conversationId, step,
                     elapsedMillis(startNanos), exception.toString());
             throw exception;
         }
     }
 
     private void logSuccess(ChatClientResponse response, Optional<LlmModel> llmModel, Object conversationId,
-                            long latencyMillis) {
+                            Object step, long latencyMillis) {
         ChatResponse chatResponse = response.chatResponse();
         Usage usage = chatResponse == null ? null : chatResponse.getMetadata().getUsage();
         if (usage == null) {
-            log.warn("[LlmMetrics] llm_call status=empty model={} conversationId={} latencyMs={}",
-                    llmModel.map(LlmModel::getName).orElse(null), conversationId, latencyMillis);
+            log.warn("[LlmMetrics] llm_call status=empty model={} conversationId={} step={} latencyMs={}",
+                    llmModel.map(LlmModel::getName).orElse(null), conversationId, step, latencyMillis);
             return;
         }
         LlmTokenUsage tokenUsage = LlmTokenUsage.from(usage);
@@ -68,12 +71,12 @@ public class MetricsAdvisor implements CallAdvisor {
                 .orElse(new LlmCost(null, null));  // tundmatu mudel (nt pole tabelis) - tokenid logime ikka
         String finishReason = getFinishReason(chatResponse);
 
-        log.info("[LlmMetrics] llm_call status=ok provider={} model={} conversationId={} latencyMs={} "
+        log.info("[LlmMetrics] llm_call status=ok provider={} model={} conversationId={} step={} latencyMs={} "
                         + "in={} cached={} cacheWrite={} out={} thinking={} inputCostEur={} outputCostEur={} "
                         + "totalCostEur={} finishReason={}",
                 llmModel.map(LlmModel::getProvider).orElse(null),
                 llmModel.map(LlmModel::getName).orElse(chatResponse.getMetadata().getModel()),
-                conversationId, latencyMillis,
+                conversationId, step, latencyMillis,
                 tokenUsage.inputTokens(), tokenUsage.cachedTokens(), tokenUsage.cacheWriteTokens(),
                 tokenUsage.outputTokens(), tokenUsage.thinkingTokens(),
                 cost.inputCost(), cost.outputCost(), cost.totalCost(), finishReason);

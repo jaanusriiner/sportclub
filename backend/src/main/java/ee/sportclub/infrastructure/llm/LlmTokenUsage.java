@@ -16,6 +16,23 @@ import org.springframework.ai.google.genai.metadata.GoogleGenAiUsage;
 public record LlmTokenUsage(Integer inputTokens, Integer cachedTokens, Integer cacheWriteTokens, Integer outputTokens,
                             Integer thinkingTokens) {
 
+    // mitme LLM kutse (nt SQL-režiimi kaks sammu) tokenid kokku; null + null = null (provider ei teata)
+    public LlmTokenUsage plus(LlmTokenUsage other) {
+        return new LlmTokenUsage(
+                sumNullable(inputTokens, other.inputTokens),
+                sumNullable(cachedTokens, other.cachedTokens),
+                sumNullable(cacheWriteTokens, other.cacheWriteTokens),
+                sumNullable(outputTokens, other.outputTokens),
+                sumNullable(thinkingTokens, other.thinkingTokens));
+    }
+
+    private static Integer sumNullable(Integer first, Integer second) {
+        if (first == null) {
+            return second;
+        }
+        return second == null ? first : first + second;
+    }
+
     public static LlmTokenUsage from(Usage usage) {
         Integer inputTokens = usage.getPromptTokens();
         Integer cachedTokens = getCachedTokens(usage);

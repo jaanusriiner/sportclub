@@ -15,6 +15,8 @@ public record BenchmarkAskResponse(
         Integer outputTokens,   // sisaldab ka thinkingTokens
         Integer thinkingTokens, // mõtlemiseks kulunud osa outputTokens'ist (arveldatakse output hinnaga)
         BigDecimal inputCost,  // EUR, cached tokenid soodushinnaga
-        BigDecimal outputCost  // EUR
+        BigDecimal outputCost,  // EUR
+        String generatedSql,    // SQL-režiim: LLM-i koostatud ja käivitatud päring (null = päringut ei tehtud / FULL režiim)
+        Integer sqlRowCount     // SQL-režiim: päringu tulemuse ridade arv
 
 ) {}
