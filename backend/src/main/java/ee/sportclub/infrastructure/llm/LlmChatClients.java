@@ -25,16 +25,16 @@ public class LlmChatClients {
     private final Map<String, ChatClient> chatClientsByProvider;
 
     public LlmChatClients(GoogleGenAiChatModel googleGenAiChatModel, OpenAiChatModel openAiChatModel,
-                          AnthropicChatModel anthropicChatModel,
+                          AnthropicChatModel anthropicChatModel, MetricsAdvisor metricsAdvisor,
                           @Value("${llm.deepseek.base-url}") String deepSeekBaseUrl,
                           @Value("${llm.deepseek.api-key}") String deepSeekApiKey,
                           @Value("${llm.deepseek.timeout-seconds}") long deepSeekTimeoutSeconds) {
         this.chatClientsByProvider = Map.of(
-                GOOGLE_GENAI, ChatClient.builder(googleGenAiChatModel).build(),
-                OPENAI, ChatClient.builder(openAiChatModel).build(),
-                ANTHROPIC, ChatClient.builder(anthropicChatModel).build(),
+                GOOGLE_GENAI, ChatClient.builder(googleGenAiChatModel).defaultAdvisors(metricsAdvisor).build(),
+                OPENAI, ChatClient.builder(openAiChatModel).defaultAdvisors(metricsAdvisor).build(),
+                ANTHROPIC, ChatClient.builder(anthropicChatModel).defaultAdvisors(metricsAdvisor).build(),
                 DEEPSEEK, ChatClient.builder(createDeepSeekChatModel(deepSeekBaseUrl, deepSeekApiKey,
-                        Duration.ofSeconds(deepSeekTimeoutSeconds))).build());
+                        Duration.ofSeconds(deepSeekTimeoutSeconds))).defaultAdvisors(metricsAdvisor).build());
     }
 
     // DeepSeek API on OpenAI-ühilduv: sama OpenAiChatModel, aga oma aadressi ja võtmega. Ei registreeri seda Spring

@@ -4,9 +4,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LlmModelRepository extends JpaRepository<LlmModel, Integer> {
 
     @Query("select l from LlmModel l where l.isActive = true order by l.provider, l.name")
     List<LlmModel> findActiveLlmModels();
+
+    @Query("select l from LlmModel l where l.name = :name")
+    Optional<LlmModel> findLlmModelBy(String name);
 }

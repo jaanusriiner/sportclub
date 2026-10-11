@@ -14,7 +14,7 @@ public class LlmConfig {
 
     @Bean
     @Primary
-    public ChatClient.Builder chatClientBuilder(GoogleGenAiChatModel googleGenAiChatModel) {
-        return ChatClient.builder(googleGenAiChatModel);
+    public ChatClient.Builder chatClientBuilder(GoogleGenAiChatModel googleGenAiChatModel, MetricsAdvisor metricsAdvisor) {
+        return ChatClient.builder(googleGenAiChatModel).defaultAdvisors(metricsAdvisor);
     }
 }

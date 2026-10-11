@@ -5,7 +5,10 @@ import ee.sportclub.controller.ask.dto.BenchmarkAskRequest;
 import ee.sportclub.controller.ask.dto.BenchmarkAskResponse;
 import ee.sportclub.infrastructure.llm.LlmChatClients;
 import ee.sportclub.infrastructure.llm.LlmChatOptionsFactory;
+import ee.sportclub.infrastructure.llm.LlmCost;
+import ee.sportclub.infrastructure.llm.LlmCostCalculator;
 import ee.sportclub.infrastructure.llm.LlmTokenUsage;
+import ee.sportclub.infrastructure.llm.MetricsAdvisor;
 import ee.sportclub.persistence.llmmodel.LlmModel;
 import ee.sportclub.persistence.tone.Tone;
 import ee.sportclub.service.llmmodel.LlmModelService;
@@ -17,12 +20,9 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,8 @@ public class NlToSearchService2 {
             User question might be in Estonian, use both Estonian and English language to search data but always respond to customer in language they started conversation.
             
             Once user shows interest to join trainings, guide user first to Register to system as new user (or login as existing one) to complete the registration to traininggroup and training.
-            You are not capable to register user yourself to training. User has to do it himself after logging into portal.
+            You are not capable to register user yourself to training. User has to do it himself after logging into portal. But do not repeat it in conversation on every response if history already contains such response. Keep some distance before suggesting it again.
+            When getting closer on proposing training time and facility, always bring our trainer name to praise his/her competence.
             
             Before answering, reason step by step in the “reasoning” field: (1) Is the question related to sport and training options? (2) Can user question be answered from provided dataset and schema? (3) Can customer be even answered before asking additional clarifying questions.
             
@@ -88,29 +89,25 @@ public class NlToSearchService2 {
 
     private static final String CSV_SEPARATOR = ";";
 
-    private static final BigDecimal TOKENS_PER_PRICE_UNIT = BigDecimal.valueOf(1_000_000);
-    private static final int COST_SCALE = 6;
-
     private final JdbcTemplate jdbcTemplate;
     private final LlmChatClients llmChatClients;
     private final LlmChatOptionsFactory llmChatOptionsFactory;
     private final LlmModelService llmModelService;
     private final ToneService toneService;
     private final ConversationDataStore conversationDataStore;
-    private final BigDecimal usdToEurRate;
+    private final LlmCostCalculator llmCostCalculator;
 
     public NlToSearchService2(JdbcTemplate jdbcTemplate, LlmChatClients llmChatClients,
                               LlmChatOptionsFactory llmChatOptionsFactory,
                               LlmModelService llmModelService, ToneService toneService,
-                              ConversationDataStore conversationDataStore,
-                              @Value("${llm.usd-to-eur-rate}") BigDecimal usdToEurRate) {
+                              ConversationDataStore conversationDataStore, LlmCostCalculator llmCostCalculator) {
         this.jdbcTemplate = jdbcTemplate;
         this.llmChatClients = llmChatClients;
         this.llmChatOptionsFactory = llmChatOptionsFactory;
         this.llmModelService = llmModelService;
         this.toneService = toneService;
         this.conversationDataStore = conversationDataStore;
-        this.usdToEurRate = usdToEurRate;
+        this.llmCostCalculator = llmCostCalculator;
     }
 
     public BenchmarkAskResponse ask(BenchmarkAskRequest request) {
@@ -177,9 +174,11 @@ public class NlToSearchService2 {
                 llmModel, temperature, request.thinkingLevel());
 
         ResponseEntity<ChatResponse, LlmAnswer> responseEntity = callLlm(llmModel, chatOptionsBuilder,
-                getSystemPrompt(dataset, tone), toHistoryMessages(request.history()), userPrompt);
+                getSystemPrompt(dataset, tone), toHistoryMessages(request.history()), userPrompt,
+                request.conversationId());
 
         LlmTokenUsage tokenUsage = LlmTokenUsage.from(responseEntity.getResponse().getMetadata().getUsage());
+        LlmCost cost = llmCostCalculator.calculateCost(tokenUsage, llmModel);
 
         return BenchmarkAskResponse.builder()
                 .answer(responseEntity.getEntity().answer())
@@ -188,8 +187,8 @@ public class NlToSearchService2 {
                 .cachedTokens(tokenUsage.cachedTokens())
                 .outputTokens(tokenUsage.outputTokens())
                 .thinkingTokens(tokenUsage.thinkingTokens())
-                .inputCost(calculateInputCostEur(tokenUsage, llmModel))
-                .outputCost(calculateCostEur(tokenUsage.outputTokens(), llmModel.getOutputPriceUsd()))
+                .inputCost(cost.inputCost())
+                .outputCost(cost.outputCost())
                 .build();
     }
 
@@ -209,33 +208,6 @@ public class NlToSearchService2 {
         return Math.min(temperature, llmModel.getMaxTemperature().doubleValue());
     }
 
-    // inputTokens sisaldab cached ja cache write tokeneid: cached soodushinnaga, cache write (Anthropic) kirjutamise
-    // hinnaga, ülejäänud tavahinnaga
-    private BigDecimal calculateInputCostEur(LlmTokenUsage tokenUsage, LlmModel llmModel) {
-        if (tokenUsage.inputTokens() == null) {
-            return null;
-        }
-        int cacheWriteTokens = tokenUsage.cacheWriteTokens();
-        int uncachedTokens = tokenUsage.inputTokens() - tokenUsage.cachedTokens() - cacheWriteTokens;
-        BigDecimal cacheWritePriceUsd = llmModel.getCacheWritePriceUsd() != null
-                ? llmModel.getCacheWritePriceUsd()
-                : llmModel.getInputPriceUsd();
-        return calculateCostEur(uncachedTokens, llmModel.getInputPriceUsd())
-                .add(calculateCostEur(tokenUsage.cachedTokens(), llmModel.getCachedInputPriceUsd()))
-                .add(calculateCostEur(cacheWriteTokens, cacheWritePriceUsd));
-    }
-
-    // hind on USD / 1M tokenit -> kulu EUR = tokenid * hind / 1 000 000 * kurss
-    private BigDecimal calculateCostEur(Integer tokens, BigDecimal priceUsdPerMillionTokens) {
-        if (tokens == null) {
-            return null;
-        }
-        return BigDecimal.valueOf(tokens)
-                .multiply(priceUsdPerMillionTokens)
-                .multiply(usdToEurRate)
-                .divide(TOKENS_PER_PRICE_UNIT, COST_SCALE, RoundingMode.HALF_UP);
-    }
-
     private List<Message> toHistoryMessages(List<AskHistoryEntry> history) {
         List<Message> messages = new ArrayList<>();
         if (history != null) {
@@ -249,10 +221,14 @@ public class NlToSearchService2 {
 
     private ResponseEntity<ChatResponse, LlmAnswer> callLlm(LlmModel llmModel, ChatOptions.Builder<?> chatOptionsBuilder,
                                                             String systemPrompt, List<Message> historyMessages,
-                                                            String userPrompt) {
+                                                            String userPrompt, String conversationId) {
         ChatClient chatClient = llmChatClients.getChatClientBy(llmModel.getProvider());
         ResponseEntity<ChatResponse, LlmAnswer> responseEntity = chatClient.prompt()
                 .options(chatOptionsBuilder)
+                // MetricsAdvisor seob logirea mudeli hindade ja Benchmarki paneeli vestlusega
+                .advisors(advisorSpec -> advisorSpec
+                        .param(MetricsAdvisor.LLM_MODEL_ID, llmModel.getId())
+                        .param(MetricsAdvisor.CONVERSATION_ID, conversationId))
                 .system(systemPrompt)
                 .messages(historyMessages)
                 .user(userPrompt)
