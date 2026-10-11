@@ -12,10 +12,12 @@ import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
+import java.util.Map;
 
 // Päringu ChatOptions provideri järgi. Mudel ja temperatuur on kõigil ühised (ChatOptions), mõtlemistase aga
 // provideri-spetsiifiline: Gemini thinkingLevel (MINIMAL/LOW/MEDIUM/HIGH), OpenAI reasoning_effort (minimal/low/...),
-// Anthropic effort (low/medium/high/...; MINIMAL -> LOW, sest Anthropicul madalamat taset pole).
+// Anthropic effort (low/medium/high/...; MINIMAL -> LOW, sest Anthropicul madalamat taset pole),
+// DeepSeek thinking + reasoning_effort (MINIMAL -> mõtlemine välja, LOW -> low, MEDIUM -> high, HIGH -> max).
 @Component
 public class LlmChatOptionsFactory {
 
@@ -26,6 +28,7 @@ public class LlmChatOptionsFactory {
             case LlmChatClients.GOOGLE_GENAI -> createGoogleGenAiChatOptionsBuilder(sendThinkingLevel, thinkingLevel);
             case LlmChatClients.OPENAI -> createOpenAiChatOptionsBuilder(sendThinkingLevel, thinkingLevel);
             case LlmChatClients.ANTHROPIC -> createAnthropicChatOptionsBuilder(sendThinkingLevel, thinkingLevel);
+            case LlmChatClients.DEEPSEEK -> createDeepSeekChatOptionsBuilder(sendThinkingLevel, thinkingLevel);
             default -> ChatOptions.builder();
         };
         chatOptionsBuilder.model(llmModel.getName());
@@ -62,6 +65,29 @@ public class LlmChatOptionsFactory {
             anthropicChatOptionsBuilder.effort(toAnthropicEffort(thinkingLevel));
         }
         return anthropicChatOptionsBuilder;
+    }
+
+    // DeepSeek (OpenAI vorming): thinking lülitatakse extra_body kaudu, sügavus reasoning_effort'iga (low/high/max)
+    private ChatOptions.Builder<?> createDeepSeekChatOptionsBuilder(boolean sendThinkingLevel, String thinkingLevel) {
+        OpenAiChatOptions.Builder deepSeekChatOptionsBuilder = OpenAiChatOptions.builder();
+        if (!sendThinkingLevel) {
+            return deepSeekChatOptionsBuilder;
+        }
+        if (thinkingLevel.equals("MINIMAL")) {
+            deepSeekChatOptionsBuilder.extraBody(Map.of("thinking", Map.of("type", "disabled")));
+            return deepSeekChatOptionsBuilder;
+        }
+        deepSeekChatOptionsBuilder.extraBody(Map.of("thinking", Map.of("type", "enabled")));
+        deepSeekChatOptionsBuilder.reasoningEffort(toDeepSeekReasoningEffort(thinkingLevel));
+        return deepSeekChatOptionsBuilder;
+    }
+
+    private String toDeepSeekReasoningEffort(String thinkingLevel) {
+        return switch (thinkingLevel) {
+            case "MEDIUM" -> "high";
+            case "HIGH" -> "max";
+            default -> "low";  // LOW
+        };
     }
 
     private OutputConfig.Effort toAnthropicEffort(String thinkingLevel) {

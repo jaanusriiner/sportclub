@@ -2619,6 +2619,10 @@ INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_inp
 INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, cache_write_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'anthropic', 'claude-opus-5-5', 4.00, 0.20, 5.00, 20.00, 1.0, false, true, true);
 INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, cache_write_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'anthropic', 'claude-sonnet-5-5', 2.00, 0.10, 2.50, 10.00, 1.0, false, true, true);
 INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, cache_write_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'anthropic', 'claude-haiku-4-5', 1.00, 0.10, 1.25, 5.00, 1.0, true, false, true);
+-- DeepSeek mudelid (api-docs.deepseek.com/quick_start/pricing, okt 2026), PEAK hinnad (off-peak on pool sellest;
+-- peak = 01-04 ja 06-10 UTC E-R). Vahemälu on automaatne. Thinking mode (vaikimisi sees) ignoreerib temperatuuri.
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'deepseek', 'deepseek-flash', 0.30, 0.006, 1.20, 2.0, false, true, true);
+INSERT INTO sportclub.llm_model (id, provider, name, input_price_usd, cached_input_price_usd, output_price_usd, max_temperature, supports_temperature, supports_thinking_level, is_active) VALUES (default, 'deepseek', 'deepseek-v4-pro', 1.32, 0.044, 3.96, 2.0, false, true, true);
 
 -- Benchmark-vaate vastuse toonid. description lisatakse LLM-i system prompti (NEUTRAL puhul midagi ei lisata)
 INSERT INTO sportclub.tone (id, name, description) VALUES (default, 'NEUTRAL', ' ');

@@ -13,7 +13,12 @@ const MAX_TEMPERATURE = 2
 const DEFAULT_TEMPERATURE = 1
 const PANEL_COUNT = 4
 // llm_model.provider -> dropdowni grupi nimi
-const PROVIDER_LABELS = { 'google-genai': 'Google', openai: 'OpenAI', anthropic: 'Anthropic' }
+const PROVIDER_LABELS = {
+  'google-genai': 'Google',
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  deepseek: 'DeepSeek',
+}
 const DEFAULT_TONE_NAME = 'NEUTRAL'
 const TEMPERATURE_NOT_SUPPORTED_HINT =
   'See mudel ei luba temperatuuri muuta (kasutatakse mudeli vaikeväärtust)'

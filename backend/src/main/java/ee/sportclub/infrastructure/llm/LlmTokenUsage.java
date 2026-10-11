@@ -1,5 +1,6 @@
 package ee.sportclub.infrastructure.llm;
 
+import com.openai.core.JsonValue;
 import com.openai.models.completions.CompletionUsage;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.google.genai.metadata.GoogleGenAiUsage;
@@ -34,7 +35,22 @@ public record LlmTokenUsage(Integer inputTokens, Integer cachedTokens, Integer c
     // provider ei pruugi vahemälu infot tagastada - siis loeme, et vahemälust ei tulnud midagi
     private static Integer getCachedTokens(Usage usage) {
         Long cacheReadInputTokens = usage.getCacheReadInputTokens();
+        if ((cacheReadInputTokens == null || cacheReadInputTokens == 0)
+                && usage.getNativeUsage() instanceof CompletionUsage completionUsage) {
+            return getDeepSeekCacheHitTokens(completionUsage);
+        }
         return cacheReadInputTokens == null ? 0 : cacheReadInputTokens.intValue();
+    }
+
+    // DeepSeek (OpenAI kliendi kaudu) teatab vahemälu tabamused mitte-standardse väljaga prompt_cache_hit_tokens,
+    // mida OpenAI SDK hoiab "lisaväljade" all
+    private static Integer getDeepSeekCacheHitTokens(CompletionUsage completionUsage) {
+        JsonValue cacheHitTokens = completionUsage._additionalProperties().get("prompt_cache_hit_tokens");
+        if (cacheHitTokens == null) {
+            return 0;
+        }
+        Object cacheHitTokenCount = cacheHitTokens.asNumber().orElse(null);
+        return cacheHitTokenCount instanceof Number number ? number.intValue() : 0;
     }
 
     private static Integer getOpenAiReasoningTokens(Usage usage) {

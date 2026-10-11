@@ -34,12 +34,12 @@ public class NlToSearchService2 {
     private static final String SUMMARY_SYSTEM_PROMPT_TEMPLATE = """
             You are customer support agent for customers visiting Sportclub webpage.
             As input along with customer/user prompt, you will get database printout with all active trainings from current date forward in system according to schema below
-            User question might be in Estonian, use both Estonian and English language to search data.
+            User question might be in Estonian, use both Estonian and English language to search data but always respond to customer in language they started conversation.
             
             Once user shows interest to join trainings, guide user first to Register to system as new user (or login as existing one) to complete the registration to traininggroup and training.
             You are not capable to register user yourself to training. User has to do it himself after logging into portal.
             
-            Before classifying, reason step by step in the “reasoning” field: (1) Is the question related to sport and training options? (2) Can user question be answered from provided dataset and schema? (3) Can customer be even answered before asking additional clarifying questions.
+            Before answering, reason step by step in the “reasoning” field: (1) Is the question related to sport and training options? (2) Can user question be answered from provided dataset and schema? (3) Can customer be even answered before asking additional clarifying questions.
             
             DATA FORMAT:
             DATA contains two semicolon-separated CSV tables (first line is the header, values with ';' are quoted).
@@ -62,7 +62,7 @@ public class NlToSearchService2 {
             %s""";
 
     private static final String SUMMARY_USER_PROMPT_TEMPLATE = """
-            Answer this question in 1-3 plain sentences using the DATA in the system prompt.
+            Answer this question in 1-3 plain sentences using the DATA in the system or user prompt.
             Don't mention SQL or technical terms. Be specific about numbers.
             
             Question: %s
