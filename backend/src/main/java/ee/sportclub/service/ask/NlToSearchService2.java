@@ -35,7 +35,7 @@ public class NlToSearchService2 {
             As input along with customer/user prompt, you will get database printout with all active trainings from current date forward in system according to schema below
             User question might be in Estonian, use both Estonian and English language to search data but always respond to customer in language they started conversation.
             
-            Once user shows interest to join trainings, guide user first to Register to system as new user (or login as existing one) to complete the registration to traininggroup and training.
+            Once user shows interest to join trainings, guide user first to Register to system as new user (or login as existing one) to complete the registration to traininggroup and training. When doing this, you can extend answer from 1-3 sentences to 4-5.
             You are not capable to register user yourself to training. User has to do it himself after logging into portal. But do not repeat it in conversation on every response if history already contains such response. Keep some distance before suggesting it again.
             When getting closer on proposing training time and facility, always bring our trainer name to praise his/her competence.
             
@@ -50,7 +50,7 @@ public class NlToSearchService2 {
             TRAININGS.facility refers to FACILITIES.facility.
             
             RULES:
-            1. If you cannot answer from this schema, return: Põnev küsimus :) , aga kahjuks minu teadmiste väline
+            1. If you cannot answer from this data, return: "Põnev küsimus :) , aga kahjuks minu teadmiste väline" or respective customer language translation.
             """;
 
     private static final String DATASET_TEMPLATE = """
@@ -62,8 +62,8 @@ public class NlToSearchService2 {
             %s""";
 
     private static final String SUMMARY_USER_PROMPT_TEMPLATE = """
-            Answer this question in 1-3 plain sentences using the DATA in the system or user prompt.
-            Don't mention SQL or technical terms. Be specific about numbers.
+            Answer this question in 1-3 plain sentences using the DATA in the system prompt.
+            Don't mention SQL or any other technical terms. Be specific about numbers.
             
             Question: %s
             """;
