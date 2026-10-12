@@ -8,6 +8,7 @@ import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.ai.google.genai.common.GoogleGenAiThinkingLevel;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +71,10 @@ public class LlmChatOptionsFactory {
     // DeepSeek (OpenAI vorming): thinking lülitatakse extra_body kaudu, sügavus reasoning_effort'iga (low/high/max)
     private ChatOptions.Builder<?> createDeepSeekChatOptionsBuilder(boolean sendThinkingLevel, String thinkingLevel) {
         OpenAiChatOptions.Builder deepSeekChatOptionsBuilder = OpenAiChatOptions.builder();
+        // JSON-režiim: ilma selleta võib DeepSeek jätkuküsimusel vastata tavatekstina (jäljendab ajaloo vormingut)
+        deepSeekChatOptionsBuilder.responseFormat(OpenAiChatModel.ResponseFormat.builder()
+                .type(OpenAiChatModel.ResponseFormat.Type.JSON_OBJECT)
+                .build());
         if (!sendThinkingLevel) {
             return deepSeekChatOptionsBuilder;
         }

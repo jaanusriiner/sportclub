@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 // Benchmarki SQL-režiim (/api/ask3): täisandmestiku asemel saab LLM alguses ainult väikese kataloogi
 // (spordialad, piirkonnad, asukohad) ja koostab ise SELECT-i, mis toob küsimuseks vajalikud treeningud.
@@ -91,7 +92,9 @@ public class NlToSqlSearchService {
     private static final String SQL_DECISION_USER_PROMPT_TEMPLATE = """
             Decide whether a new query is needed and write it if so.
 
-            Question: %s""";
+            Question: %s
+
+            Reply only with the JSON object described in the system prompt.""";
 
     private static final String SQL_FIX_USER_PROMPT_TEMPLATE = """
             Your previous SQL could not be executed:
@@ -99,7 +102,9 @@ public class NlToSqlSearchService {
             Error: %s
             Return a corrected SQL statement (or null if no query is needed).
 
-            Question: %s""";
+            Question: %s
+
+            Reply only with the JSON object described in the system prompt.""";
 
     private static final String ANSWER_SYSTEM_PROMPT_TEMPLATE = """
             You are search engine for customers visiting Sportclub webpage.
@@ -121,7 +126,9 @@ public class NlToSqlSearchService {
             Answer this question in 1-3 plain sentences using the QUERY RESULTS and CATALOG in the system prompt.
             Don't mention SQL or technical terms. Be specific about numbers.
 
-            Question: %s""";
+            Question: %s
+
+            Reply only with the JSON object described in the system prompt.""";
 
     private static final String SPORTS_SQL = """
             SELECT s.name AS sport, string_agg(sl.name, ', ' ORDER BY sl.id) AS levels
@@ -216,8 +223,9 @@ public class NlToSqlSearchService {
         String userPrompt = failedSql == null
                 ? SQL_DECISION_USER_PROMPT_TEMPLATE.formatted(request.question())
                 : SQL_FIX_USER_PROMPT_TEMPLATE.formatted(failedSql.sql(), failedSql.error(), request.question());
+        // varuvarianti pole: tavatekstist SQL-i arvamine oleks ebaturvaline - vigane otsus on viga
         LlmCallResult<LlmSqlDecision> sqlDecision = callLlm(request, llmModel, systemPrompt, userPrompt,
-                LlmSqlDecision.class, STEP_SQL_DECISION);
+                LlmSqlDecision.class, STEP_SQL_DECISION, null);
         // iga LLM-i genereeritud SQL logisse - ka see, mille validaator hiljem tagasi lükkab
         log.info("[SqlMode] generated_sql conversationId={} model={} attempt={} sql={}",
                 request.conversationId(), llmModel.getName(), failedSql == null ? "first" : "fix",
@@ -261,7 +269,9 @@ public class NlToSqlSearchService {
                 + getQueryResults(sqlConversation)
                 + getToneInstruction(tone);
         String userPrompt = ANSWER_USER_PROMPT_TEMPLATE.formatted(request.question());
-        return callLlm(request, llmModel, systemPrompt, userPrompt, LlmAnswer.class, STEP_ANSWER);
+        // tavatekstina vastus kuvatakse ikkagi (ilma reasoning'uta)
+        return callLlm(request, llmModel, systemPrompt, userPrompt, LlmAnswer.class, STEP_ANSWER,
+                plainText -> new LlmAnswer(null, plainText));
     }
 
     private String getQueryResults(SqlConversation sqlConversation) {
@@ -287,8 +297,10 @@ public class NlToSqlSearchService {
         return "\nTONE:\n" + toneDescription;
     }
 
+    // plainTextFallback: mida teha, kui mudel ei vastanud JSON-ina (null = viga)
     private <T> LlmCallResult<T> callLlm(BenchmarkAskRequest request, LlmModel llmModel, String systemPrompt,
-                                         String userPrompt, Class<T> responseType, String step) {
+                                         String userPrompt, Class<T> responseType, String step,
+                                         Function<String, T> plainTextFallback) {
         // reasoning mudelid (nt OpenAI GPT-6, Gemini 3.x) ei luba temperatuuri muuta - siis jätame selle saatmata
         Double temperature = llmModel.getSupportsTemperature()
                 ? Math.min(request.temperature(), llmModel.getMaxTemperature().doubleValue())
@@ -311,7 +323,8 @@ public class NlToSqlSearchService {
                 .call()
                 .chatResponse();
 
-        T entity = LlmStructuredOutput.toEntity(chatResponse, outputConverter, llmModel.getName() + " (" + step + ")");
+        T entity = LlmStructuredOutput.toEntity(chatResponse, outputConverter, llmModel.getName() + " (" + step + ")",
+                plainTextFallback);
         LlmTokenUsage tokenUsage = LlmTokenUsage.from(chatResponse.getMetadata().getUsage());
         return new LlmCallResult<>(entity, tokenUsage);
     }

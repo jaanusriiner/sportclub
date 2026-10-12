@@ -66,6 +66,8 @@ public class NlToSearchService2 {
             Don't mention SQL or any other technical terms. Be specific about numbers.
             
             Question: %s
+            
+            Reply only with the JSON object described in the system prompt.
             """;
 
     // andmestik kompaktselt: ainult vastamiseks vajalikud veerud (ilma id-de ja e-postideta), asukoha andmed
@@ -200,7 +202,9 @@ public class NlToSearchService2 {
                 .call()
                 .chatResponse();
 
-        LlmAnswer llmAnswer = LlmStructuredOutput.toEntity(chatResponse, outputConverter, llmModel.getName());
+        // kui mudel vastas tavatekstina (mitte JSON-ina), kuvatakse see ikkagi vastusena (ilma reasoning'uta)
+        LlmAnswer llmAnswer = LlmStructuredOutput.toEntity(chatResponse, outputConverter, llmModel.getName(),
+                plainText -> new LlmAnswer(null, plainText));
         return new ResponseEntity<>(chatResponse, llmAnswer);
     }
 }
